@@ -42,7 +42,7 @@ public class FindFolderAction extends FindAction {
 	protected String getStrutsAction(
 		HttpServletRequest request, String portletId) {
 
-		return "/document_library/view";
+		return "/document_library_display/view";
 	}
 
 	@Override
