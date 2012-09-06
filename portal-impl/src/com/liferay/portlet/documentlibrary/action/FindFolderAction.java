@@ -15,6 +15,7 @@
 package com.liferay.portlet.documentlibrary.action;
 
 import com.liferay.portal.kernel.repository.model.Folder;
+import com.liferay.portal.model.PortletConstants;
 import com.liferay.portal.struts.FindAction;
 import com.liferay.portal.util.PortletKeys;
 import com.liferay.portlet.documentlibrary.service.DLAppLocalServiceUtil;
@@ -42,7 +43,13 @@ public class FindFolderAction extends FindAction {
 	protected String getStrutsAction(
 		HttpServletRequest request, String portletId) {
 
-		return "/document_library_display/view";
+		String rootPortletId = PortletConstants.getRootPortletId(portletId);
+
+		if (rootPortletId.equals(PortletKeys.DOCUMENT_LIBRARY_DISPLAY)) {
+			return "/document_library_display/view";
+		}
+
+		return "/document_library/view";
 	}
 
 	@Override
