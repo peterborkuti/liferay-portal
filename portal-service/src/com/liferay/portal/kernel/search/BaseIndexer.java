@@ -733,14 +733,15 @@ public abstract class BaseIndexer implements Indexer {
 			boolean like)
 		throws Exception {
 
-		if (Validator.isNull(field)) {
+		if (Validator.isNull(field) ||
+			(searchContext.getFacet(field) != null)) {
+
 			return;
 		}
 
 		String value = String.valueOf(searchContext.getAttribute(field));
 
-		if ((searchContext.getFacet(field) != null) ||
-			Validator.isNull(value)) {
+		if (Validator.isNull(value)) {
 			value = searchContext.getKeywords();
 		}
 
