@@ -733,7 +733,9 @@ public abstract class BaseIndexer implements Indexer {
 			boolean like)
 		throws Exception {
 
-		if (Validator.isNull(field)) {
+		if (Validator.isNull(field) ||
+			(searchContext.getFacet(field) != null)) {
+
 			return;
 		}
 
