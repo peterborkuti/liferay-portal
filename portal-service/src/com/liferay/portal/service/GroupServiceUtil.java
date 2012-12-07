@@ -311,16 +311,6 @@ public class GroupServiceUtil {
 	}
 
 	public static java.util.List<com.liferay.portal.model.Group> getUserPlaces(
-		long userId, java.lang.String[] classNames, java.lang.String name,
-		boolean active, boolean includeControlPanel, int start, int end)
-		throws com.liferay.portal.kernel.exception.PortalException,
-			com.liferay.portal.kernel.exception.SystemException {
-		return getService()
-				   .getUserPlaces(userId, classNames, name, active,
-			includeControlPanel, start, end);
-	}
-
-	public static java.util.List<com.liferay.portal.model.Group> getUserPlaces(
 		long userId, java.lang.String[] classNames,
 		boolean includeControlPanel, int max)
 		throws com.liferay.portal.kernel.exception.PortalException,
@@ -361,6 +351,16 @@ public class GroupServiceUtil {
 		return getService().getUserPlaces(userId, classNames, max);
 	}
 
+	public static java.util.List<com.liferay.portal.model.Group> getUserPlaces(
+		long userId, java.lang.String[] classNames, java.lang.String name,
+		boolean active, boolean includeControlPanel, int start, int end)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return getService()
+				   .getUserPlaces(userId, classNames, name, active,
+			includeControlPanel, start, end);
+	}
+
 	/**
 	* Returns the guest or current user's group &quot;places&quot; associated
 	* with the group entity class names, including the control panel group if
@@ -390,6 +390,22 @@ public class GroupServiceUtil {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		return getService().getUserPlaces(classNames, max);
+	}
+
+	/**
+	* Returns the number of the guest or current user's group
+	* &quot;places&quot; associated with the group entity class names,
+	* including the control panel group if the user is permitted to view the
+	* control panel.
+	*
+	* @return the number of user's group &quot;places&quot;
+	* @throws PortalException if a portal exception occurred
+	* @throws SystemException if a system exception occurred
+	*/
+	public static int getUserPlacesCount()
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return getService().getUserPlacesCount();
 	}
 
 	/**

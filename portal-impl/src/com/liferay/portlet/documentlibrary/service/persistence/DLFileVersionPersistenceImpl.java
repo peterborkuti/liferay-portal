@@ -15,7 +15,6 @@
 package com.liferay.portlet.documentlibrary.service.persistence;
 
 import com.liferay.portal.NoSuchModelException;
-import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
@@ -38,7 +37,6 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 import com.liferay.portal.model.CacheModel;
 import com.liferay.portal.model.ModelListener;
-import com.liferay.portal.service.persistence.UserPersistence;
 import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
 
 import com.liferay.portlet.documentlibrary.NoSuchFileVersionException;
@@ -3985,19 +3983,103 @@ public class DLFileVersionPersistenceImpl extends BasePersistenceImpl<DLFileVers
 		}
 	}
 
+	protected void cacheUniqueFindersCache(DLFileVersion dlFileVersion) {
+		if (dlFileVersion.isNew()) {
+			Object[] args = new Object[] {
+					dlFileVersion.getUuid(),
+					Long.valueOf(dlFileVersion.getGroupId())
+				};
+
+			FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_UUID_G, args,
+				Long.valueOf(1));
+			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_UUID_G, args,
+				dlFileVersion);
+
+			args = new Object[] {
+					Long.valueOf(dlFileVersion.getFileEntryId()),
+					
+					dlFileVersion.getVersion()
+				};
+
+			FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_F_V, args,
+				Long.valueOf(1));
+			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_F_V, args,
+				dlFileVersion);
+		}
+		else {
+			DLFileVersionModelImpl dlFileVersionModelImpl = (DLFileVersionModelImpl)dlFileVersion;
+
+			if ((dlFileVersionModelImpl.getColumnBitmask() &
+					FINDER_PATH_FETCH_BY_UUID_G.getColumnBitmask()) != 0) {
+				Object[] args = new Object[] {
+						dlFileVersion.getUuid(),
+						Long.valueOf(dlFileVersion.getGroupId())
+					};
+
+				FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_UUID_G, args,
+					Long.valueOf(1));
+				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_UUID_G, args,
+					dlFileVersion);
+			}
+
+			if ((dlFileVersionModelImpl.getColumnBitmask() &
+					FINDER_PATH_FETCH_BY_F_V.getColumnBitmask()) != 0) {
+				Object[] args = new Object[] {
+						Long.valueOf(dlFileVersion.getFileEntryId()),
+						
+						dlFileVersion.getVersion()
+					};
+
+				FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_F_V, args,
+					Long.valueOf(1));
+				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_F_V, args,
+					dlFileVersion);
+			}
+		}
+	}
+
 	protected void clearUniqueFindersCache(DLFileVersion dlFileVersion) {
-		FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_UUID_G,
-			new Object[] {
+		DLFileVersionModelImpl dlFileVersionModelImpl = (DLFileVersionModelImpl)dlFileVersion;
+
+		Object[] args = new Object[] {
 				dlFileVersion.getUuid(),
 				Long.valueOf(dlFileVersion.getGroupId())
-			});
+			};
 
-		FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_F_V,
-			new Object[] {
+		FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_UUID_G, args);
+		FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_UUID_G, args);
+
+		if ((dlFileVersionModelImpl.getColumnBitmask() &
+				FINDER_PATH_FETCH_BY_UUID_G.getColumnBitmask()) != 0) {
+			args = new Object[] {
+					dlFileVersionModelImpl.getOriginalUuid(),
+					Long.valueOf(dlFileVersionModelImpl.getOriginalGroupId())
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_UUID_G, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_UUID_G, args);
+		}
+
+		args = new Object[] {
 				Long.valueOf(dlFileVersion.getFileEntryId()),
 				
-			dlFileVersion.getVersion()
-			});
+				dlFileVersion.getVersion()
+			};
+
+		FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_F_V, args);
+		FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_F_V, args);
+
+		if ((dlFileVersionModelImpl.getColumnBitmask() &
+				FINDER_PATH_FETCH_BY_F_V.getColumnBitmask()) != 0) {
+			args = new Object[] {
+					Long.valueOf(dlFileVersionModelImpl.getOriginalFileEntryId()),
+					
+					dlFileVersionModelImpl.getOriginalVersion()
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_F_V, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_F_V, args);
+		}
 	}
 
 	/**
@@ -4287,59 +4369,8 @@ public class DLFileVersionPersistenceImpl extends BasePersistenceImpl<DLFileVers
 			DLFileVersionImpl.class, dlFileVersion.getPrimaryKey(),
 			dlFileVersion);
 
-		if (isNew) {
-			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_UUID_G,
-				new Object[] {
-					dlFileVersion.getUuid(),
-					Long.valueOf(dlFileVersion.getGroupId())
-				}, dlFileVersion);
-
-			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_F_V,
-				new Object[] {
-					Long.valueOf(dlFileVersion.getFileEntryId()),
-					
-				dlFileVersion.getVersion()
-				}, dlFileVersion);
-		}
-		else {
-			if ((dlFileVersionModelImpl.getColumnBitmask() &
-					FINDER_PATH_FETCH_BY_UUID_G.getColumnBitmask()) != 0) {
-				Object[] args = new Object[] {
-						dlFileVersionModelImpl.getOriginalUuid(),
-						Long.valueOf(dlFileVersionModelImpl.getOriginalGroupId())
-					};
-
-				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_UUID_G, args);
-
-				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_UUID_G, args);
-
-				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_UUID_G,
-					new Object[] {
-						dlFileVersion.getUuid(),
-						Long.valueOf(dlFileVersion.getGroupId())
-					}, dlFileVersion);
-			}
-
-			if ((dlFileVersionModelImpl.getColumnBitmask() &
-					FINDER_PATH_FETCH_BY_F_V.getColumnBitmask()) != 0) {
-				Object[] args = new Object[] {
-						Long.valueOf(dlFileVersionModelImpl.getOriginalFileEntryId()),
-						
-						dlFileVersionModelImpl.getOriginalVersion()
-					};
-
-				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_F_V, args);
-
-				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_F_V, args);
-
-				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_F_V,
-					new Object[] {
-						Long.valueOf(dlFileVersion.getFileEntryId()),
-						
-					dlFileVersion.getVersion()
-					}, dlFileVersion);
-			}
-		}
+		clearUniqueFindersCache(dlFileVersion);
+		cacheUniqueFindersCache(dlFileVersion);
 
 		return dlFileVersion;
 	}
@@ -4682,26 +4713,6 @@ public class DLFileVersionPersistenceImpl extends BasePersistenceImpl<DLFileVers
 		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 	}
 
-	@BeanReference(type = DLContentPersistence.class)
-	protected DLContentPersistence dlContentPersistence;
-	@BeanReference(type = DLFileEntryPersistence.class)
-	protected DLFileEntryPersistence dlFileEntryPersistence;
-	@BeanReference(type = DLFileEntryMetadataPersistence.class)
-	protected DLFileEntryMetadataPersistence dlFileEntryMetadataPersistence;
-	@BeanReference(type = DLFileEntryTypePersistence.class)
-	protected DLFileEntryTypePersistence dlFileEntryTypePersistence;
-	@BeanReference(type = DLFileRankPersistence.class)
-	protected DLFileRankPersistence dlFileRankPersistence;
-	@BeanReference(type = DLFileShortcutPersistence.class)
-	protected DLFileShortcutPersistence dlFileShortcutPersistence;
-	@BeanReference(type = DLFileVersionPersistence.class)
-	protected DLFileVersionPersistence dlFileVersionPersistence;
-	@BeanReference(type = DLFolderPersistence.class)
-	protected DLFolderPersistence dlFolderPersistence;
-	@BeanReference(type = DLSyncPersistence.class)
-	protected DLSyncPersistence dlSyncPersistence;
-	@BeanReference(type = UserPersistence.class)
-	protected UserPersistence userPersistence;
 	private static final String _SQL_SELECT_DLFILEVERSION = "SELECT dlFileVersion FROM DLFileVersion dlFileVersion";
 	private static final String _SQL_SELECT_DLFILEVERSION_WHERE = "SELECT dlFileVersion FROM DLFileVersion dlFileVersion WHERE ";
 	private static final String _SQL_COUNT_DLFILEVERSION = "SELECT COUNT(dlFileVersion) FROM DLFileVersion dlFileVersion";

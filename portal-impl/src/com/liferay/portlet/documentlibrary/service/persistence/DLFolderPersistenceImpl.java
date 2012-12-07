@@ -46,20 +46,12 @@ import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 import com.liferay.portal.model.CacheModel;
 import com.liferay.portal.model.ModelListener;
 import com.liferay.portal.security.permission.InlineSQLHelperUtil;
-import com.liferay.portal.service.persistence.GroupPersistence;
-import com.liferay.portal.service.persistence.LockPersistence;
-import com.liferay.portal.service.persistence.UserPersistence;
-import com.liferay.portal.service.persistence.WebDAVPropsPersistence;
-import com.liferay.portal.service.persistence.WorkflowDefinitionLinkPersistence;
-import com.liferay.portal.service.persistence.WorkflowInstanceLinkPersistence;
 import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
 
 import com.liferay.portlet.documentlibrary.NoSuchFolderException;
 import com.liferay.portlet.documentlibrary.model.DLFolder;
 import com.liferay.portlet.documentlibrary.model.impl.DLFolderImpl;
 import com.liferay.portlet.documentlibrary.model.impl.DLFolderModelImpl;
-import com.liferay.portlet.expando.service.persistence.ExpandoValuePersistence;
-import com.liferay.portlet.trash.service.persistence.TrashEntryPersistence;
 
 import java.io.Serializable;
 
@@ -7867,21 +7859,137 @@ public class DLFolderPersistenceImpl extends BasePersistenceImpl<DLFolder>
 		}
 	}
 
+	protected void cacheUniqueFindersCache(DLFolder dlFolder) {
+		if (dlFolder.isNew()) {
+			Object[] args = new Object[] {
+					dlFolder.getUuid(), Long.valueOf(dlFolder.getGroupId())
+				};
+
+			FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_UUID_G, args,
+				Long.valueOf(1));
+			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_UUID_G, args,
+				dlFolder);
+
+			args = new Object[] { Long.valueOf(dlFolder.getRepositoryId()) };
+
+			FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_REPOSITORYID, args,
+				Long.valueOf(1));
+			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_REPOSITORYID, args,
+				dlFolder);
+
+			args = new Object[] {
+					Long.valueOf(dlFolder.getGroupId()),
+					Long.valueOf(dlFolder.getParentFolderId()),
+					
+					dlFolder.getName()
+				};
+
+			FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_G_P_N, args,
+				Long.valueOf(1));
+			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_G_P_N, args, dlFolder);
+		}
+		else {
+			DLFolderModelImpl dlFolderModelImpl = (DLFolderModelImpl)dlFolder;
+
+			if ((dlFolderModelImpl.getColumnBitmask() &
+					FINDER_PATH_FETCH_BY_UUID_G.getColumnBitmask()) != 0) {
+				Object[] args = new Object[] {
+						dlFolder.getUuid(), Long.valueOf(dlFolder.getGroupId())
+					};
+
+				FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_UUID_G, args,
+					Long.valueOf(1));
+				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_UUID_G, args,
+					dlFolder);
+			}
+
+			if ((dlFolderModelImpl.getColumnBitmask() &
+					FINDER_PATH_FETCH_BY_REPOSITORYID.getColumnBitmask()) != 0) {
+				Object[] args = new Object[] {
+						Long.valueOf(dlFolder.getRepositoryId())
+					};
+
+				FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_REPOSITORYID,
+					args, Long.valueOf(1));
+				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_REPOSITORYID,
+					args, dlFolder);
+			}
+
+			if ((dlFolderModelImpl.getColumnBitmask() &
+					FINDER_PATH_FETCH_BY_G_P_N.getColumnBitmask()) != 0) {
+				Object[] args = new Object[] {
+						Long.valueOf(dlFolder.getGroupId()),
+						Long.valueOf(dlFolder.getParentFolderId()),
+						
+						dlFolder.getName()
+					};
+
+				FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_G_P_N, args,
+					Long.valueOf(1));
+				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_G_P_N, args,
+					dlFolder);
+			}
+		}
+	}
+
 	protected void clearUniqueFindersCache(DLFolder dlFolder) {
-		FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_UUID_G,
-			new Object[] { dlFolder.getUuid(), Long.valueOf(
-					dlFolder.getGroupId()) });
+		DLFolderModelImpl dlFolderModelImpl = (DLFolderModelImpl)dlFolder;
 
-		FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_REPOSITORYID,
-			new Object[] { Long.valueOf(dlFolder.getRepositoryId()) });
+		Object[] args = new Object[] {
+				dlFolder.getUuid(), Long.valueOf(dlFolder.getGroupId())
+			};
 
-		FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_G_P_N,
-			new Object[] {
+		FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_UUID_G, args);
+		FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_UUID_G, args);
+
+		if ((dlFolderModelImpl.getColumnBitmask() &
+				FINDER_PATH_FETCH_BY_UUID_G.getColumnBitmask()) != 0) {
+			args = new Object[] {
+					dlFolderModelImpl.getOriginalUuid(),
+					Long.valueOf(dlFolderModelImpl.getOriginalGroupId())
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_UUID_G, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_UUID_G, args);
+		}
+
+		args = new Object[] { Long.valueOf(dlFolder.getRepositoryId()) };
+
+		FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_REPOSITORYID, args);
+		FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_REPOSITORYID, args);
+
+		if ((dlFolderModelImpl.getColumnBitmask() &
+				FINDER_PATH_FETCH_BY_REPOSITORYID.getColumnBitmask()) != 0) {
+			args = new Object[] {
+					Long.valueOf(dlFolderModelImpl.getOriginalRepositoryId())
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_REPOSITORYID, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_REPOSITORYID, args);
+		}
+
+		args = new Object[] {
 				Long.valueOf(dlFolder.getGroupId()),
 				Long.valueOf(dlFolder.getParentFolderId()),
 				
-			dlFolder.getName()
-			});
+				dlFolder.getName()
+			};
+
+		FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_P_N, args);
+		FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_G_P_N, args);
+
+		if ((dlFolderModelImpl.getColumnBitmask() &
+				FINDER_PATH_FETCH_BY_G_P_N.getColumnBitmask()) != 0) {
+			args = new Object[] {
+					Long.valueOf(dlFolderModelImpl.getOriginalGroupId()),
+					Long.valueOf(dlFolderModelImpl.getOriginalParentFolderId()),
+					
+					dlFolderModelImpl.getOriginalName()
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_P_N, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_G_P_N, args);
+		}
 	}
 
 	/**
@@ -8244,81 +8352,8 @@ public class DLFolderPersistenceImpl extends BasePersistenceImpl<DLFolder>
 		EntityCacheUtil.putResult(DLFolderModelImpl.ENTITY_CACHE_ENABLED,
 			DLFolderImpl.class, dlFolder.getPrimaryKey(), dlFolder);
 
-		if (isNew) {
-			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_UUID_G,
-				new Object[] {
-					dlFolder.getUuid(), Long.valueOf(dlFolder.getGroupId())
-				}, dlFolder);
-
-			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_REPOSITORYID,
-				new Object[] { Long.valueOf(dlFolder.getRepositoryId()) },
-				dlFolder);
-
-			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_G_P_N,
-				new Object[] {
-					Long.valueOf(dlFolder.getGroupId()),
-					Long.valueOf(dlFolder.getParentFolderId()),
-					
-				dlFolder.getName()
-				}, dlFolder);
-		}
-		else {
-			if ((dlFolderModelImpl.getColumnBitmask() &
-					FINDER_PATH_FETCH_BY_UUID_G.getColumnBitmask()) != 0) {
-				Object[] args = new Object[] {
-						dlFolderModelImpl.getOriginalUuid(),
-						Long.valueOf(dlFolderModelImpl.getOriginalGroupId())
-					};
-
-				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_UUID_G, args);
-
-				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_UUID_G, args);
-
-				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_UUID_G,
-					new Object[] {
-						dlFolder.getUuid(), Long.valueOf(dlFolder.getGroupId())
-					}, dlFolder);
-			}
-
-			if ((dlFolderModelImpl.getColumnBitmask() &
-					FINDER_PATH_FETCH_BY_REPOSITORYID.getColumnBitmask()) != 0) {
-				Object[] args = new Object[] {
-						Long.valueOf(dlFolderModelImpl.getOriginalRepositoryId())
-					};
-
-				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_REPOSITORYID,
-					args);
-
-				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_REPOSITORYID,
-					args);
-
-				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_REPOSITORYID,
-					new Object[] { Long.valueOf(dlFolder.getRepositoryId()) },
-					dlFolder);
-			}
-
-			if ((dlFolderModelImpl.getColumnBitmask() &
-					FINDER_PATH_FETCH_BY_G_P_N.getColumnBitmask()) != 0) {
-				Object[] args = new Object[] {
-						Long.valueOf(dlFolderModelImpl.getOriginalGroupId()),
-						Long.valueOf(dlFolderModelImpl.getOriginalParentFolderId()),
-						
-						dlFolderModelImpl.getOriginalName()
-					};
-
-				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_P_N, args);
-
-				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_G_P_N, args);
-
-				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_G_P_N,
-					new Object[] {
-						Long.valueOf(dlFolder.getGroupId()),
-						Long.valueOf(dlFolder.getParentFolderId()),
-						
-					dlFolder.getName()
-					}, dlFolder);
-			}
-		}
+		clearUniqueFindersCache(dlFolder);
+		cacheUniqueFindersCache(dlFolder);
 
 		return dlFolder;
 	}
@@ -9166,40 +9201,8 @@ public class DLFolderPersistenceImpl extends BasePersistenceImpl<DLFolder>
 		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 	}
 
-	@BeanReference(type = DLContentPersistence.class)
-	protected DLContentPersistence dlContentPersistence;
-	@BeanReference(type = DLFileEntryPersistence.class)
-	protected DLFileEntryPersistence dlFileEntryPersistence;
-	@BeanReference(type = DLFileEntryMetadataPersistence.class)
-	protected DLFileEntryMetadataPersistence dlFileEntryMetadataPersistence;
 	@BeanReference(type = DLFileEntryTypePersistence.class)
 	protected DLFileEntryTypePersistence dlFileEntryTypePersistence;
-	@BeanReference(type = DLFileRankPersistence.class)
-	protected DLFileRankPersistence dlFileRankPersistence;
-	@BeanReference(type = DLFileShortcutPersistence.class)
-	protected DLFileShortcutPersistence dlFileShortcutPersistence;
-	@BeanReference(type = DLFileVersionPersistence.class)
-	protected DLFileVersionPersistence dlFileVersionPersistence;
-	@BeanReference(type = DLFolderPersistence.class)
-	protected DLFolderPersistence dlFolderPersistence;
-	@BeanReference(type = DLSyncPersistence.class)
-	protected DLSyncPersistence dlSyncPersistence;
-	@BeanReference(type = GroupPersistence.class)
-	protected GroupPersistence groupPersistence;
-	@BeanReference(type = LockPersistence.class)
-	protected LockPersistence lockPersistence;
-	@BeanReference(type = UserPersistence.class)
-	protected UserPersistence userPersistence;
-	@BeanReference(type = WebDAVPropsPersistence.class)
-	protected WebDAVPropsPersistence webDAVPropsPersistence;
-	@BeanReference(type = WorkflowDefinitionLinkPersistence.class)
-	protected WorkflowDefinitionLinkPersistence workflowDefinitionLinkPersistence;
-	@BeanReference(type = WorkflowInstanceLinkPersistence.class)
-	protected WorkflowInstanceLinkPersistence workflowInstanceLinkPersistence;
-	@BeanReference(type = ExpandoValuePersistence.class)
-	protected ExpandoValuePersistence expandoValuePersistence;
-	@BeanReference(type = TrashEntryPersistence.class)
-	protected TrashEntryPersistence trashEntryPersistence;
 	protected ContainsDLFileEntryType containsDLFileEntryType;
 	protected AddDLFileEntryType addDLFileEntryType;
 	protected ClearDLFileEntryTypes clearDLFileEntryTypes;
