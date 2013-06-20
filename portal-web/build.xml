@@ -704,21 +704,8 @@
 				</replace>
 
 				<replace file="docroot/html/js/editor/fckeditor/editor/filemanager/browser/liferay/frmresourcetype.html">
-					<replacetoken><![CDATA[AddSelectOption( oCombo, defaultTypes[i][1], defaultTypes[i][0] ) ;]]></replacetoken>
-					<replacevalue><![CDATA[]]></replacevalue>
-				</replace>
-
-				<replace file="docroot/html/js/editor/fckeditor/editor/filemanager/browser/liferay/frmresourcetype.html">
 					<replacetoken><![CDATA[if ( oConnector.ShowAllTypes || defaultTypes[i][0] == oConnector.ResourceType )]]></replacetoken>
-					<replacevalue>
-						<![CDATA[
-								if ( oConnector.ResourceType === defaultTypes[i][0] ||
-									inArray( defaultTypes[i][0], oConnector.ResourceTypes ) ) {
-
-									AddSelectOption( oCombo, defaultTypes[i][1], defaultTypes[i][0] ) ;
-								}
-
-						]]>
+					<replacevalue><![CDATA[if ( oConnector.ResourceType === defaultTypes[i][0] || inArray( defaultTypes[i][0], oConnector.ResourceTypes ) )]]>
 					</replacevalue>
 				</replace>
 
