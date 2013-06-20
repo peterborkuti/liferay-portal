@@ -686,20 +686,20 @@
 								i,
 								coreArr = [];
 
-							if ( coreArr.indexOf ) {
-								return coreArr.indexOf.call( arr, e ) > -1;
-							}
-
-							for ( i = 0; i < len; i += 1 ) {
-								if ( i in arr && arr[ i ] === e ) {
-									return true;
+								if ( coreArr.indexOf ) {
+									return coreArr.indexOf.call( arr, e ) > -1;
 								}
-							}
+
+								for ( i = 0; i < len; i += 1 ) {
+									if ( i in arr && arr[ i ] === e ) {
+										return true;
+									}
+								}
 
 								return false;
 							}
 
-							]]>
+						]]>
 					</replacevalue>
 				</replace>
 
