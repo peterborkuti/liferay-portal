@@ -675,30 +675,28 @@
 				</replace>
 
 				<replace file="docroot/html/js/editor/fckeditor/editor/filemanager/browser/liferay/frmresourcetype.html">
-					<replacetoken><![CDATA[window.onload = function()
-{]]></replacetoken>
+					<replacetoken><![CDATA[var oCombo = document.getElementById('cmbType') ;]]></replacetoken>
 					<replacevalue>
 						<![CDATA[
-						window.onload = function()
-						{
-							var inArray = function( e, arr) {
-								var len = arr.length,
-								i,
-								coreArr = [];
+						var inArray = function( e, arr) {
+							var len = arr.length,
+							i,
+							coreArr = [];
 
-								if ( coreArr.indexOf ) {
-									return coreArr.indexOf.call( arr, e ) > -1;
-								}
-
-								for ( i = 0; i < len; i += 1 ) {
-									if ( i in arr && arr[ i ] === e ) {
-										return true;
-									}
-								}
-
-								return false;
+							if ( coreArr.indexOf ) {
+								return coreArr.indexOf.call( arr, e ) > -1;
 							}
 
+							for ( i = 0; i < len; i += 1 ) {
+								if ( i in arr && arr[ i ] === e ) {
+									return true;
+								}
+							}
+
+							return false;
+						}
+
+						var oCombo = document.getElementById('cmbType') ;
 						]]>
 					</replacevalue>
 				</replace>
