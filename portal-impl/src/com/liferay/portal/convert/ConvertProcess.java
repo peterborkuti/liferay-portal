@@ -16,7 +16,9 @@ package com.liferay.portal.convert;
 
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.util.ClassLoaderUtil;
 import com.liferay.portal.util.MaintenanceUtil;
+import com.liferay.portlet.documentlibrary.store.BaseStore;
 
 import org.apache.commons.lang.time.StopWatch;
 
@@ -28,6 +30,35 @@ public abstract class ConvertProcess {
 	public void convert() throws ConvertException {
 		try {
 			if (getPath() != null) {
+				return;
+			}
+
+			String[] values = getParameterValues();
+
+			String targetStoreClassName = values[0];
+
+			ClassLoader classLoader = ClassLoaderUtil.getPortalClassLoader();
+
+			Class targetClass = null;
+
+			try {
+				targetClass = classLoader.loadClass(targetStoreClassName);
+			}
+			catch (ClassNotFoundException e) {
+				_log.error(
+					"Migration does not start." + targetStoreClassName +
+						" class is missing.", e);
+
+				return;
+			}
+			catch (Exception e) {
+			}
+
+			if (!BaseStore.class.isAssignableFrom(targetClass)) {
+				_log.error(
+					"Migration does not start. BaseStore is not the super of " +
+						targetStoreClassName);
+
 				return;
 			}
 
