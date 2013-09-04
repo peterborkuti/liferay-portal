@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.InstanceFactory;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
@@ -105,8 +106,21 @@ public class ConvertDocumentLibrary extends ConvertProcess {
 
 		String targetStoreClassName = values[0];
 
-		_targetStore = (Store)InstanceFactory.newInstance(
-			ClassLoaderUtil.getPortalClassLoader(), targetStoreClassName);
+		if (!ArrayUtil.contains(_HOOKS, targetStoreClassName)) {
+			_log.error("Invalid class name " + targetStoreClassName);
+
+			return;
+		}
+
+		try {
+			_targetStore = (Store)InstanceFactory.newInstance(
+				ClassLoaderUtil.getPortalClassLoader(), targetStoreClassName);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			return;
+		}
 
 		migratePortlets();
 
