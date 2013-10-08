@@ -1604,9 +1604,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		return map;
 	}
 
-	protected FileEntry getFileEntry(Map<String, String[]> map)
-		throws Exception {
-
+	protected FileEntry getFileEntry(Map<String, String[]> map) {
 		if (map == null) {
 			return null;
 		}
