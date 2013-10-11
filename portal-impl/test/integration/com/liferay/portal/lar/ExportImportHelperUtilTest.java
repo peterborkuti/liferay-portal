@@ -24,6 +24,7 @@ import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.test.ExecutionTestListeners;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.FileUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -81,6 +82,7 @@ import org.powermock.api.mockito.PowerMockito;
 
 /**
  * @author Zsolt Berentey
+ * @author Peter Borkuti
  */
 @ExecutionTestListeners(
 	listeners = {
@@ -169,17 +171,17 @@ public class ExportImportHelperUtilTest extends PowerMockito {
 			_portletDataContextExport.getExportDataRootElement();
 
 		String content = replaceParameters(
-			getContent("dl_references_timestamp.txt"), _fileEntry);
+			getContent("dl_references.txt"), _fileEntry);
 
-		List<String> urls = replaceTimestampParameters(content);
+		List<String> urls = getURLs(content);
 
-		content = StringUtil.merge(urls,"\n");
+		String urlContent = StringUtil.merge(urls, StringPool.NEW_LINE);
 
 		content = ExportImportHelperUtil.replaceExportContentReferences(
 			_portletDataContextExport, _referrerStagedModel,
-			rootElement.element("entry"), content, true);
+			rootElement.element("entry"), urlContent, true);
 
-		String[] exportedUrls = content.split("\n");
+		String[] exportedUrls = content.split(StringPool.NEW_LINE);
 
 		Assert.assertEquals(urls.size(), exportedUrls.length);
 
@@ -484,21 +486,26 @@ public class ExportImportHelperUtilTest extends PowerMockito {
 		Pattern pattern = Pattern.compile(
 			"(?:href=|\\{|\\[[^$])(.*?)(?:>|\\}|[^$]\\]|Link\\]\\])");
 
-		Matcher matcher = pattern.matcher(content);
+		Matcher matcher = pattern.matcher(StringPool.BLANK);
+
+		String[] lines = StringUtil.split(content, StringPool.NEW_LINE);
 
 		List<String> urls = new ArrayList<String>();
 
-		while (matcher.find()) {
-			String url = matcher.group(1);
+		for (String line : lines) {
+			matcher.reset(line);
 
-			urls.add(url);
+			if (matcher.find()) {
+				urls.add(line);
+			}
 		}
 
 		return urls;
 	}
 
 	protected String replaceParameters(String content, FileEntry fileEntry) {
-		return StringUtil.replace(
+
+		content = StringUtil.replace(
 			content,
 			new String[] {
 				"[$GROUP_FRIENDLY_URL$]", "[$GROUP_ID$]", "[$IMAGE_ID$]",
@@ -516,24 +523,44 @@ public class ExportImportHelperUtilTest extends PowerMockito {
 				PropsValues.LAYOUT_FRIENDLY_URL_PUBLIC_SERVLET_MAPPING,
 				fileEntry.getTitle(), fileEntry.getUuid()
 			});
-	}
 
-	protected List<String> replaceTimestampParameters(String content)
-		throws Exception {
-
-		List<String> urls = new ArrayList<String>();
-
-		for (String line : content.split("\n")) {
-			if (line.contains("TIMESTAMP$]")) {
-				urls.add(line);
-			}
+		if (!content.contains("TIMESTAMP$]")) {
+			return content;
 		}
 
-		String timestampParameter = "t=" + ServiceTestUtil.randomLong();
+		return _replaceTimestampParameters(content);
+	}
+
+	protected void setFinalStaticField(Field field, Object newValue)
+		throws Exception {
+
+		field.setAccessible(true);
+
+		Field modifiersField = Field.class.getDeclaredField("modifiers");
+
+		modifiersField.setAccessible(true);
+		modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+
+		field.set(null, newValue);
+	}
+
+	private String _replaceTimestampParameters(String content) {
+		List<String> urls = ListUtil.toList(StringUtil.splitLines(content));
+
+		String timestampParameter = "t=1366811139876";
+		try {
+			timestampParameter = "t=" + ServiceTestUtil.randomLong();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 
 		String parameters1 = timestampParameter + "&width=100&height=100";
 		String parameters2 = "width=100&" + timestampParameter + "&height=100";
-		String parameters3 = "width=100&height=100" + timestampParameter;
+		String parameters3 = "width=100&height=100&" + timestampParameter;
+		String parameters4 =
+			timestampParameter + "?" + timestampParameter +
+				"&width=100&height=100";
 
 		List<String> outUrls = new ArrayList<String>();
 
@@ -552,22 +579,14 @@ public class ExportImportHelperUtilTest extends PowerMockito {
 				StringUtil.replace(
 					url, new String[] {"[$TIMESTAMP$]", "[$ONLYTIMESTAMP$]"},
 					new String[] {"&" + parameters3, "?" + parameters3}));
+
+			outUrls.add(
+				StringUtil.replace(
+					url, new String[] {"[$TIMESTAMP$]", "[$ONLYTIMESTAMP$]"},
+					new String[] {StringPool.BLANK, "?" + parameters4}));
 		}
 
-		return outUrls;
-	}
-
-	protected void setFinalStaticField(Field field, Object newValue)
-		throws Exception {
-
-		field.setAccessible(true);
-
-		Field modifiersField = Field.class.getDeclaredField("modifiers");
-
-		modifiersField.setAccessible(true);
-		modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-
-		field.set(null, newValue);
+		return StringUtil.merge(outUrls, StringPool.NEW_LINE);
 	}
 
 	private static String _OLD_LAYOUT_FRIENDLY_URL_PRIVATE_USER_SERVLET_MAPPING;
