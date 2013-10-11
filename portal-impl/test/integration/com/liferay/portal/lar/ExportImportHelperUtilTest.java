@@ -533,7 +533,10 @@ public class ExportImportHelperUtilTest extends PowerMockito {
 
 		String parameters1 = timestampParameter + "&width=100&height=100";
 		String parameters2 = "width=100&" + timestampParameter + "&height=100";
-		String parameters3 = "width=100&height=100" + timestampParameter;
+		String parameters3 = "width=100&height=100&" + timestampParameter;
+		String parameters4 =
+			timestampParameter + "?" + timestampParameter +
+				"&width=100&height=100";
 
 		List<String> outUrls = new ArrayList<String>();
 
@@ -552,6 +555,11 @@ public class ExportImportHelperUtilTest extends PowerMockito {
 				StringUtil.replace(
 					url, new String[] {"[$TIMESTAMP$]", "[$ONLYTIMESTAMP$]"},
 					new String[] {"&" + parameters3, "?" + parameters3}));
+
+			outUrls.add(
+				StringUtil.replace(
+					url, new String[] {"[$TIMESTAMP$]", "[$ONLYTIMESTAMP$]"},
+					new String[] {"", "?" + parameters4}));
 		}
 
 		return outUrls;
