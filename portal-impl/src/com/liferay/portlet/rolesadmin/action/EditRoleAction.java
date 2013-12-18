@@ -23,7 +23,6 @@ import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.Role;
 import com.liferay.portal.model.RoleConstants;
 import com.liferay.portal.security.auth.PrincipalException;
@@ -31,7 +30,6 @@ import com.liferay.portal.service.RoleServiceUtil;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.ServiceContextFactory;
 import com.liferay.portal.struts.PortletAction;
-import com.liferay.portal.util.PortalUtil;
 
 import java.util.Locale;
 import java.util.Map;
@@ -60,6 +58,8 @@ public class EditRoleAction extends PortletAction {
 
 		String cmd = ParamUtil.getString(actionRequest, Constants.CMD);
 
+		String redirect = ParamUtil.getString(actionRequest, "redirect");
+
 		try {
 			Role role = null;
 
@@ -69,8 +69,6 @@ public class EditRoleAction extends PortletAction {
 			else if (cmd.equals(Constants.DELETE)) {
 				deleteRole(actionRequest);
 			}
-
-			String redirect = ParamUtil.getString(actionRequest, "redirect");
 
 			if (role != null) {
 				redirect = HttpUtil.setParameter(
@@ -93,14 +91,7 @@ public class EditRoleAction extends PortletAction {
 
 				SessionErrors.add(actionRequest, e.getClass());
 
-				if (cmd.equals(Constants.DELETE)) {
-					String redirect = PortalUtil.escapeRedirect(
-						ParamUtil.getString(actionRequest, "redirect"));
-
-					if (Validator.isNotNull(redirect)) {
-						actionResponse.sendRedirect(redirect);
-					}
-				}
+				sendRedirect(actionRequest, actionResponse, redirect);
 			}
 			else {
 				throw e;
