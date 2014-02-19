@@ -2396,6 +2396,20 @@ public class PortalImpl implements Portal {
 
 			value = GetterUtil.getLongValues(values);
 		}
+		else if (type == ExpandoColumnConstants.NUMBER) {
+			value = ParamUtil.getNumber(uploadPortletRequest, name);
+		}
+		else if (type == ExpandoColumnConstants.NUMBER_ARRAY) {
+			String[] values = uploadPortletRequest.getParameterValues(name);
+
+			if (displayType.equals(
+					ExpandoColumnConstants.PROPERTY_DISPLAY_TYPE_TEXT_BOX)) {
+
+				values = StringUtil.splitLines(values[0]);
+			}
+
+			value = GetterUtil.getNumberValues(values);
+		}
 		else if (type == ExpandoColumnConstants.SHORT) {
 			value = ParamUtil.getShort(uploadPortletRequest, name);
 		}
