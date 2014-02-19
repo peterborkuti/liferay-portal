@@ -2295,96 +2295,47 @@ public class PortalImpl implements Portal {
 			value = ParamUtil.getDouble(uploadPortletRequest, name);
 		}
 		else if (type == ExpandoColumnConstants.DOUBLE_ARRAY) {
-			String[] values = uploadPortletRequest.getParameterValues(name);
-
-			if (displayType.equals(
-					ExpandoColumnConstants.PROPERTY_DISPLAY_TYPE_TEXT_BOX)) {
-
-				values = StringUtil.splitLines(values[0]);
-			}
-
-			value = GetterUtil.getDoubleValues(values);
+			value = GetterUtil.getDoubleValues(
+				getParameterValues(uploadPortletRequest, name, displayType));
 		}
 		else if (type == ExpandoColumnConstants.FLOAT) {
 			value = ParamUtil.getFloat(uploadPortletRequest, name);
 		}
 		else if (type == ExpandoColumnConstants.FLOAT_ARRAY) {
-			String[] values = uploadPortletRequest.getParameterValues(name);
-
-			if (displayType.equals(
-					ExpandoColumnConstants.PROPERTY_DISPLAY_TYPE_TEXT_BOX)) {
-
-				values = StringUtil.splitLines(values[0]);
-			}
-
-			value = GetterUtil.getFloatValues(values);
+			value = GetterUtil.getFloatValues(
+				getParameterValues(uploadPortletRequest, name, displayType));
 		}
 		else if (type == ExpandoColumnConstants.INTEGER) {
 			value = ParamUtil.getInteger(uploadPortletRequest, name);
 		}
 		else if (type == ExpandoColumnConstants.INTEGER_ARRAY) {
-			String[] values = uploadPortletRequest.getParameterValues(name);
-
-			if (displayType.equals(
-					ExpandoColumnConstants.PROPERTY_DISPLAY_TYPE_TEXT_BOX)) {
-
-				values = StringUtil.splitLines(values[0]);
-			}
-
-			value = GetterUtil.getIntegerValues(values);
+			value = GetterUtil.getIntegerValues(
+				getParameterValues(uploadPortletRequest, name, displayType));
 		}
 		else if (type == ExpandoColumnConstants.LONG) {
 			value = ParamUtil.getLong(uploadPortletRequest, name);
 		}
 		else if (type == ExpandoColumnConstants.LONG_ARRAY) {
-			String[] values = uploadPortletRequest.getParameterValues(name);
-
-			if (displayType.equals(
-					ExpandoColumnConstants.PROPERTY_DISPLAY_TYPE_TEXT_BOX)) {
-
-				values = StringUtil.splitLines(values[0]);
-			}
-
-			value = GetterUtil.getLongValues(values);
+			value = GetterUtil.getLongValues(
+				getParameterValues(uploadPortletRequest, name, displayType));
 		}
 		else if (type == ExpandoColumnConstants.NUMBER) {
 			value = ParamUtil.getNumber(uploadPortletRequest, name);
 		}
 		else if (type == ExpandoColumnConstants.NUMBER_ARRAY) {
-			String[] values = uploadPortletRequest.getParameterValues(name);
-
-			if (displayType.equals(
-					ExpandoColumnConstants.PROPERTY_DISPLAY_TYPE_TEXT_BOX)) {
-
-				values = StringUtil.splitLines(values[0]);
-			}
-
-			value = GetterUtil.getNumberValues(values);
+			value = GetterUtil.getNumberValues(
+				getParameterValues(uploadPortletRequest, name, displayType));
 		}
 		else if (type == ExpandoColumnConstants.SHORT) {
 			value = ParamUtil.getShort(uploadPortletRequest, name);
 		}
 		else if (type == ExpandoColumnConstants.SHORT_ARRAY) {
-			String[] values = uploadPortletRequest.getParameterValues(name);
-
-			if (displayType.equals(
-					ExpandoColumnConstants.PROPERTY_DISPLAY_TYPE_TEXT_BOX)) {
-
-				values = StringUtil.splitLines(values[0]);
-			}
-
-			value = GetterUtil.getShortValues(values);
+			value = GetterUtil.getShortValues(
+				getParameterValues(uploadPortletRequest, name, displayType));
 		}
 		else if (type == ExpandoColumnConstants.STRING_ARRAY) {
-			String[] values = uploadPortletRequest.getParameterValues(name);
-
-			if (displayType.equals(
-					ExpandoColumnConstants.PROPERTY_DISPLAY_TYPE_TEXT_BOX)) {
-
-				values = StringUtil.splitLines(values[0]);
-			}
-
-			value = GetterUtil.getStringValues(values);
+			value = GetterUtil.getStringValues(
+				getParameterValues(uploadPortletRequest, name, displayType));
 		}
 		else if (type == ExpandoColumnConstants.STRING_LOCALIZED) {
 			value = (Serializable)LocalizationUtil.getLocalizationMap(
@@ -7777,9 +7728,23 @@ public class PortalImpl implements Portal {
 	}
 
 	protected String[] getParameterValues(
-		PortletRequest portletRequest, String name, String displayType) {
+		PortletRequest request, String name, String displayType) {
 
-		String[] values = portletRequest.getParameterValues(name);
+		String[] values = request.getParameterValues(name);
+
+		if (displayType.equals(
+				ExpandoColumnConstants.PROPERTY_DISPLAY_TYPE_TEXT_BOX)) {
+
+			values = StringUtil.splitLines(values[0]);
+		}
+
+		return values;
+	}
+
+	protected String[] getParameterValues(
+		UploadPortletRequest request, String name, String displayType) {
+
+		String[] values = request.getParameterValues(name);
 
 		if (displayType.equals(
 				ExpandoColumnConstants.PROPERTY_DISPLAY_TYPE_TEXT_BOX)) {
