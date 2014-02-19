@@ -2193,96 +2193,47 @@ public class PortalImpl implements Portal {
 			value = ParamUtil.getDouble(portletRequest, name);
 		}
 		else if (type == ExpandoColumnConstants.DOUBLE_ARRAY) {
-			String[] values = portletRequest.getParameterValues(name);
-
-			if (displayType.equals(
-					ExpandoColumnConstants.PROPERTY_DISPLAY_TYPE_TEXT_BOX)) {
-
-				values = StringUtil.splitLines(values[0]);
-			}
-
-			value = GetterUtil.getDoubleValues(values);
+			value = GetterUtil.getDoubleValues(
+				getParameterValues(portletRequest, name, displayType));
 		}
 		else if (type == ExpandoColumnConstants.FLOAT) {
 			value = ParamUtil.getFloat(portletRequest, name);
 		}
 		else if (type == ExpandoColumnConstants.FLOAT_ARRAY) {
-			String[] values = portletRequest.getParameterValues(name);
-
-			if (displayType.equals(
-					ExpandoColumnConstants.PROPERTY_DISPLAY_TYPE_TEXT_BOX)) {
-
-				values = StringUtil.splitLines(values[0]);
-			}
-
-			value = GetterUtil.getFloatValues(values);
+			value = GetterUtil.getFloatValues(
+				getParameterValues(portletRequest, name, displayType));
 		}
 		else if (type == ExpandoColumnConstants.INTEGER) {
 			value = ParamUtil.getInteger(portletRequest, name);
 		}
 		else if (type == ExpandoColumnConstants.INTEGER_ARRAY) {
-			String[] values = portletRequest.getParameterValues(name);
-
-			if (displayType.equals(
-					ExpandoColumnConstants.PROPERTY_DISPLAY_TYPE_TEXT_BOX)) {
-
-				values = StringUtil.splitLines(values[0]);
-			}
-
-			value = GetterUtil.getIntegerValues(values);
+			value = GetterUtil.getIntegerValues(
+				getParameterValues(portletRequest, name, displayType));
 		}
 		else if (type == ExpandoColumnConstants.LONG) {
 			value = ParamUtil.getLong(portletRequest, name);
 		}
 		else if (type == ExpandoColumnConstants.LONG_ARRAY) {
-			String[] values = portletRequest.getParameterValues(name);
-
-			if (displayType.equals(
-					ExpandoColumnConstants.PROPERTY_DISPLAY_TYPE_TEXT_BOX)) {
-
-				values = StringUtil.splitLines(values[0]);
-			}
-
-			value = GetterUtil.getLongValues(values);
+			value = GetterUtil.getLongValues(
+				getParameterValues(portletRequest, name, displayType));
 		}
 		else if (type == ExpandoColumnConstants.NUMBER) {
 			value = ParamUtil.getNumber(portletRequest, name);
 		}
 		else if (type == ExpandoColumnConstants.NUMBER_ARRAY) {
-			String[] values = portletRequest.getParameterValues(name);
-
-			if (displayType.equals(
-					ExpandoColumnConstants.PROPERTY_DISPLAY_TYPE_TEXT_BOX)) {
-
-				values = StringUtil.splitLines(values[0]);
-			}
-
-			value = GetterUtil.getNumberValues(values);
+			value = GetterUtil.getNumberValues(
+				getParameterValues(portletRequest, name, displayType));
 		}
 		else if (type == ExpandoColumnConstants.SHORT) {
 			value = ParamUtil.getShort(portletRequest, name);
 		}
 		else if (type == ExpandoColumnConstants.SHORT_ARRAY) {
-			String[] values = portletRequest.getParameterValues(name);
-
-			if (displayType.equals(
-					ExpandoColumnConstants.PROPERTY_DISPLAY_TYPE_TEXT_BOX)) {
-
-				values = StringUtil.splitLines(values[0]);
-			}
-
-			value = GetterUtil.getShortValues(values);
+			value = GetterUtil.getShortValues(
+				getParameterValues(portletRequest, name, displayType));
 		}
 		else if (type == ExpandoColumnConstants.STRING_ARRAY) {
-			String[] values = portletRequest.getParameterValues(name);
-
-			if (displayType.equals(
-					ExpandoColumnConstants.PROPERTY_DISPLAY_TYPE_TEXT_BOX)) {
-
-				values = StringUtil.splitLines(values[0]);
-			}
-
-			value = GetterUtil.getStringValues(values);
+			value = GetterUtil.getStringValues(
+				getParameterValues(portletRequest, name, displayType));
 		}
 		else if (type == ExpandoColumnConstants.STRING_LOCALIZED) {
 			value = (Serializable)LocalizationUtil.getLocalizationMap(
@@ -7823,6 +7774,20 @@ public class PortalImpl implements Portal {
 		sb.append(group.getFriendlyURL());
 
 		return sb.toString();
+	}
+
+	protected String[] getParameterValues(
+		PortletRequest portletRequest, String name, String displayType) {
+
+		String[] values = portletRequest.getParameterValues(name);
+
+		if (displayType.equals(
+				ExpandoColumnConstants.PROPERTY_DISPLAY_TYPE_TEXT_BOX)) {
+
+			values = StringUtil.splitLines(values[0]);
+		}
+
+		return values;
 	}
 
 	protected String getPortletParam(HttpServletRequest request, String name) {
