@@ -110,7 +110,6 @@ import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletSession;
 import javax.portlet.PortletURL;
-import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
 import javax.servlet.http.HttpServletRequest;
@@ -877,9 +876,10 @@ public class JournalUtil {
 	}
 
 	public static Map<String, String> getEmailDefinitionTerms(
-		RenderRequest request, String emailFromAddress, String emailFromName) {
+		PortletRequest portletRequest, String emailFromAddress,
+		String emailFromName) {
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
 		Map<String, String> definitionTerms = new HashMap<String, String>();
@@ -907,7 +907,7 @@ public class JournalUtil {
 		definitionTerms.put("[$PORTAL_URL$]", company.getVirtualHostname());
 
 		definitionTerms.put(
-			"[$PORTLET_NAME$]", PortalUtil.getPortletTitle(request));
+			"[$PORTLET_NAME$]", PortalUtil.getPortletTitle(portletRequest));
 		definitionTerms.put(
 			"[$TO_ADDRESS$]",
 			LanguageUtil.get(

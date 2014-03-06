@@ -35,8 +35,10 @@ import java.util.Set;
 /**
  * @author Michael C. Han
  */
-public abstract class AbstractSearchEngineConfigurator {
+public abstract class AbstractSearchEngineConfigurator
+	implements SearchEngineConfigurator {
 
+	@Override
 	public void afterPropertiesSet() {
 		Set<Entry<String, SearchEngine>> entrySet = _searchEngines.entrySet();
 
@@ -56,6 +58,7 @@ public abstract class AbstractSearchEngineConfigurator {
 		_searchEngines.clear();
 	}
 
+	@Override
 	public void destroy() {
 		for (SearchEngineRegistration searchEngineRegistration :
 				_searchEngineRegistrations) {
@@ -72,6 +75,7 @@ public abstract class AbstractSearchEngineConfigurator {
 		}
 	}
 
+	@Override
 	public void setSearchEngines(Map<String, SearchEngine> searchEngines) {
 		_searchEngines = searchEngines;
 	}

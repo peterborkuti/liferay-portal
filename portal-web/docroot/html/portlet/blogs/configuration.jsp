@@ -30,8 +30,8 @@ String currentLanguageId = LanguageUtil.getLanguageId(request);
 
 <aui:form action="<%= configurationActionURL %>" method="post" name="fm" onSubmit='<%= "event.preventDefault(); " + renderResponse.getNamespace() + "saveConfiguration();" %>'>
 	<aui:input name="<%= Constants.CMD %>" type="hidden" value="<%= Constants.UPDATE %>" />
-	<aui:input name="languageId" type="hidden" value="<%= currentLanguageId %>" />
 	<aui:input name="redirect" type="hidden" value="<%= configurationRenderURL %>" />
+	<aui:input name="languageId" type="hidden" value="<%= currentLanguageId %>" />
 
 	<%
 	String tabs2Names = "display-settings,email-from,entry-added-email,entry-updated-email";

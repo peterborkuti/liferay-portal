@@ -29,8 +29,8 @@ String currentLanguageId = LanguageUtil.getLanguageId(request);
 
 <aui:form action="<%= configurationActionURL %>" method="post" name="fm" onSubmit='<%= renderResponse.getNamespace() + "saveConfiguration();" %>'>
 	<aui:input name="<%= Constants.CMD %>" type="hidden" value="<%= Constants.UPDATE %>" />
-	<aui:input name="languageId" type="hidden" value="<%= currentLanguageId %>" />
 	<aui:input name="redirect" type="hidden" value="<%= configurationRenderURL %>" />
+	<aui:input name="languageId" type="hidden" value="<%= currentLanguageId %>" />
 
 	<liferay-ui:tabs
 		names="general,email-from,password-changed-notification,password-reset-notification"

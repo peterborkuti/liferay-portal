@@ -67,7 +67,6 @@ import javax.portlet.PortletModeException;
 import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
-import javax.portlet.RenderRequest;
 import javax.portlet.WindowState;
 import javax.portlet.WindowStateException;
 
@@ -158,10 +157,10 @@ public class LoginUtil {
 	}
 
 	public static Map<String, String> getEmailDefinitionTerms(
-		RenderRequest request, String emailFromAddress, String emailFromName,
-		boolean showPasswordTerms) {
+		PortletRequest portletRequest, String emailFromAddress,
+		String emailFromName, boolean showPasswordTerms) {
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
 		Map<String, String> definitionTerms = new HashMap<String, String>();

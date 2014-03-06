@@ -262,7 +262,6 @@ import javax.portlet.PortletResponse;
 import javax.portlet.PortletURL;
 import javax.portlet.PreferencesValidator;
 import javax.portlet.RenderRequest;
-import javax.portlet.RenderResponse;
 import javax.portlet.StateAwareResponse;
 import javax.portlet.ValidatorException;
 import javax.portlet.WindowState;
@@ -4571,26 +4570,26 @@ public class PortalImpl implements Portal {
 	}
 
 	@Override
-	public String getPortletTitle(RenderRequest renderRequest) {
-		String portletId = (String)renderRequest.getAttribute(
+	public String getPortletTitle(PortletRequest portletRequest) {
+		String portletId = (String)portletRequest.getAttribute(
 			WebKeys.PORTLET_ID);
 
 		Portlet portlet = PortletLocalServiceUtil.getPortletById(portletId);
 
-		HttpServletRequest request = getHttpServletRequest(renderRequest);
+		HttpServletRequest request = getHttpServletRequest(portletRequest);
 
 		ServletContext servletContext = (ServletContext)request.getAttribute(
 			WebKeys.CTX);
 
-		Locale locale = renderRequest.getLocale();
+		Locale locale = portletRequest.getLocale();
 
 		return getPortletTitle(portlet, servletContext, locale);
 	}
 
 	@Override
-	public String getPortletTitle(RenderResponse renderResponse) {
+	public String getPortletTitle(PortletResponse portletResponse) {
 		PortletResponseImpl portletResponseImpl =
-			PortletResponseImpl.getPortletResponseImpl(renderResponse);
+			PortletResponseImpl.getPortletResponseImpl(portletResponse);
 
 		return ((RenderResponseImpl)portletResponseImpl).getTitle();
 	}

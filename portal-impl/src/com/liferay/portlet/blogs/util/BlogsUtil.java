@@ -41,7 +41,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.portlet.PortletPreferences;
-import javax.portlet.RenderRequest;
+import javax.portlet.PortletRequest;
 
 /**
  * @author Brian Wing Shun Chan
@@ -56,9 +56,10 @@ public class BlogsUtil {
 	public static final String DISPLAY_STYLE_TITLE = "title";
 
 	public static Map<String, String> getEmailDefinitionTerms(
-		RenderRequest request, String emailFromAddress, String emailFromName) {
+		PortletRequest portletRequest, String emailFromAddress,
+		String emailFromName) {
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
 		Map<String, String> definitionTerms = new HashMap<String, String>();
@@ -115,7 +116,7 @@ public class BlogsUtil {
 		definitionTerms.put("[$PORTAL_URL$]", company.getVirtualHostname());
 
 		definitionTerms.put(
-			"[$PORTLET_NAME$]", PortalUtil.getPortletTitle(request));
+			"[$PORTLET_NAME$]", PortalUtil.getPortletTitle(portletRequest));
 		definitionTerms.put(
 			"[$SITE_NAME$]",
 			LanguageUtil.get(
@@ -261,9 +262,10 @@ public class BlogsUtil {
 	}
 
 	public static Map<String, String> getEmailFromDefinitionTerms(
-		RenderRequest request, String emailFromAddress, String emailFromName) {
+		PortletRequest portletRequest, String emailFromAddress,
+		String emailFromName) {
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
 		Map<String, String> definitionTerms = new HashMap<String, String>();
@@ -293,7 +295,7 @@ public class BlogsUtil {
 				themeDisplay.getLocale(),
 				"the-company-name-associated-with-the-blog"));
 		definitionTerms.put(
-			"[$PORTLET_NAME$]", PortalUtil.getPortletTitle(request));
+			"[$PORTLET_NAME$]", PortalUtil.getPortletTitle(portletRequest));
 		definitionTerms.put(
 			"[$SITE_NAME$]",
 			LanguageUtil.get(

@@ -111,6 +111,10 @@ public interface DL {
 			PortletRequest portletRequest, long folderId)
 		throws PortalException, SystemException;
 
+	public Map<String, String> getEmailDefinitionTerms(
+		PortletRequest portletRequest, String emailFromAddress,
+		String emailFromName);
+
 	public Map<Locale, String> getEmailFileEntryAddedBodyMap(
 		PortletPreferences preferences);
 
@@ -132,6 +136,10 @@ public interface DL {
 	public String getEmailFromAddress(
 			PortletPreferences preferences, long companyId)
 		throws SystemException;
+
+	public Map<String, String> getEmailFromDefinitionTerms(
+		PortletRequest portletRequest, String emailFromAddress,
+		String emailFromName);
 
 	public String getEmailFromName(
 			PortletPreferences preferences, long companyId)
