@@ -16,6 +16,7 @@ package com.liferay.portal.util;
 
 import com.liferay.counter.service.CounterLocalServiceUtil;
 import com.liferay.portal.ImageTypeException;
+import com.liferay.portal.NoSuchGroupException;
 import com.liferay.portal.NoSuchImageException;
 import com.liferay.portal.NoSuchLayoutException;
 import com.liferay.portal.NoSuchUserException;
@@ -1120,6 +1121,23 @@ public class PortalImpl implements Portal {
 		return canonicalURL.concat(i18nPath);
 	}
 
+	@Override
+	public long[] getAncestorSiteGroupIds(long groupId)
+		throws PortalException, SystemException {
+
+		List<Group> groups = doGetAncestorSiteGroupIds(groupId);
+
+		long[] groupIds = new long[groups.size()];
+
+		for (int i = 0; i < groups.size(); i++) {
+			Group group = groups.get(i);
+
+			groupIds[i] = group.getGroupId();
+		}
+
+		return groupIds;
+	}
+
 	/**
 	 * @deprecated As of 6.2.0, replaced by {@link
 	 *             AuthTokenWhitelistUtil#getPortletCSRFWhitelistActions}
@@ -1626,7 +1644,8 @@ public class PortalImpl implements Portal {
 
 		sb.append(
 			getPortalURL(
-				company.getVirtualHostname(), getPortalPort(false), false));
+				company.getVirtualHostname(), getPortalServerPort(false),
+				false));
 		sb.append(getPathFriendlyURLPrivateGroup());
 		sb.append(GroupConstants.CONTROL_PANEL_FRIENDLY_URL);
 		sb.append(PropsValues.CONTROL_PANEL_LAYOUT_FRIENDLY_URL);
@@ -1800,6 +1819,33 @@ public class PortalImpl implements Portal {
 		}
 
 		return StringPool.BLANK;
+	}
+
+	@Override
+	public long[] getCurrentAndAncestorSiteGroupIds(long groupId)
+		throws PortalException, SystemException {
+
+		List<Group> groups = new ArrayList<Group>();
+
+		long siteGroupId = getSiteGroupId(groupId);
+
+		Group siteGroup = GroupLocalServiceUtil.getGroup(siteGroupId);
+
+		if (!siteGroup.isLayoutPrototype()) {
+			groups.add(siteGroup);
+		}
+
+		groups.addAll(doGetAncestorSiteGroupIds(groupId));
+
+		long[] groupIds = new long[groups.size()];
+
+		for (int i = 0; i < groups.size(); i++) {
+			Group group = groups.get(i);
+
+			groupIds[i] = group.getGroupId();
+		}
+
+		return groupIds;
 	}
 
 	@Override
@@ -3088,7 +3134,7 @@ public class PortalImpl implements Portal {
 		}
 
 		String portalURL = getPortalURL(
-			virtualHostname, getPortalPort(secure), secure);
+			virtualHostname, getPortalServerPort(secure), secure);
 
 		sb.append(portalURL);
 
@@ -3985,7 +4031,7 @@ public class PortalImpl implements Portal {
 	@Deprecated
 	@Override
 	public int getPortalPort() {
-		return _portalPort.get();
+		return getPortalServerPort(false);
 	}
 
 	/**
@@ -3995,12 +4041,7 @@ public class PortalImpl implements Portal {
 	@Deprecated
 	@Override
 	public int getPortalPort(boolean secure) {
-		if (secure) {
-			return _securePortalPort.get();
-		}
-		else {
-			return _portalPort.get();
-		}
+		return getPortalServerPort(secure);
 	}
 
 	@Override
@@ -4986,6 +5027,11 @@ public class PortalImpl implements Portal {
 		return siteAdministrationURL;
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             #getCurrentAndAncestorSiteGroupIds(long)}
+	 */
+	@Deprecated
 	@Override
 	public long[] getSiteAndCompanyGroupIds(long groupId)
 		throws PortalException, SystemException {
@@ -5012,6 +5058,11 @@ public class PortalImpl implements Portal {
 		}
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             #getCurrentAndAncestorSiteGroupIds(long)}
+	 */
+	@Deprecated
 	@Override
 	public long[] getSiteAndCompanyGroupIds(ThemeDisplay themeDisplay)
 		throws PortalException, SystemException {
@@ -6817,9 +6868,24 @@ public class PortalImpl implements Portal {
 
 		String redirect = PATH_MAIN + "/portal/status";
 
-		if ((e instanceof NoSuchLayoutException) &&
+		if ((e instanceof NoSuchGroupException) &&
 			Validator.isNotNull(
-				PropsValues.LAYOUT_FRIENDLY_URL_PAGE_NOT_FOUND)) {
+				PropsValues.SITES_FRIENDLY_URL_PAGE_NOT_FOUND)) {
+
+			response.setStatus(status);
+
+			redirect = PropsValues.SITES_FRIENDLY_URL_PAGE_NOT_FOUND;
+
+			RequestDispatcher requestDispatcher =
+				servletContext.getRequestDispatcher(redirect);
+
+			if (requestDispatcher != null) {
+				requestDispatcher.forward(request, response);
+			}
+		}
+		else if ((e instanceof NoSuchLayoutException) &&
+				 Validator.isNotNull(
+					PropsValues.LAYOUT_FRIENDLY_URL_PAGE_NOT_FOUND)) {
 
 			response.setStatus(status);
 
@@ -7456,6 +7522,26 @@ public class PortalImpl implements Portal {
 		}
 
 		return StringPool.SLASH.concat(languageId);
+	}
+
+	protected List<Group> doGetAncestorSiteGroupIds(long groupId)
+		throws PortalException, SystemException {
+
+		List<Group> groups = new ArrayList<Group>();
+
+		long siteGroupId = getSiteGroupId(groupId);
+
+		Group siteGroup = GroupLocalServiceUtil.getGroup(siteGroupId);
+
+		groups.addAll(siteGroup.getAncestors());
+
+		if (!siteGroup.isCompany()) {
+			groups.add(
+				GroupLocalServiceUtil.getCompanyGroup(
+					siteGroup.getCompanyId()));
+		}
+
+		return groups;
 	}
 
 	protected long doGetPlidFromPortletId(
@@ -8152,6 +8238,11 @@ public class PortalImpl implements Portal {
 	private final AtomicReference<InetSocketAddress>
 		_portalLocalInetSocketAddress =
 			new AtomicReference<InetSocketAddress>();
+
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             #_portalServerInetSocketAddress}
+	 */
 	private final AtomicInteger _portalPort = new AtomicInteger(-1);
 
 	/**
@@ -8174,6 +8265,7 @@ public class PortalImpl implements Portal {
 	 * @deprecated As of 7.0.0, replaced by {@link
 	 *             #_securePortalServerInetSocketAddress}
 	 */
+	@Deprecated
 	private final AtomicInteger _securePortalPort = new AtomicInteger(-1);
 
 	private final AtomicReference<InetSocketAddress>

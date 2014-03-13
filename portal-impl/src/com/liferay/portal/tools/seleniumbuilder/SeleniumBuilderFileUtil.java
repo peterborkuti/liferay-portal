@@ -55,8 +55,8 @@ import org.apache.commons.lang.StringEscapeUtils;
  */
 public class SeleniumBuilderFileUtil {
 
-	public SeleniumBuilderFileUtil(String baseDir) {
-		_baseDir = baseDir;
+	public SeleniumBuilderFileUtil(String baseDirName) {
+		_baseDirName = baseDirName;
 	}
 
 	public String escapeHtml(String input) {
@@ -92,8 +92,8 @@ public class SeleniumBuilderFileUtil {
 		return allChildElements;
 	}
 
-	public String getBaseDir() {
-		return _baseDir;
+	public String getBaseDirName() {
+		return _baseDirName;
 	}
 
 	public Set<String> getChildElementAttributeValues(
@@ -250,7 +250,7 @@ public class SeleniumBuilderFileUtil {
 			if (!content.equals(newContent)) {
 				content = newContent;
 
-				writeFile(getBaseDir(), fileName, newContent, false);
+				writeFile(getBaseDirName(), fileName, newContent, false);
 			}
 		}
 
@@ -361,20 +361,20 @@ public class SeleniumBuilderFileUtil {
 	}
 
 	public String readFile(String fileName) throws Exception {
-		return FileUtil.read(getBaseDir() + "/" + fileName);
+		return FileUtil.read(getBaseDirName() + "/" + fileName);
 	}
 
 	public void writeFile(String fileName, String content, boolean format)
 		throws Exception {
 
-		writeFile(getBaseDir() + "-generated", fileName, content, format);
+		writeFile(getBaseDirName() + "-generated", fileName, content, format);
 	}
 
 	public void writeFile(
-			String baseDir, String fileName, String content, boolean format)
+			String baseDirName, String fileName, String content, boolean format)
 		throws Exception {
 
-		File file = new File(baseDir + "/" + fileName);
+		File file = new File(baseDirName + "/" + fileName);
 
 		if (format) {
 			ServiceBuilder.writeFile(file, content);
@@ -631,8 +631,12 @@ public class SeleniumBuilderFileUtil {
 								1006, fileName, element, attributeName);
 						}
 					}
-					else if (attributeName.startsWith("locator") ||
-							 attributeName.startsWith("locator-key")) {
+					else if (attributeName.equals("locator1") ||
+							 attributeName.equals("locator2") ||
+							 attributeName.equals("locator-key1") ||
+							 attributeName.equals("locator-key2") ||
+							 attributeName.equals("value1") ||
+							 attributeName.equals("value2")) {
 
 						String attributeValue = attribute.getValue();
 
@@ -646,15 +650,20 @@ public class SeleniumBuilderFileUtil {
 
 					if (!attributeName.equals("comparator") &&
 						!attributeName.equals("line-number") &&
-						!attributeName.startsWith("locator") &&
-						!attributeName.startsWith("locator-key")) {
+						!attributeName.equals("locator1") &&
+						!attributeName.equals("locator2") &&
+						!attributeName.equals("locator-key1") &&
+						!attributeName.equals("locator-key2") &&
+						!attributeName.equals("value1") &&
+						!attributeName.equals("value2")) {
 
 						throwValidationException(
 							1005, fileName, element, attributeName);
 					}
 
 					if (attributeName.equals("locator") ||
-						attributeName.equals("locator-key")) {
+						attributeName.equals("locator-key") ||
+						attributeName.equals("value")) {
 
 						throwValidationException(
 							1005, fileName, element, attributeName);
@@ -664,7 +673,7 @@ public class SeleniumBuilderFileUtil {
 				if (!hasNeededAttributeName) {
 					throwValidationException(
 						1004, fileName, element,
-						new String[] {"locator1", "locator-key1"});
+						new String[] {"locator1", "locator-key1", "value1"});
 				}
 
 				validateBlockElement(
@@ -851,9 +860,12 @@ public class SeleniumBuilderFileUtil {
 
 				if (!attributeName.equals("action") &&
 					!attributeName.equals("line-number") &&
-					!attributeName.startsWith("locator") &&
-					!attributeName.startsWith("locator-key") &&
-					!attributeName.startsWith("value")) {
+					!attributeName.equals("locator1") &&
+					!attributeName.equals("locator2") &&
+					!attributeName.equals("locator-key1") &&
+					!attributeName.equals("locator-key2") &&
+					!attributeName.equals("value1") &&
+					!attributeName.equals("value2")) {
 
 					throwValidationException(
 						1005, fileName, executeElement, attributeName);
@@ -1838,7 +1850,7 @@ public class SeleniumBuilderFileUtil {
 			"while", "var"
 		});
 
-	private String _baseDir;
+	private String _baseDirName;
 	private Pattern _pathTrElementStatementPattern = Pattern.compile(
 		"[A-Z0-9].*");
 	private Pattern _pathTrElementWordPattern1 = Pattern.compile(

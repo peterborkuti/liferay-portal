@@ -324,7 +324,7 @@ String iconMenuId = null;
 					</c:if>
 
 					<%
-					int fileEntryTypesCount = DLFileEntryTypeServiceUtil.getFileEntryTypesCount(PortalUtil.getSiteAndCompanyGroupIds(themeDisplay));
+					int fileEntryTypesCount = DLFileEntryTypeServiceUtil.getFileEntryTypesCount(PortalUtil.getCurrentAndAncestorSiteGroupIds(scopeGroupId));
 					%>
 
 					<liferay-portlet:renderURL var="editFileEntryURL" windowState="<%= (((folder == null) || folder.isSupportsMetadata()) && (fileEntryTypesCount > 0)) ? LiferayWindowState.POP_UP.toString() : WindowState.NORMAL.toString() %>">
@@ -444,14 +444,9 @@ String iconMenuId = null;
 
 		<br /><br />
 
-		<div class="file-entry-field">
-			<label><liferay-ui:message key="webdav-url" /></label>
-
-			<liferay-ui:input-resource
-				cssClass="webdav-url-resource"
-				url="<%= DLUtil.getWebDavURL(themeDisplay, folder, null) %>"
-			/>
-		</div>
+		<aui:field-wrapper cssClass="file-entry-field" label="webdav-url">
+			<liferay-ui:input-resource cssClass="webdav-url-resource" id="webdavUrl" url="<%= DLUtil.getWebDavURL(themeDisplay, folder, null) %>" />
+		</aui:field-wrapper>
 	</div>
 </div>
 

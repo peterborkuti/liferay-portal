@@ -493,6 +493,10 @@
 		padding: 3px 15px 2px;
 
 		li {
+			@include ellipsis;
+
+			max-width: 300px;
+
 			a {
 				display: inline-block;
 
@@ -555,6 +559,8 @@
 
 	@include respond-to(phone, tablet) {
 		.taglib-form-navigator {
+			position: relative;
+
 			.form-navigator-content {
 				clear: both;
 				float: none;
@@ -579,6 +585,12 @@
 						margin: 0;
 						padding: 0.1em 1em;
 					}
+				}
+
+				.button-holder {
+					padding-bottom: 20px;
+					position: absolute;
+					top: 100%;
 				}
 			}
 
@@ -611,6 +623,8 @@
 		background-color: #E5E5E5;
 		border: solid #DDD;
 		border-width: 1px 0;
+
+		@include ellipsis;
 	}
 
 	.accordion .accordion-group {

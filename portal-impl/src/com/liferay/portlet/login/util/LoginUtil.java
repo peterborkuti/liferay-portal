@@ -58,6 +58,7 @@ import com.liferay.util.Encryptor;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -163,7 +164,8 @@ public class LoginUtil {
 		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		Map<String, String> definitionTerms = new HashMap<String, String>();
+		Map<String, String> definitionTerms =
+			new LinkedHashMap<String, String>();
 
 		definitionTerms.put(
 			"[$FROM_ADDRESS$]", HtmlUtil.escape(emailFromAddress));
@@ -285,39 +287,7 @@ public class LoginUtil {
 			request, login, password, authType);
 
 		if (!PropsValues.AUTH_SIMULTANEOUS_LOGINS) {
-			Map<String, UserTracker> sessionUsers = LiveUsers.getSessionUsers(
-				company.getCompanyId());
-
-			List<UserTracker> userTrackers = new ArrayList<UserTracker>(
-				sessionUsers.values());
-
-			for (UserTracker userTracker : userTrackers) {
-				if (userId != userTracker.getUserId()) {
-					continue;
-				}
-
-				JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
-
-				ClusterNode clusterNode =
-					ClusterExecutorUtil.getLocalClusterNode();
-
-				if (clusterNode != null) {
-					jsonObject.put(
-						"clusterNodeId", clusterNode.getClusterNodeId());
-				}
-
-				jsonObject.put("command", "signOut");
-
-				long companyId = CompanyLocalServiceUtil.getCompanyIdByUserId(
-					userId);
-
-				jsonObject.put("companyId", companyId);
-				jsonObject.put("sessionId", userTracker.getSessionId());
-				jsonObject.put("userId", userId);
-
-				MessageBusUtil.sendMessage(
-					DestinationNames.LIVE_USERS, jsonObject.toString());
-			}
+			signOutSimultaneousLogins(userId);
 		}
 
 		if (PropsValues.SESSION_ENABLE_PHISHING_PROTECTION) {
@@ -557,6 +527,38 @@ public class LoginUtil {
 			body, serviceContext);
 
 		SessionMessages.add(actionRequest, "requestProcessed", toAddress);
+	}
+
+	public static void signOutSimultaneousLogins(long userId) throws Exception {
+		long companyId = CompanyLocalServiceUtil.getCompanyIdByUserId(userId);
+
+		Map<String, UserTracker> sessionUsers = LiveUsers.getSessionUsers(
+			companyId);
+
+		List<UserTracker> userTrackers = new ArrayList<UserTracker>(
+			sessionUsers.values());
+
+		for (UserTracker userTracker : userTrackers) {
+			if (userId != userTracker.getUserId()) {
+				continue;
+			}
+
+			JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
+
+			ClusterNode clusterNode = ClusterExecutorUtil.getLocalClusterNode();
+
+			if (clusterNode != null) {
+				jsonObject.put("clusterNodeId", clusterNode.getClusterNodeId());
+			}
+
+			jsonObject.put("command", "signOut");
+			jsonObject.put("companyId", companyId);
+			jsonObject.put("sessionId", userTracker.getSessionId());
+			jsonObject.put("userId", userId);
+
+			MessageBusUtil.sendMessage(
+				DestinationNames.LIVE_USERS, jsonObject.toString());
+		}
 	}
 
 	private static Log _log = LogFactoryUtil.getLog(LoginUtil.class);

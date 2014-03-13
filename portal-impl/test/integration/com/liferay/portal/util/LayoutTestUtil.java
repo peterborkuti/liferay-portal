@@ -138,7 +138,8 @@ public class LayoutTestUtil {
 
 		return LayoutPrototypeLocalServiceUtil.addLayoutPrototype(
 			TestPropsValues.getUserId(), TestPropsValues.getCompanyId(),
-			nameMap, null, true, ServiceTestUtil.getServiceContext());
+			nameMap, (Map<Locale, String>)null, true,
+			ServiceTestUtil.getServiceContext());
 	}
 
 	public static LayoutSetPrototype addLayoutSetPrototype(String name)
@@ -150,7 +151,8 @@ public class LayoutTestUtil {
 
 		return LayoutSetPrototypeLocalServiceUtil.addLayoutSetPrototype(
 			TestPropsValues.getUserId(), TestPropsValues.getCompanyId(),
-			nameMap, null, true, true, ServiceTestUtil.getServiceContext());
+			nameMap, (Map<Locale, String>)null, true, true,
+			ServiceTestUtil.getServiceContext());
 	}
 
 	public static String addPortletToLayout(Layout layout, String portletId)

@@ -56,6 +56,7 @@ import com.liferay.portal.model.AttachedModel;
 import com.liferay.portal.model.AuditedModel;
 import com.liferay.portal.model.ClassedModel;
 import com.liferay.portal.model.Group;
+import com.liferay.portal.model.GroupConstants;
 import com.liferay.portal.model.Layout;
 import com.liferay.portal.model.Lock;
 import com.liferay.portal.model.Portlet;
@@ -973,9 +974,14 @@ public class PortletDataContextImpl implements PortletDataContext {
 			"path", path);
 	}
 
+	/**
+	 * @deprecated As of 6.2.0, replaced by {@link
+	 *             ExportImportPathUtil#getLayoutPath(PortletDataContext, long)}
+	 */
+	@Deprecated
 	@Override
 	public String getLayoutPath(long plid) {
-		return ExportImportPathUtil.getLayoutPath(this, plid);
+		return StringPool.BLANK;
 	}
 
 	@Override
@@ -1017,7 +1023,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of 7.0.0, with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -1040,6 +1046,12 @@ public class PortletDataContextImpl implements PortletDataContext {
 		return _plid;
 	}
 
+	/**
+	 * @deprecated As of 6.2.0, replaced by {@link
+	 *             ExportImportPathUtil#getPortletPath(PortletDataContext,
+	 *             String)}
+	 */
+	@Deprecated
 	@Override
 	public String getPortletPath(String portletId) {
 		return ExportImportPathUtil.getPortletPath(this, portletId);
@@ -1115,7 +1127,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of 7.0.0, with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -1188,13 +1200,18 @@ public class PortletDataContextImpl implements PortletDataContext {
 		return getReferenceElements(parentStagedModel, clazz, 0, null);
 	}
 
+	/**
+	 * @deprecated As of 6.2.0, replaced by {@link
+	 *             ExportImportPathUtil#getRootPath(PortletDataContext)}
+	 */
+	@Deprecated
 	@Override
 	public String getRootPath() {
 		return ExportImportPathUtil.getRootPath(this);
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of 7.0.0, with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -1232,16 +1249,33 @@ public class PortletDataContextImpl implements PortletDataContext {
 		return _sourceGroupId;
 	}
 
+	/**
+	 * @deprecated As of 6.2.0, replaced by {@link
+	 *             ExportImportPathUtil#getSourceLayoutPath(PortletDataContext,
+	 *             long)}
+	 */
+	@Deprecated
 	@Override
 	public String getSourceLayoutPath(long layoutId) {
-		return ExportImportPathUtil.getSourceLayoutPath(this, layoutId);
+		return StringPool.BLANK;
 	}
 
+	/**
+	 * @deprecated As of 6.2.0, replaced by {@link
+	 *             ExportImportPathUtil#getSourcePortletPath(PortletDataContext,
+	 *             String)}
+	 */
+	@Deprecated
 	@Override
 	public String getSourcePortletPath(String portletId) {
-		return ExportImportPathUtil.getSourcePortletPath(this, portletId);
+		return StringPool.BLANK;
 	}
 
+	/**
+	 * @deprecated As of 6.2.0, replaced by {@link
+	 *             ExportImportPathUtil#getSourceRootPath(PortletDataContext)}
+	 */
+	@Deprecated
 	@Override
 	public String getSourceRootPath() {
 		return ExportImportPathUtil.getSourceRootPath(this);
@@ -1273,7 +1307,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of 7.0.0, with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -1340,7 +1374,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of 7.0.0, with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -1657,7 +1691,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of 7.0.0, with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -2026,6 +2060,31 @@ public class PortletDataContextImpl implements PortletDataContext {
 
 			referenceElement.addAttribute(
 				"group-id", String.valueOf(stagedGroupedModel.getGroupId()));
+
+			try {
+				Group group = GroupLocalServiceUtil.getGroup(
+					stagedGroupedModel.getGroupId());
+
+				long liveGroupId = group.getLiveGroupId();
+
+				if (group.isStagedRemotely()) {
+					liveGroupId = group.getRemoteLiveGroupId();
+				}
+
+				if (liveGroupId == GroupConstants.DEFAULT_LIVE_GROUP_ID) {
+					liveGroupId = group.getGroupId();
+				}
+
+				referenceElement.addAttribute(
+					"live-group-id", String.valueOf(liveGroupId));
+			}
+			catch (Exception e) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						"Unable to find group " +
+							stagedGroupedModel.getGroupId());
+				}
+			}
 		}
 
 		if (Validator.isNotNull(binPath)) {

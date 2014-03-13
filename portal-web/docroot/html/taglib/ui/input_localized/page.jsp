@@ -154,19 +154,21 @@ if ((exception != null) && fieldName.equals(focusField)) {
 		<%
 		languageIds.add(defaultLanguageId);
 
-		if (Validator.isNotNull(xml)) {
-			for (int i = 0; i < availableLocales.length; i++) {
-				String curLanguageId = LocaleUtil.toLanguageId(availableLocales[i]);
+		for (int i = 0; i < availableLocales.length; i++) {
+			String curLanguageId = LocaleUtil.toLanguageId(availableLocales[i]);
 
-				if (curLanguageId.equals(defaultLanguageId)) {
-					continue;
-				}
+			if (curLanguageId.equals(defaultLanguageId)) {
+				continue;
+			}
 
-				String languageValue = LocalizationUtil.getLocalization(xml, curLanguageId, false);
+			String languageValue = null;
 
-				if (Validator.isNotNull(languageValue) || (!ignoreRequestValue && (request.getParameter(name + StringPool.UNDERLINE + curLanguageId) != null))) {
-					languageIds.add(curLanguageId);
-				}
+			if (Validator.isNotNull(xml)) {
+				languageValue = LocalizationUtil.getLocalization(xml, curLanguageId, false);
+			}
+
+			if (Validator.isNotNull(languageValue) || (!ignoreRequestValue && (request.getParameter(name + StringPool.UNDERLINE + curLanguageId) != null))) {
+				languageIds.add(curLanguageId);
 			}
 		}
 
@@ -317,14 +319,14 @@ if ((exception != null) && fieldName.equals(focusField)) {
 			);
 
 			<c:if test="<%= autoFocus %>">
-				Liferay.Util.focusFormField('#<portlet:namespace /><%= HtmlUtil.escapeAttribute(id + fieldSuffix) %>');
+				Liferay.Util.focusFormField('#<portlet:namespace /><%= HtmlUtil.escapeJS(id + fieldSuffix) %>');
 			</c:if>
 		</aui:script>
 	</c:when>
 	<c:otherwise>
 		<c:if test="<%= autoFocus %>">
 			<aui:script>
-				Liferay.Util.focusFormField('#<portlet:namespace /><%= HtmlUtil.escapeAttribute(id + fieldSuffix) %>');
+				Liferay.Util.focusFormField('#<portlet:namespace /><%= HtmlUtil.escapeJS(id + fieldSuffix) %>');
 			</aui:script>
 		</c:if>
 	</c:otherwise>
