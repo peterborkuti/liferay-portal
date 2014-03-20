@@ -89,6 +89,16 @@
 	<td></td>
 </tr>
 <tr>
+	<td>DEFAULT_LOGO</td>
+	<td>//a[contains(@class,'default-logo')]/img</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CUSTOM_LOGO</td>
+	<td>//a[contains(@class,'custom-logo')]/img</td>
+	<td></td>
+</tr>
+<tr>
 	<td>SITE_NAME</td>
 	<td>//h1[@class='site-title']/a/span</td>
 	<td></td>
@@ -106,6 +116,16 @@
 <tr>
 	<td>ERROR_MESSAGE</td>
 	<td>//div[contains(@class,'alert') and contains(@class, 'alert-error')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>STATUS_MESSAGE</td>
+	<td>//tr[1]/td</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ERROR_MESSAGE_EXPIRED_SESSION</td>
+	<td>//div[contains(@class,'popup-alert-warning')]</td>
 	<td></td>
 </tr>
 <tr>

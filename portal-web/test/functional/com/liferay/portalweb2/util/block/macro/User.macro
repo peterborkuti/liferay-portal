@@ -933,6 +933,13 @@
 		<execute action="PGLogin#type" locator-key1="EMAIL_ADDRESS_FIELD" value1="${userEmailAddress}" />
 		<execute action="PGLogin#type" locator-key1="PASSWORD_FIELD" value1="${password}" />
 
+		<if>
+			<equals arg1="${rememberMeChecked}" arg2="true" />
+			<then>
+				<execute action="PGLogin#check" locator-key1="REMEMBER_ME_CHECKBOX" />
+			</then>
+		</if>
+
 		<take-screenshot />
 
 		<execute action="PGLogin#click" locator-key1="SIGN_IN_BUTTON" value1="Sign In" />
@@ -1059,6 +1066,22 @@
 		<execute action="CPUsersandorganizationsUser#assertClick" locator-key1="ROLES_REGULAR_ROLES_TABLE_REMOVE" value1="Remove" />
 		<execute action="CPUsersandorganizationsUser#assertElementNotPresent" locator-key1="ROLES_REGULAR_ROLES_TABLE_TITLE" value1="${roleName}" />
 		<execute action="CPUsersandorganizationsUser#assertClick" locator-key1="SAVE_BUTTON" value1="Save" />
+		<execute action="CPUsersandorganizationsUser#assertTextEquals" locator-key1="SUCCESS_MESSAGE" value1="Your request completed successfully." />
+	</command>
+
+	<command name="unlockUserAccount">
+		<execute action="CPUsersandorganizations#assertClick" locator-key1="SEARCH_ALL_USERS" value1="All Users" />
+
+		<var name="key_userScreenName" value="${userScreenName}" />
+
+		<execute action="CPUsersandorganizationsViewusers#type" locator-key1="BASIC_SEARCH_FIELD" value1="${userScreenName}" />
+		<execute action="CPUsersandorganizationsViewusers#assertClick" locator-key1="BASIC_SEARCH_BUTTON" value1="Search" />
+		<execute action="CPUsersandorganizationsViewusers#assertTextEquals" locator-key1="USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
+		<execute action="CPUsersandorganizationsViewusers#assertClick" locator-key1="USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
+
+		<execute action="CPUsersandorganizationsUser#assertTextEquals" locator-key1="USER_BLOCKED_MESSAGE" value1="This user account has been locked due to excessive failed login attempts." />
+		<execute action="CPUsersandorganizationsUser#assertClick" locator-key1="UNLOCK_BUTTON" value1="Unlock" />
+
 		<execute action="CPUsersandorganizationsUser#assertTextEquals" locator-key1="SUCCESS_MESSAGE" value1="Your request completed successfully." />
 	</command>
 
