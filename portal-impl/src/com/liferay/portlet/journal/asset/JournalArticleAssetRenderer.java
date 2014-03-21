@@ -266,16 +266,27 @@ public class JournalArticleAssetRenderer
 						_article.getUrlTitle()));
 		}
 
+		boolean isPrivateLayout = layout.isPrivateLayout();
+
 		List<Long> hitLayoutIds =
 			JournalContentSearchLocalServiceUtil.getLayoutIds(
-				_article.getGroupId(), layout.isPrivateLayout(),
+				_article.getGroupId(), isPrivateLayout,
 				_article.getArticleId());
+
+		if (hitLayoutIds.isEmpty()) {
+			isPrivateLayout = !isPrivateLayout;
+
+			hitLayoutIds =
+				JournalContentSearchLocalServiceUtil.getLayoutIds(
+					_article.getGroupId(), isPrivateLayout,
+					_article.getArticleId());
+		}
 
 		if (!hitLayoutIds.isEmpty()) {
 			Long hitLayoutId = hitLayoutIds.get(0);
 
 			Layout hitLayout = LayoutLocalServiceUtil.getLayout(
-				_article.getGroupId(), layout.isPrivateLayout(),
+				_article.getGroupId(), isPrivateLayout,
 				hitLayoutId.longValue());
 
 			return PortalUtil.getLayoutURL(hitLayout, themeDisplay);
