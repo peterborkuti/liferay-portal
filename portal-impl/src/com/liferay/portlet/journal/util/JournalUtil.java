@@ -1213,7 +1213,7 @@ public class JournalUtil {
 
 	public static boolean isSubscribedToStructure(
 			long companyId, long groupId, long userId, long ddmStructureId)
-		throws PortalException, SystemException {
+		throws SystemException {
 
 		return SubscriptionLocalServiceUtil.isSubscribed(
 			companyId, userId, DDMStructure.class.getName(), ddmStructureId);

@@ -80,7 +80,6 @@ public class JournalTemplatePermission {
 			String templateId, String actionId)
 		throws PortalException, SystemException {
 
-		@SuppressWarnings("deprecation")
 		JournalTemplate template =
 			com.liferay.portlet.journal.service.
 				JournalTemplateLocalServiceUtil.getTemplate(

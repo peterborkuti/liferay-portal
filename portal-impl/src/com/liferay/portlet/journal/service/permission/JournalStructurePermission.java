@@ -69,7 +69,6 @@ public class JournalStructurePermission {
 			String structureId, String actionId)
 		throws PortalException, SystemException {
 
-		@SuppressWarnings("deprecation")
 		JournalStructure structure =
 			com.liferay.portlet.journal.service.
 				JournalStructureLocalServiceUtil.getStructure(
