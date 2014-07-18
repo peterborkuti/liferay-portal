@@ -131,8 +131,12 @@ public class LayoutsTreeUtil {
 			groupId, privateLayout, parentLayoutId, incomplete,
 			QueryUtil.ALL_POS, QueryUtil.ALL_POS);
 
+		String treeId = ParamUtil.getString(request, "treeId");
+
 		for (Layout layout :
-				_paginateLayouts(request, parentLayoutId, layouts)) {
+				_paginateLayouts(
+					request, layouts, groupId, parentLayoutId, privateLayout,
+					treeId)) {
 
 			LayoutTreeNode layoutTreeNode = new LayoutTreeNode(layout);
 
@@ -166,29 +170,17 @@ public class LayoutsTreeUtil {
 	}
 
 	private static int _getLoadedLayoutsCount(
-			HttpServletRequest request, long layoutId)
+			HttpSession session, long groupId, long layoutId,
+			boolean privateLayout, String treeId)
 		throws Exception {
-
-		HttpSession session = request.getSession();
 
 		StringBundler sb = new StringBundler(7);
 
-		String treeId = ParamUtil.getString(request, "treeId");
-
 		sb.append(treeId);
-
 		sb.append(StringPool.COLON);
-
-		long groupId = ParamUtil.getLong(request, "groupId");
-
 		sb.append(groupId);
-
 		sb.append(StringPool.COLON);
-
-		boolean privateLayout = ParamUtil.getBoolean(request, "privateLayout");
-
 		sb.append(privateLayout);
-
 		sb.append(StringPool.COLON);
 		sb.append("Pagination");
 
@@ -230,8 +222,8 @@ public class LayoutsTreeUtil {
 	}
 
 	private static List<Layout> _paginateLayouts(
-			HttpServletRequest request, long parentLayoutId,
-			List<Layout> layouts)
+			HttpServletRequest request, List<Layout> layouts, long groupId,
+			long parentLayoutId, boolean privateLayout, String treeId)
 		throws Exception {
 
 		if (!_isPaginationEnabled(request)) {
@@ -246,8 +238,10 @@ public class LayoutsTreeUtil {
 			request, "end",
 			start + PropsValues.LAYOUT_MANAGE_PAGES_INITIAL_CHILDREN);
 
+		HttpSession session = request.getSession();
+
 		int loadedLayoutsCount = _getLoadedLayoutsCount(
-			request, parentLayoutId);
+			session, groupId, parentLayoutId, privateLayout, treeId);
 
 		if (loadedLayoutsCount > end) {
 			end = loadedLayoutsCount;
