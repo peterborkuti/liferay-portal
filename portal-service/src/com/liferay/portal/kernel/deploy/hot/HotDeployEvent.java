@@ -127,9 +127,8 @@ public class HotDeployEvent {
 
 			Properties properties = PropertiesUtil.load(propertiesString);
 
-			String[] pluginPackgeRequiredDeploymentContexts =
-				StringUtil.split(
-					properties.getProperty("required-deployment-contexts"));
+			String[] pluginPackgeRequiredDeploymentContexts = StringUtil.split(
+				properties.getProperty("required-deployment-contexts"));
 
 			for (String pluginPackageRequiredDeploymentContext :
 					pluginPackgeRequiredDeploymentContexts) {
@@ -148,13 +147,14 @@ public class HotDeployEvent {
 		}
 	}
 
-	private static Log _log = LogFactoryUtil.getLog(HotDeployEvent.class);
+	private static final Log _log = LogFactoryUtil.getLog(HotDeployEvent.class);
 
-	private ClassLoader _contextClassLoader;
-	private Set<String> _dependentServletContextNames = new TreeSet<String>();
+	private final ClassLoader _contextClassLoader;
+	private final Set<String> _dependentServletContextNames =
+		new TreeSet<String>();
 	private PluginPackage _pluginPackage;
-	private Queue<PortalLifecycle> _portalLifecycles =
+	private final Queue<PortalLifecycle> _portalLifecycles =
 		new ConcurrentLinkedQueue<PortalLifecycle>();
-	private ServletContext _servletContext;
+	private final ServletContext _servletContext;
 
 }

@@ -54,7 +54,7 @@ import java.util.concurrent.Callable;
 public class LiferaySyncCapability implements SyncCapability {
 
 	@Override
-	public void addFileEntry(FileEntry fileEntry) throws PortalException {
+	public void addFileEntry(FileEntry fileEntry) {
 		registerDLSyncEventCallback(DLSyncConstants.EVENT_ADD, fileEntry);
 	}
 
@@ -64,7 +64,7 @@ public class LiferaySyncCapability implements SyncCapability {
 	}
 
 	@Override
-	public void deleteFileEntry(FileEntry fileEntry) throws PortalException {
+	public void deleteFileEntry(FileEntry fileEntry) {
 		registerDLSyncEventCallback(DLSyncConstants.EVENT_DELETE, fileEntry);
 	}
 
@@ -90,7 +90,7 @@ public class LiferaySyncCapability implements SyncCapability {
 	}
 
 	@Override
-	public void moveFileEntry(FileEntry fileEntry) throws PortalException {
+	public void moveFileEntry(FileEntry fileEntry) {
 		registerDLSyncEventCallback(DLSyncConstants.EVENT_MOVE, fileEntry);
 	}
 
@@ -148,7 +148,7 @@ public class LiferaySyncCapability implements SyncCapability {
 	}
 
 	@Override
-	public void restoreFileEntry(FileEntry fileEntry) throws PortalException {
+	public void restoreFileEntry(FileEntry fileEntry) {
 		registerDLSyncEventCallback(DLSyncConstants.EVENT_RESTORE, fileEntry);
 	}
 
@@ -158,7 +158,7 @@ public class LiferaySyncCapability implements SyncCapability {
 	}
 
 	@Override
-	public void trashFileEntry(FileEntry fileEntry) throws PortalException {
+	public void trashFileEntry(FileEntry fileEntry) {
 		registerDLSyncEventCallback(DLSyncConstants.EVENT_TRASH, fileEntry);
 	}
 
@@ -168,7 +168,7 @@ public class LiferaySyncCapability implements SyncCapability {
 	}
 
 	@Override
-	public void updateFileEntry(FileEntry fileEntry) throws PortalException {
+	public void updateFileEntry(FileEntry fileEntry) {
 		registerDLSyncEventCallback(DLSyncConstants.EVENT_UPDATE, fileEntry);
 	}
 
@@ -189,23 +189,12 @@ public class LiferaySyncCapability implements SyncCapability {
 	}
 
 	protected void registerDLSyncEventCallback(
-			String event, FileEntry fileEntry)
-		throws PortalException {
+		String event, FileEntry fileEntry) {
 
 		if (isStagingGroup(fileEntry.getGroupId()) ||
 			!(fileEntry instanceof LiferayFileEntry)) {
 
 			return;
-		}
-
-		if (!event.equals(DLSyncConstants.EVENT_DELETE) &&
-			!event.equals(DLSyncConstants.EVENT_TRASH)) {
-
-			FileVersion fileVersion = fileEntry.getFileVersion();
-
-			if (!fileVersion.isApproved()) {
-				return;
-			}
 		}
 
 		registerDLSyncEventCallback(
@@ -277,7 +266,7 @@ public class LiferaySyncCapability implements SyncCapability {
 		implements RepositoryModelOperation {
 
 		@Override
-		public void execute(FileEntry fileEntry) throws PortalException {
+		public void execute(FileEntry fileEntry) {
 			deleteFileEntry(fileEntry);
 		}
 
@@ -318,7 +307,7 @@ public class LiferaySyncCapability implements SyncCapability {
 			}
 		}
 
-		private MethodKey _methodKey;
+		private final MethodKey _methodKey;
 
 	}
 

@@ -33,6 +33,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.notifications.UserNotificationDefinition;
 import com.liferay.portal.kernel.portlet.PortletRequestModel;
+import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.sanitizer.SanitizerUtil;
 import com.liferay.portal.kernel.search.BaseModelSearchResult;
 import com.liferay.portal.kernel.search.Field;
@@ -97,6 +98,7 @@ import com.liferay.portal.webserver.WebServerServletTokenUtil;
 import com.liferay.portlet.asset.model.AssetEntry;
 import com.liferay.portlet.asset.model.AssetLink;
 import com.liferay.portlet.asset.model.AssetLinkConstants;
+import com.liferay.portlet.documentlibrary.util.DLUtil;
 import com.liferay.portlet.dynamicdatamapping.NoSuchTemplateException;
 import com.liferay.portlet.dynamicdatamapping.StorageFieldNameException;
 import com.liferay.portlet.dynamicdatamapping.StorageFieldRequiredException;
@@ -381,8 +383,8 @@ public class JournalArticleLocalServiceImpl
 		article.setDescriptionMap(descriptionMap, locale);
 		article.setContent(content);
 		article.setType(type);
-		article.setStructureId(ddmStructureKey);
-		article.setTemplateId(ddmTemplateKey);
+		article.setDDMStructureKey(ddmStructureKey);
+		article.setDDMTemplateKey(ddmTemplateKey);
 		article.setLayoutUuid(layoutUuid);
 		article.setDisplayDate(displayDate);
 		article.setExpirationDate(expirationDate);
@@ -806,8 +808,8 @@ public class JournalArticleLocalServiceImpl
 		}
 
 		newArticle.setType(oldArticle.getType());
-		newArticle.setStructureId(oldArticle.getStructureId());
-		newArticle.setTemplateId(oldArticle.getTemplateId());
+		newArticle.setDDMStructureKey(oldArticle.getDDMStructureKey());
+		newArticle.setDDMTemplateKey(oldArticle.getDDMTemplateKey());
 		newArticle.setLayoutUuid(oldArticle.getLayoutUuid());
 		newArticle.setDisplayDate(oldArticle.getDisplayDate());
 		newArticle.setExpirationDate(oldArticle.getExpirationDate());
@@ -1247,9 +1249,9 @@ public class JournalArticleLocalServiceImpl
 	 * Deletes the layout's association with the web content articles for the
 	 * group.
 	 *
-	 * @param  groupId the primary key of the web content article's group
-	 * @param  layoutUuid the unique string identifying the web content
-	 *         article's display page
+	 * @param groupId the primary key of the web content article's group
+	 * @param layoutUuid the unique string identifying the web content article's
+	 *        display page
 	 */
 	@Override
 	public void deleteLayoutArticleReferences(long groupId, String layoutUuid) {
@@ -1366,6 +1368,17 @@ public class JournalArticleLocalServiceImpl
 			groupId, articleId, version);
 	}
 
+	@Override
+	public JournalArticle fetchLatestArticle(long resourcePrimKey) {
+		return fetchLatestArticle(
+			resourcePrimKey, WorkflowConstants.STATUS_ANY);
+	}
+
+	@Override
+	public JournalArticle fetchLatestArticle(long resourcePrimKey, int status) {
+		return fetchLatestArticle(resourcePrimKey, status, true);
+	}
+
 	/**
 	 * Returns the latest web content article matching the resource primary key
 	 * and workflow status, optionally preferring articles with approved
@@ -1432,16 +1445,16 @@ public class JournalArticleLocalServiceImpl
 	}
 
 	/**
-	 * Returns the latest web content article matching the group, article ID, and
-	 * workflow status.
+	 * Returns the latest web content article matching the group, article ID,
+	 * and workflow status.
 	 *
 	 * @param  groupId the primary key of the web content article's group
 	 * @param  articleId the primary key of the web content article
 	 * @param  status the web content article's workflow status. For more
 	 *         information see {@link WorkflowConstants} for constants starting
 	 *         with the "STATUS_" prefix.
-	 * @return the latest matching web content article, or <code>null</code> if no
-	 *         matching web content article could be found
+	 * @return the latest matching web content article, or <code>null</code> if
+	 *         no matching web content article could be found
 	 */
 	@Override
 	public JournalArticle fetchLatestArticle(
@@ -1478,9 +1491,8 @@ public class JournalArticleLocalServiceImpl
 			WorkflowConstants.STATUS_APPROVED, WorkflowConstants.STATUS_IN_TRASH
 		};
 
-		List<JournalArticle> articles =
-			journalArticlePersistence.findByR_I_S(
-				resourcePrimKey, true, statuses, 0, 1, orderByComparator);
+		List<JournalArticle> articles = journalArticlePersistence.findByR_I_S(
+			resourcePrimKey, true, statuses, 0, 1, orderByComparator);
 
 		if (articles.isEmpty()) {
 			return null;
@@ -2974,7 +2986,8 @@ public class JournalArticleLocalServiceImpl
 	public List<JournalArticle> getStructureArticles(
 		long groupId, String ddmStructureKey) {
 
-		return journalArticlePersistence.findByG_S(groupId, ddmStructureKey);
+		return journalArticlePersistence.findByG_DDMSK(
+			groupId, ddmStructureKey);
 	}
 
 	/**
@@ -3006,7 +3019,7 @@ public class JournalArticleLocalServiceImpl
 		long groupId, String ddmStructureKey, int start, int end,
 		OrderByComparator<JournalArticle> obc) {
 
-		return journalArticlePersistence.findByG_S(
+		return journalArticlePersistence.findByG_DDMSK(
 			groupId, ddmStructureKey, start, end, obc);
 	}
 
@@ -3021,7 +3034,8 @@ public class JournalArticleLocalServiceImpl
 	public List<JournalArticle> getStructureArticles(
 		String[] ddmStructureKeys) {
 
-		return journalArticlePersistence.findByStructureId(ddmStructureKeys);
+		return journalArticlePersistence.findByDDMStructureKey(
+			ddmStructureKeys);
 	}
 
 	/**
@@ -3035,7 +3049,8 @@ public class JournalArticleLocalServiceImpl
 	 */
 	@Override
 	public int getStructureArticlesCount(long groupId, String ddmStructureKey) {
-		return journalArticlePersistence.countByG_S(groupId, ddmStructureKey);
+		return journalArticlePersistence.countByG_DDMSK(
+			groupId, ddmStructureKey);
 	}
 
 	/**
@@ -3050,7 +3065,7 @@ public class JournalArticleLocalServiceImpl
 	public List<JournalArticle> getTemplateArticles(
 		long groupId, String ddmTemplateKey) {
 
-		return journalArticlePersistence.findByG_T(groupId, ddmTemplateKey);
+		return journalArticlePersistence.findByG_DDMTK(groupId, ddmTemplateKey);
 	}
 
 	/**
@@ -3082,7 +3097,7 @@ public class JournalArticleLocalServiceImpl
 		long groupId, String ddmTemplateKey, int start, int end,
 		OrderByComparator<JournalArticle> obc) {
 
-		return journalArticlePersistence.findByG_T(
+		return journalArticlePersistence.findByG_DDMTK(
 			groupId, ddmTemplateKey, start, end, obc);
 	}
 
@@ -3097,7 +3112,8 @@ public class JournalArticleLocalServiceImpl
 	 */
 	@Override
 	public int getTemplateArticlesCount(long groupId, String ddmTemplateKey) {
-		return journalArticlePersistence.countByG_T(groupId, ddmTemplateKey);
+		return journalArticlePersistence.countByG_DDMTK(
+			groupId, ddmTemplateKey);
 	}
 
 	/**
@@ -3254,7 +3270,7 @@ public class JournalArticleLocalServiceImpl
 		JournalArticle latestArticle = getLatestArticle(groupId, articleId);
 
 		validateDDMStructureId(
-			groupId, newFolderId, latestArticle.getStructureId());
+			groupId, newFolderId, latestArticle.getDDMStructureKey());
 
 		List<JournalArticle> articles = journalArticlePersistence.findByG_A(
 			groupId, articleId);
@@ -3667,10 +3683,10 @@ public class JournalArticleLocalServiceImpl
 	}
 
 	/**
-	 * Returns a range of all the web content articles in a single folder matching
-	 * the parameters without using the indexer. It is preferable to use the
-	 * indexed version {@link #search(long, long, long, int, int, int)} instead of
-	 * this method wherever possible for performance reasons.
+	 * Returns a range of all the web content articles in a single folder
+	 * matching the parameters without using the indexer. It is preferable to
+	 * use the indexed version {@link #search(long, long, long, int, int, int)}
+	 * instead of this method wherever possible for performance reasons.
 	 *
 	 * <p>
 	 * Useful when paginating results. Returns a maximum of <code>end -
@@ -4127,9 +4143,10 @@ public class JournalArticleLocalServiceImpl
 	}
 
 	/**
-	 *Returns a range of all the web content articles matching the group, creator,
-	 * and status using the indexer. It is preferable to use this method instead of
-	 * the non-indexed version whenever possible for performance reasons.
+	 * Returns a range of all the web content articles matching the group,
+	 * creator, and status using the indexer. It is preferable to use this
+	 * method instead of the non-indexed version whenever possible for
+	 * performance reasons.
 	 *
 	 * <p>
 	 * Useful when paginating results. Returns a maximum of <code>end -
@@ -4392,13 +4409,13 @@ public class JournalArticleLocalServiceImpl
 	}
 
 	/**
-	 * Returns a {@link BaseModelSearchResult} containing the total number of hits
-	 * and an ordered range of all the web content articles matching the parameters
-	 * using the indexer, including a keywords parameter for matching an article's
-	 * ID, title, description, or content, a DDM structure key parameter, a DDM
-	 * template key parameter, and a finder hash map parameter. It is preferable to
-	 * use this method instead of the non-indexed version whenever possible for
-	 * performance reasons.
+	 * Returns a {@link BaseModelSearchResult} containing the total number of
+	 * hits and an ordered range of all the web content articles matching the
+	 * parameters using the indexer, including a keywords parameter for matching
+	 * an article's ID, title, description, or content, a DDM structure key
+	 * parameter, a DDM template key parameter, and a finder hash map parameter.
+	 * It is preferable to use this method instead of the non-indexed version
+	 * whenever possible for performance reasons.
 	 *
 	 * <p>
 	 * The <code>start</code> and <code>end</code> parameters only affect the
@@ -4438,9 +4455,9 @@ public class JournalArticleLocalServiceImpl
 	 *         return (not inclusive)
 	 * @param  sort the field, type, and direction by which to sort (optionally
 	 *         <code>null</code>)
-	 * @return a {@link BaseModelSearchResult} containing the total number of hits
-	 *         and an ordered range of all the matching web content articles
-	 *         ordered by <code>sort</code>
+	 * @return a {@link BaseModelSearchResult} containing the total number of
+	 *         hits and an ordered range of all the matching web content
+	 *         articles ordered by <code>sort</code>
 	 * @throws PortalException if a portal exception occurred
 	 */
 	@Override
@@ -4479,13 +4496,14 @@ public class JournalArticleLocalServiceImpl
 	}
 
 	/**
-	 * Returns a {@link BaseModelSearchResult} containing the total number of hits
-	 * and an ordered range of all the web content articles matching the parameters
-	 * using the indexer, including keyword parameters for article ID, title,
-	 * description, or content, a DDM structure key parameter, a DDM template key
-	 * parameter, an AND operator switch, and parameters for type, status, and a
-	 * finder hash map. It is preferable to use this method instead of the
-	 * non-indexed version whenever possible for performance reasons.
+	 * Returns a {@link BaseModelSearchResult} containing the total number of
+	 * hits and an ordered range of all the web content articles matching the
+	 * parameters using the indexer, including keyword parameters for article
+	 * ID, title, description, or content, a DDM structure key parameter, a DDM
+	 * template key parameter, an AND operator switch, and parameters for type,
+	 * status, and a finder hash map. It is preferable to use this method
+	 * instead of the non-indexed version whenever possible for performance
+	 * reasons.
 	 *
 	 * <p>
 	 * The <code>start</code> and <code>end</code> parameters only affect the
@@ -4538,9 +4556,9 @@ public class JournalArticleLocalServiceImpl
 	 *         return (not inclusive)
 	 * @param  sort the field, type, and direction by which to sort (optionally
 	 *         <code>null</code>)
-	 * @return a {@link BaseModelSearchResult} containing the total number of hits
-	 *         and an ordered range of all the matching web content articles
-	 *         ordered by <code>sort</code>
+	 * @return a {@link BaseModelSearchResult} containing the total number of
+	 *         hits and an ordered range of all the matching web content
+	 *         articles ordered by <code>sort</code>
 	 * @throws PortalException if a portal exception occurred
 	 */
 	@Override
@@ -4562,11 +4580,11 @@ public class JournalArticleLocalServiceImpl
 	}
 
 	/**
-	 * Returns a {@link BaseModelSearchResult} containing the total number of hits
-	 * and an ordered range of all the web content articles matching the parameters
-	 * using the indexer, including the web content article's creator ID and
-	 * status. It is preferable to use this method instead of the non-indexed
-	 * version whenever possible for performance reasons.
+	 * Returns a {@link BaseModelSearchResult} containing the total number of
+	 * hits and an ordered range of all the web content articles matching the
+	 * parameters using the indexer, including the web content article's creator
+	 * ID and status. It is preferable to use this method instead of the
+	 * non-indexed version whenever possible for performance reasons.
 	 *
 	 * <p>
 	 * The <code>start</code> and <code>end</code> parameters only affect the
@@ -4595,9 +4613,9 @@ public class JournalArticleLocalServiceImpl
 	 *         return
 	 * @param  end the upper bound of the range of web content articles to
 	 *         return (not inclusive)
-	 * @return a {@link BaseModelSearchResult} containing the total number of hits
-	 *         and an ordered range of all the matching web content articles
-	 *         ordered by <code>sort</code>
+	 * @return a {@link BaseModelSearchResult} containing the total number of
+	 *         hits and an ordered range of all the matching web content
+	 *         articles ordered by <code>sort</code>
 	 * @throws PortalException if a portal exception occurred
 	 */
 	@Override
@@ -4831,12 +4849,12 @@ public class JournalArticleLocalServiceImpl
 		return journalArticleLocalService.updateArticle(
 			userId, groupId, folderId, articleId, version, titleMap,
 			descriptionMap, content, article.getType(),
-			article.getStructureId(), article.getTemplateId(), layoutUuid,
-			displayDateMonth, displayDateDay, displayDateYear, displayDateHour,
-			displayDateMinute, expirationDateMonth, expirationDateDay,
-			expirationDateYear, expirationDateHour, expirationDateMinute,
-			neverExpire, reviewDateMonth, reviewDateDay, reviewDateYear,
-			reviewDateHour, reviewDateMinute, neverReview,
+			article.getDDMStructureKey(), article.getDDMTemplateKey(),
+			layoutUuid, displayDateMonth, displayDateDay, displayDateYear,
+			displayDateHour, displayDateMinute, expirationDateMonth,
+			expirationDateDay, expirationDateYear, expirationDateHour,
+			expirationDateMinute, neverExpire, reviewDateMonth, reviewDateDay,
+			reviewDateYear, reviewDateHour, reviewDateMinute, neverReview,
 			article.getIndexable(), article.isSmallImage(),
 			article.getSmallImageURL(), null, null, null, serviceContext);
 	}
@@ -5066,8 +5084,8 @@ public class JournalArticleLocalServiceImpl
 		article.setDescriptionMap(descriptionMap, locale);
 		article.setContent(content);
 		article.setType(type);
-		article.setStructureId(ddmStructureKey);
-		article.setTemplateId(ddmTemplateKey);
+		article.setDDMStructureKey(ddmStructureKey);
+		article.setDDMTemplateKey(ddmTemplateKey);
 		article.setLayoutUuid(layoutUuid);
 		article.setDisplayDate(displayDate);
 		article.setExpirationDate(expirationDate);
@@ -5295,8 +5313,8 @@ public class JournalArticleLocalServiceImpl
 					serviceContext));
 			article.setDescriptionMap(oldArticle.getDescriptionMap());
 			article.setType(oldArticle.getType());
-			article.setStructureId(oldArticle.getStructureId());
-			article.setTemplateId(oldArticle.getTemplateId());
+			article.setDDMStructureKey(oldArticle.getDDMStructureKey());
+			article.setDDMTemplateKey(oldArticle.getDDMTemplateKey());
 			article.setLayoutUuid(oldArticle.getLayoutUuid());
 			article.setDisplayDate(oldArticle.getDisplayDate());
 			article.setExpirationDate(oldArticle.getExpirationDate());
@@ -5333,7 +5351,7 @@ public class JournalArticleLocalServiceImpl
 
 		content = format(
 			user, groupId, articleId, article.getVersion(),
-			!oldArticle.isDraft(), content, oldArticle.getStructureId(),
+			!oldArticle.isDraft(), content, oldArticle.getDDMStructureKey(),
 			images);
 
 		article.setContent(content);
@@ -5728,26 +5746,27 @@ public class JournalArticleLocalServiceImpl
 	 * Updates the web content articles matching the group, class name ID, and
 	 * DDM template key, replacing the DDM template key with a new one.
 	 *
-	 * @param  groupId the primary key of the web content article's group
-	 * @param  classNameId the primary key of the DDMStructure class if the web
-	 *         content article is related to a DDM structure, the primary key of
-	 *         the class name associated with the article, or {@link
-	 *         JournalArticleConstants#CLASSNAME_ID_DEFAULT} otherwise
-	 * @param  oldDDMTemplateKey the primary key of the web content article's
-	 *         old DDM template
-	 * @param  newDDMTemplateKey the primary key of the web content article's
-	 *         new DDM template
+	 * @param groupId the primary key of the web content article's group
+	 * @param classNameId the primary key of the DDMStructure class if the web
+	 *        content article is related to a DDM structure, the primary key of
+	 *        the class name associated with the article, or {@link
+	 *        JournalArticleConstants#CLASSNAME_ID_DEFAULT} otherwise
+	 * @param oldDDMTemplateKey the primary key of the web content article's old
+	 *        DDM template
+	 * @param newDDMTemplateKey the primary key of the web content article's new
+	 *        DDM template
 	 */
 	@Override
 	public void updateTemplateId(
 		long groupId, long classNameId, String oldDDMTemplateKey,
 		String newDDMTemplateKey) {
 
-		List<JournalArticle> articles = journalArticlePersistence.findByG_C_T(
-			groupId, classNameId, oldDDMTemplateKey);
+		List<JournalArticle> articles =
+			journalArticlePersistence.findByG_C_DDMTK(
+				groupId, classNameId, oldDDMTemplateKey);
 
 		for (JournalArticle article : articles) {
-			article.setTemplateId(newDDMTemplateKey);
+			article.setDDMTemplateKey(newDDMTemplateKey);
 
 			journalArticlePersistence.update(article);
 		}
@@ -5934,7 +5953,7 @@ public class JournalArticleLocalServiceImpl
 
 			JournalContentUtil.clearCache(
 				article.getGroupId(), article.getArticleId(),
-				article.getTemplateId());
+				article.getDDMTemplateKey());
 
 			companyIds.add(article.getCompanyId());
 		}
@@ -6166,7 +6185,10 @@ public class JournalArticleLocalServiceImpl
 				"instance-id", StringPool.BLANK);
 			String elType = element.attributeValue("type", StringPool.BLANK);
 
-			if (elType.equals("image")) {
+			if (elType.equals("document_library")) {
+				formatDocumentLibrary(element);
+			}
+			else if (elType.equals("image")) {
 				String elName = element.attributeValue(
 					"name", StringPool.BLANK);
 				String elIndex = element.attributeValue(
@@ -6236,6 +6258,45 @@ public class JournalArticleLocalServiceImpl
 		}
 
 		return content;
+	}
+
+	protected void formatDocumentLibrary(Element dynamicElementElement)
+		throws PortalException {
+
+		for (Element dynamicContentElement :
+				dynamicElementElement.elements("dynamic-content")) {
+
+			JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
+				dynamicContentElement.getText());
+
+			String uuid = jsonObject.getString("uuid");
+			long groupId = jsonObject.getLong("groupId");
+			boolean tempFile = jsonObject.getBoolean("tempFile");
+
+			FileEntry fileEntry =
+				dlAppLocalService.getFileEntryByUuidAndGroupId(uuid, groupId);
+
+			if (tempFile) {
+				String fileEntryName = DLUtil.getFileName(
+					fileEntry.getGroupId(), fileEntry.getFolderId(),
+					fileEntry.getFileName());
+
+				fileEntry = dlAppLocalService.addFileEntry(
+					fileEntry.getUserId(), fileEntry.getGroupId(), 0,
+					fileEntryName, fileEntry.getMimeType(), fileEntryName,
+					StringPool.BLANK, StringPool.BLANK,
+					fileEntry.getContentStream(), fileEntry.getSize(),
+					new ServiceContext());
+			}
+
+			String previewURL = DLUtil.getPreviewURL(
+				fileEntry, fileEntry.getFileVersion(), null, StringPool.BLANK,
+				false, true);
+
+			dynamicContentElement.clearContent();
+
+			dynamicContentElement.addCDATA(previewURL);
+		}
 	}
 
 	protected void formatImage(
@@ -6462,13 +6523,13 @@ public class JournalArticleLocalServiceImpl
 			"article_resource_pk",
 			String.valueOf(article.getResourcePrimKey()));
 
-		String defaultDDMTemplateKey = article.getTemplateId();
+		String defaultDDMTemplateKey = article.getDDMTemplateKey();
 
 		if (Validator.isNull(ddmTemplateKey)) {
 			ddmTemplateKey = defaultDDMTemplateKey;
 		}
 
-		tokens.put("structure_id", article.getStructureId());
+		tokens.put("structure_id", article.getDDMStructureKey());
 		tokens.put("template_id", ddmTemplateKey);
 
 		Document document = article.getDocument();
@@ -6615,9 +6676,10 @@ public class JournalArticleLocalServiceImpl
 			article.getTitle(languageId), article.getUrlTitle(),
 			article.getDescription(languageId),
 			article.getAvailableLanguageIds(), content, article.getType(),
-			article.getStructureId(), ddmTemplateKey, article.isSmallImage(),
-			article.getSmallImageId(), article.getSmallImageURL(),
-			numberOfPages, page, paginate, cacheable);
+			article.getDDMStructureKey(), ddmTemplateKey,
+			article.isSmallImage(), article.getSmallImageId(),
+			article.getSmallImageURL(), numberOfPages, page, paginate,
+			cacheable);
 	}
 
 	protected List<ObjectValuePair<Long, Integer>> getArticleVersionStatuses(
@@ -6649,7 +6711,8 @@ public class JournalArticleLocalServiceImpl
 			JournalArticle.class);
 
 		DDMStructure ddmStructure = ddmStructureLocalService.fetchStructure(
-			article.getGroupId(), classNameId, article.getStructureId(), true);
+			article.getGroupId(), classNameId, article.getDDMStructureKey(),
+			true);
 
 		return ddmStructure.getStructureId();
 	}
@@ -6897,7 +6960,7 @@ public class JournalArticleLocalServiceImpl
 		DDMStructure ddmStructure = ddmStructureLocalService.getStructure(
 			article.getGroupId(),
 			classNameLocalService.getClassNameId(JournalArticle.class),
-			article.getStructureId(), true);
+			article.getDDMStructureKey(), true);
 
 		subscriptionSender.addPersistedSubscribers(
 			DDMStructure.class.getName(), ddmStructure.getStructureId());

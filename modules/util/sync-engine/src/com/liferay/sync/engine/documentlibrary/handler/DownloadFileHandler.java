@@ -163,6 +163,8 @@ public class DownloadFileHandler extends BaseHandler {
 			SyncFileService.update(syncFile);
 
 			SyncFileService.updateFileKeySyncFile(syncFile);
+
+			IODeltaUtil.checksums(syncFile);
 		}
 		catch (FileSystemException fse) {
 			downloadedFilePathNames.remove(filePath.toString());
@@ -181,7 +183,7 @@ public class DownloadFileHandler extends BaseHandler {
 		}
 	}
 
-	private static Logger _logger = LoggerFactory.getLogger(
+	private static final Logger _logger = LoggerFactory.getLogger(
 		DownloadFileHandler.class);
 
 }

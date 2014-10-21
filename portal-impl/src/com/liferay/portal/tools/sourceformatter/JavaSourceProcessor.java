@@ -23,12 +23,12 @@ import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.kernel.util.Tuple;
 import com.liferay.portal.kernel.util.Validator;
 
 import com.thoughtworks.qdox.JavaDocBuilder;
 import com.thoughtworks.qdox.model.ClassLibrary;
 import com.thoughtworks.qdox.model.JavaField;
+import com.thoughtworks.qdox.model.JavaMethod;
 import com.thoughtworks.qdox.model.JavaSource;
 import com.thoughtworks.qdox.model.Type;
 import com.thoughtworks.qdox.parser.ParseException;
@@ -207,6 +207,69 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 		return content;
 	}
 
+	protected String checkFinalableFieldType(
+		com.thoughtworks.qdox.model.JavaClass javaClass,
+		com.thoughtworks.qdox.model.JavaClass[] javaClasses,
+		JavaField javaField, String content) {
+
+		Type javaClassType = javaClass.asType();
+
+		if ((javaClass.isEnum() && javaClassType.equals(javaField.getType())) ||
+			javaField.isFinal()) {
+
+			return content;
+		}
+
+		StringBundler sb = new StringBundler(4);
+
+		sb.append("(\\b|\\.)");
+		sb.append(javaField.getName());
+		sb.append(" (=)|(\\+\\+)|(--)|(\\+=)|(-=)|(\\*=)|(/=)|(%=)");
+		sb.append("|(\\|=)|(&=)|(^=) ");
+
+		Pattern pattern = Pattern.compile(sb.toString());
+
+		for (com.thoughtworks.qdox.model.JavaClass javaSubClass : javaClasses) {
+			for (JavaMethod javaMethod : javaSubClass.getMethods()) {
+				if (javaMethod.isConstructor() && (javaSubClass == javaClass)) {
+					continue;
+				}
+
+				Matcher matcher = pattern.matcher(javaMethod.getCodeBlock());
+
+				if (matcher.find()) {
+					return content;
+				}
+			}
+		}
+
+		String[] lines = StringUtil.splitLines(content);
+
+		String line = lines[javaField.getLineNumber() - 1];
+
+		if (javaField.isStatic()) {
+			lines[javaField.getLineNumber() - 1] = StringUtil.replace(
+				line, "private static ", "private static final ");
+		}
+		else {
+			lines[javaField.getLineNumber() - 1] = StringUtil.replace(
+				line, "private ", "private final ");
+		}
+
+		sb = new StringBundler(2 * lines.length);
+
+		for (String contentLine : lines) {
+			sb.append(contentLine);
+			sb.append(StringPool.NEW_LINE);
+		}
+
+		sb.setIndex(sb.index() - 1);
+
+		content = sb.toString();
+
+		return content;
+	}
+
 	protected void checkFinderCacheInterfaceMethod(
 		String fileName, String content) {
 
@@ -342,9 +405,34 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 		return ifClause;
 	}
 
-	protected String checkImmutableAndStaticableFieldTypes(
-		String fileName, String packagePath, String className,
-		String content) {
+	protected String checkImmutableFieldType(
+		JavaField javaField, Type javaFieldType, String content) {
+
+		String oldName = javaField.getName();
+
+		if (javaFieldType.isArray() || !javaField.isStatic() ||
+			oldName.equals("serialVersionUID")) {
+
+			return content;
+		}
+
+		Matcher matcher = _camelCasePattern.matcher(oldName);
+
+		String newName = matcher.replaceAll("$1_$2");
+
+		newName = StringUtil.toUpperCase(newName);
+
+		if (newName.charAt(0) != CharPool.UNDERLINE) {
+			newName = StringPool.UNDERLINE.concat(newName);
+		}
+
+		return content.replaceAll(
+			"(?<=[\\W&&[^.\"]])(" + oldName + ")\\b", newName);
+	}
+
+	protected String checkJavaFieldTypes(
+		String fileName, String absolutePath, String packagePath,
+		String className, String content) {
 
 		if (!portalSource) {
 			return content;
@@ -368,63 +456,35 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 			return content;
 		}
 
-		com.thoughtworks.qdox.model.JavaClass javaClass =
-			javaDocBuilder.getClassByName(
-				packagePath.concat(StringPool.PERIOD).concat(className));
+		com.thoughtworks.qdox.model.JavaClass[] javaClasses =
+			javaDocBuilder.getClasses();
 
-		String[] lines = null;
-
-		for (JavaField javaField : javaClass.getFields()) {
-			Type type = javaField.getType();
-
-			String fieldTypeName = type.getFullyQualifiedName();
-
-			if (_immutableFieldTypes == null) {
-				_immutableFieldTypes = getImmutableFieldTypes();
-			}
-
-			if (!javaField.isPrivate() || !javaField.isFinal() ||
-				!_immutableFieldTypes.contains(fieldTypeName)) {
-
-				continue;
-			}
-
-			String oldName = javaField.getName();
-
-			if (!type.isArray() && javaField.isStatic() &&
-				!oldName.equals("serialVersionUID")) {
-
-				Matcher matcher = _camelCasePattern.matcher(oldName);
-
-				String newName = matcher.replaceAll("$1_$2");
-
-				newName = StringUtil.toUpperCase(newName);
-
-				if (newName.charAt(0) != CharPool.UNDERLINE) {
-					newName = StringPool.UNDERLINE.concat(newName);
+		for (com.thoughtworks.qdox.model.JavaClass javaClass : javaClasses) {
+			for (JavaField javaField : javaClass.getFields()) {
+				if (!javaField.isPrivate()) {
+					continue;
 				}
 
-				content = content.replaceAll(
-					"(?<=[\\W&&[^.\"]])(" + oldName + ")\\b", newName);
+				Type javaFieldType = javaField.getType();
+
+				String fieldTypeName = javaFieldType.getFullyQualifiedName();
+
+				Set<String> immutableFieldTypes = getImmutableFieldTypes();
+
+				if (javaField.isFinal() &&
+					immutableFieldTypes.contains(fieldTypeName)) {
+
+					content = checkImmutableFieldType(
+						javaField, javaFieldType, content);
+					content = checkStaticableFieldType(
+						javaField, javaFieldType, content);
+				}
+
+				if (!isExcluded(_finalableFieldTypesExclusions, absolutePath)) {
+					content = checkFinalableFieldType(
+						javaClass, javaClasses, javaField, content);
+				}
 			}
-
-			String initializationExpression = StringUtil.trim(
-				javaField.getInitializationExpression());
-
-			if (javaField.isStatic() || initializationExpression.isEmpty()) {
-				continue;
-			}
-
-			if (lines == null) {
-				lines = StringUtil.splitLines(content);
-			}
-
-			String line = lines[javaField.getLineNumber() - 1];
-
-			String newLine = StringUtil.replace(
-				line, "private final", "private static final");
-
-			content = StringUtil.replace(content, line, newLine);
 		}
 
 		return content;
@@ -506,6 +566,28 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 				fileName,
 				"create pattern as global var: " + fileName + " " + lineCount);
 		}
+	}
+
+	protected String checkStaticableFieldType(
+		JavaField javaField, Type javaFieldType, String content) {
+
+		String[] lines = StringUtil.splitLines(content);
+
+		String initializationExpression = StringUtil.trim(
+			javaField.getInitializationExpression());
+
+		if (javaField.isStatic() || initializationExpression.isEmpty() ||
+			javaFieldType.isArray()) {
+
+			return content;
+		}
+
+		String line = lines[javaField.getLineNumber() - 1];
+
+		String newLine = StringUtil.replace(
+			line, "private final", "private static final");
+
+		return StringUtil.replace(content, line, newLine);
 	}
 
 	protected void checkSystemEventAnnotations(String content, String fileName)
@@ -736,7 +818,10 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 			}
 		}
 
-		String newContent = content;
+		// LPS-49294
+
+		String newContent = checkJavaFieldTypes(
+			fileName, absolutePath, packagePath, className, content);
 
 		if (newContent.contains("$\n */")) {
 			processErrorMessage(fileName, "*: " + fileName);
@@ -767,14 +852,12 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 			new String[] {
 				"com.liferay.portal.PortalException",
 				"com.liferay.portal.SystemException",
-				"com.liferay.util.LocalizationUtil",
-				"private static final Log _log"
+				"com.liferay.util.LocalizationUtil"
 			},
 			new String[] {
 				"com.liferay.portal.kernel.exception.PortalException",
 				"com.liferay.portal.kernel.exception.SystemException",
-				"com.liferay.portal.kernel.util.LocalizationUtil",
-				"private static Log _log"
+				"com.liferay.portal.kernel.util.LocalizationUtil"
 			});
 
 		newContent = StringUtil.replace(
@@ -823,7 +906,8 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 
 		if (!isExcluded(_staticLogVariableExclusions, absolutePath)) {
 			newContent = StringUtil.replace(
-				newContent, "private Log _log", "private static Log _log");
+				newContent, "private Log _log",
+				"private static final Log _log");
 		}
 
 		if (newContent.contains("*/\npackage ")) {
@@ -1003,11 +1087,6 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 		// LPS-48153
 
 		//newContent = applyDiamondOperator(newContent);
-
-		// LPS-49294
-
-		newContent = checkImmutableAndStaticableFieldTypes(
-			fileName, packagePath, className, newContent);
 
 		// LPS-49552
 
@@ -1206,6 +1285,8 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 			getProperty("add.missing.deprecation.release.version"));
 		_allowUseServiceUtilInServiceImpl = GetterUtil.getBoolean(
 			getProperty("allow.use.service.util.in.service.impl"));
+		_finalableFieldTypesExclusions = getPropertyList(
+			"finalable.field.types.excludes.files");
 		_fitOnSingleLineExclusions = getPropertyList(
 			"fit.on.single.line.excludes.files");
 		_hibernateSQLQueryExclusions = getPropertyList(
@@ -1243,7 +1324,6 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 			String previousLine = StringPool.BLANK;
 
 			int lineCount = 0;
-			int lineToSkipIfEmpty = 0;
 
 			String ifClause = StringPool.BLANK;
 			String packageName = StringPool.BLANK;
@@ -1491,6 +1571,7 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 							StringPool.TAB + StringPool.LESS_THAN) &&
 						!previousLine.contains(
 							StringPool.TAB + StringPool.SPACE) &&
+						!previousLine.contains(StringPool.TAB + "for (") &&
 						!previousLine.contains(
 							StringPool.TAB + "implements ") &&
 						!previousLine.contains(StringPool.TAB + "throws ")) {
@@ -1711,7 +1792,6 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 						fileName, "{:" + fileName + " " + lineCount);
 				}
 
-				Tuple combinedLines = null;
 				int lineLength = getLineLength(line);
 
 				if (!line.startsWith("import ") &&
@@ -1727,11 +1807,19 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 					else if (fileName.endsWith("Table.java") &&
 							 line.contains(" index IX_")) {
 					}
-					else if (lineLength > 80) {
+					else if (lineLength > _MAX_LINE_LENGTH) {
 						if (!isExcluded(
-								_lineLengthExclusions, absolutePath, 
+								_lineLengthExclusions, absolutePath,
 								lineCount) &&
 							!isAnnotationParameter(content, trimmedLine)) {
+
+							String truncateLongLinesContent =
+								getTruncateLongLinesContent(
+									content, line, trimmedLine, lineCount);
+
+							if (truncateLongLinesContent != null) {
+								return truncateLongLinesContent;
+							}
 
 							processErrorMessage(
 								fileName, "> 80: " + fileName + " " +
@@ -1745,8 +1833,8 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 
 						if (!trimmedLine.startsWith("//")) {
 							if (previousLine.endsWith(StringPool.COMMA) &&
-								 previousLine.contains(
-									 StringPool.OPEN_PARENTHESIS) &&
+								previousLine.contains(
+									StringPool.OPEN_PARENTHESIS) &&
 								!previousLine.contains("for (") &&
 								(lineLeadingTabCount >
 									previousLineLeadingTabCount)) {
@@ -1803,7 +1891,8 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 									StringPool.OPEN_PARENTHESIS);
 
 								if ((x != -1) &&
-									((getLineLength(previousLine) + x) < 80) &&
+									((getLineLength(previousLine) + x) <
+										_MAX_LINE_LENGTH) &&
 									(trimmedLine.endsWith(
 										StringPool.OPEN_PARENTHESIS) ||
 									 (trimmedLine.charAt(x + 1) !=
@@ -1828,7 +1917,7 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 										lineCount);
 							}
 
-							if ((diff == 2) && 
+							if ((diff == 2) &&
 								(previousLineLeadingTabCount > 0) &&
 								line.endsWith(StringPool.SEMICOLON) &&
 								!previousLine.contains(
@@ -1853,117 +1942,67 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 							}
 						}
 
-						if (!isExcluded(
-								_fitOnSingleLineExclusions, absolutePath,
-								lineCount)) {
+						String combinedLinesContent = getCombinedLinesContent(
+							content, fileName, absolutePath, line, trimmedLine,
+							lineLength, lineCount, previousLine,
+							lineLeadingTabCount, previousLineLeadingTabCount);
 
-							combinedLines = getCombinedLines(
-								trimmedLine, previousLine, lineLeadingTabCount,
-								previousLineLeadingTabCount);
+						if (combinedLinesContent != null) {
+							return combinedLinesContent;
 						}
 					}
 				}
 
-				if (combinedLines != null) {
-					previousLine = (String)combinedLines.getObject(0);
+				if (lineCount > 1) {
+					sb.append(previousLine);
 
-					if (combinedLines.getSize() > 1) {
-						String linePart = (String)combinedLines.getObject(1);
-						boolean addToPreviousLine =
-							(Boolean)combinedLines.getObject(2);
+					if (Validator.isNotNull(previousLine) &&
+						Validator.isNotNull(trimmedLine) &&
+						!previousLine.contains("/*") &&
+						!previousLine.endsWith("*/")) {
 
-						if (addToPreviousLine) {
-							previousLine = previousLine + linePart;
-							line = StringUtil.replaceFirst(
-								line, linePart, StringPool.BLANK);
+						String trimmedPreviousLine = StringUtil.trimLeading(
+							previousLine);
+
+						if ((trimmedPreviousLine.startsWith("// ") &&
+							 !trimmedLine.startsWith("// ")) ||
+							(!trimmedPreviousLine.startsWith("// ") &&
+							 trimmedLine.startsWith("// "))) {
+
+							sb.append("\n");
 						}
-						else {
-							if (((linePart.length() + lineLength) <= 80) &&
-								(line.endsWith(StringPool.OPEN_CURLY_BRACE) ||
-								 line.endsWith(StringPool.SEMICOLON))) {
+						else if (!trimmedPreviousLine.endsWith(
+									StringPool.OPEN_CURLY_BRACE) &&
+								 !trimmedPreviousLine.endsWith(
+									StringPool.COLON) &&
+								 (trimmedLine.startsWith("for (") ||
+								  trimmedLine.startsWith("if ("))) {
 
-								previousLine = StringUtil.replaceLast(
-									previousLine, StringUtil.trim(linePart),
-									StringPool.BLANK);
-
-								line = StringUtil.replaceLast(
-									line, StringPool.TAB,
-									StringPool.TAB + linePart);
-							}
-							else {
-								processErrorMessage(
-									fileName,
-									"line break: " + fileName + " " +
-										lineCount);
-							}
+							sb.append("\n");
 						}
+						else if (previousLine.endsWith(
+									StringPool.TAB +
+										StringPool.CLOSE_CURLY_BRACE) &&
+								 !trimmedLine.startsWith(
+									 StringPool.CLOSE_CURLY_BRACE) &&
+								 !trimmedLine.startsWith(
+									 StringPool.CLOSE_PARENTHESIS) &&
+								 !trimmedLine.startsWith(
+									 StringPool.DOUBLE_SLASH) &&
+								 !trimmedLine.equals("*/") &&
+								 !trimmedLine.startsWith("catch ") &&
+								 !trimmedLine.startsWith("else ") &&
+								 !trimmedLine.startsWith("finally ") &&
+								 !trimmedLine.startsWith("while ")) {
 
-						sb.append(previousLine);
-						sb.append("\n");
-
-						previousLine = line;
+							sb.append("\n");
+						}
 					}
-					else if (line.endsWith(StringPool.OPEN_CURLY_BRACE) &&
-							 !previousLine.contains(" class ")) {
 
-						lineToSkipIfEmpty = lineCount + 1;
-					}
+					sb.append("\n");
 				}
-				else {
-					if ((lineCount > 1) &&
-						(Validator.isNotNull(previousLine) ||
-						 (lineToSkipIfEmpty != (lineCount - 1)))) {
 
-						sb.append(previousLine);
-
-						if (Validator.isNotNull(previousLine) &&
-							Validator.isNotNull(trimmedLine) &&
-							!previousLine.contains("/*") &&
-							!previousLine.endsWith("*/")) {
-
-							String trimmedPreviousLine = StringUtil.trimLeading(
-								previousLine);
-
-							if ((trimmedPreviousLine.startsWith("// ") &&
-								 !trimmedLine.startsWith("// ")) ||
-								(!trimmedPreviousLine.startsWith("// ") &&
-								 trimmedLine.startsWith("// "))) {
-
-								sb.append("\n");
-							}
-							else if (!trimmedPreviousLine.endsWith(
-										StringPool.OPEN_CURLY_BRACE) &&
-									 !trimmedPreviousLine.endsWith(
-										StringPool.COLON) &&
-									 (trimmedLine.startsWith("for (") ||
-									  trimmedLine.startsWith("if ("))) {
-
-								sb.append("\n");
-							}
-							else if (previousLine.endsWith(
-										StringPool.TAB +
-											StringPool.CLOSE_CURLY_BRACE) &&
-									 !trimmedLine.startsWith(
-										 StringPool.CLOSE_CURLY_BRACE) &&
-									 !trimmedLine.startsWith(
-										 StringPool.CLOSE_PARENTHESIS) &&
-									 !trimmedLine.startsWith(
-										 StringPool.DOUBLE_SLASH) &&
-									 !trimmedLine.equals("*/") &&
-									 !trimmedLine.startsWith("catch ") &&
-									 !trimmedLine.startsWith("else ") &&
-									 !trimmedLine.startsWith("finally ") &&
-									 !trimmedLine.startsWith("while ")) {
-
-								sb.append("\n");
-							}
-						}
-
-						sb.append("\n");
-					}
-
-					previousLine = line;
-				}
+				previousLine = line;
 			}
 
 			sb.append(previousLine);
@@ -1978,54 +2017,156 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 		return newContent;
 	}
 
-	protected Tuple getCombinedLines(
-		String line, String previousLine, int lineTabCount,
-		int previousLineTabCount) {
+	protected String getCombinedLinesContent(
+		String content, String fileName, String line, String trimmedLine,
+		int lineLength, int lineCount, String previousLine, String linePart,
+		int tabDiff, boolean addToPreviousLine, boolean extraSpace,
+		boolean removeTabOnNextLine) {
 
-		if (Validator.isNull(line) || Validator.isNull(previousLine)) {
+		if (linePart == null) {
+			String combinedLine = previousLine;
+
+			if (extraSpace) {
+				combinedLine += StringPool.SPACE;
+			}
+
+			combinedLine += trimmedLine;
+
+			String nextLine = getNextLine(content, lineCount);
+
+			if (nextLine == null) {
+				return null;
+			}
+
+			if (removeTabOnNextLine) {
+				return StringUtil.replace(
+					content,
+					"\n" + previousLine + "\n" + line + "\n" + nextLine + "\n",
+					"\n" + combinedLine + "\n" + nextLine.substring(1) + "\n");
+			}
+
+			if (line.endsWith(StringPool.OPEN_CURLY_BRACE) &&
+				(tabDiff != 0) && !previousLine.contains(" class ") &&
+				Validator.isNull(nextLine)) {
+
+				return StringUtil.replace(
+					content, "\n" + previousLine + "\n" + line + "\n",
+					"\n" + combinedLine);
+			}
+
+			return StringUtil.replace(
+				content, "\n" + previousLine + "\n" + line + "\n",
+				"\n" + combinedLine + "\n");
+		}
+
+		String firstLine = previousLine;
+		String secondLine = line;
+
+		if (addToPreviousLine) {
+			if (extraSpace) {
+				firstLine += StringPool.SPACE;
+			}
+
+			firstLine += linePart;
+
+			secondLine = StringUtil.replaceFirst(
+				line, linePart, StringPool.BLANK);
+		}
+		else {
+			if (((linePart.length() + lineLength) <= _MAX_LINE_LENGTH) &&
+				(line.endsWith(StringPool.OPEN_CURLY_BRACE) ||
+				 line.endsWith(StringPool.SEMICOLON))) {
+
+				firstLine = StringUtil.replaceLast(
+					firstLine, StringUtil.trim(linePart), StringPool.BLANK);
+
+				secondLine = StringUtil.replaceLast(
+					line, StringPool.TAB, StringPool.TAB + linePart);
+			}
+			else {
+				processErrorMessage(
+					fileName, "line break: " + fileName + " " + lineCount);
+
+				return null;
+			}
+		}
+
+		firstLine = StringUtil.trimTrailing(firstLine);
+
+		return StringUtil.replace(
+			content, "\n" + previousLine + "\n" + line + "\n",
+			"\n" + firstLine + "\n" + secondLine + "\n");
+	}
+
+	protected String getCombinedLinesContent(
+		String content, String fileName, String absolutePath, String line,
+		String trimmedLine, int lineLength, int lineCount, String previousLine,
+		int lineTabCount, int previousLineTabCount) {
+
+		if (Validator.isNull(line) || Validator.isNull(previousLine) ||
+			isExcluded(_fitOnSingleLineExclusions, absolutePath, lineCount)) {
+
 			return null;
 		}
 
 		String trimmedPreviousLine = StringUtil.trimLeading(previousLine);
 
-		if (line.startsWith("// ") || trimmedPreviousLine.startsWith("// ")) {
+		if (line.contains("// ") || line.contains("*/") ||
+			line.contains("*/") || previousLine.contains("// ") ||
+			previousLine.contains("*/") || previousLine.contains("*/")) {
+
 			return null;
 		}
 
+		int tabDiff = lineTabCount - previousLineTabCount;
+
 		if (previousLine.endsWith(" extends")) {
-			return new Tuple(previousLine, "extends ", false);
+			return getCombinedLinesContent(
+				content, fileName, line, trimmedLine, lineLength, lineCount,
+				previousLine, "extends", tabDiff, false, false, false);
 		}
 
 		if (previousLine.endsWith(" implements")) {
-			return new Tuple(previousLine, "implements ", false);
+			return getCombinedLinesContent(
+				content, fileName, line, trimmedLine, lineLength, lineCount,
+				previousLine, "implements ", tabDiff, false, false, false);
 		}
 
-		if (line.startsWith("+ ") || line.startsWith("- ") ||
-			line.startsWith("|| ") || line.startsWith("&& ")) {
+		if (trimmedLine.startsWith("+ ") || trimmedLine.startsWith("- ") ||
+			trimmedLine.startsWith("|| ") || trimmedLine.startsWith("&& ")) {
 
-			int pos = line.indexOf(StringPool.SPACE);
+			int pos = trimmedLine.indexOf(StringPool.SPACE);
 
-			String linePart = line.substring(0, pos);
+			String linePart = trimmedLine.substring(0, pos);
 
-			return new Tuple(previousLine + StringPool.SPACE, linePart, true);
+			return getCombinedLinesContent(
+				content, fileName, line, trimmedLine, lineLength, lineCount,
+				previousLine, linePart, tabDiff, true, true, false);
 		}
 
 		int previousLineLength = getLineLength(previousLine);
 
-		if ((line.length() + previousLineLength) < 80) {
+		if ((trimmedLine.length() + previousLineLength) < _MAX_LINE_LENGTH) {
 			if (trimmedPreviousLine.startsWith("for ") &&
 				previousLine.endsWith(StringPool.COLON) &&
 				line.endsWith(StringPool.OPEN_CURLY_BRACE)) {
 
-				return new Tuple(previousLine + StringPool.SPACE + line);
+				return getCombinedLinesContent(
+					content, fileName, line, trimmedLine, lineLength, lineCount,
+					previousLine, null, tabDiff, false, true, false);
 			}
 
-			if ((previousLine.endsWith(StringPool.EQUAL) ||
-				 previousLine.endsWith(StringPool.PERIOD) ||
-				 trimmedPreviousLine.equals("return")) &&
-				line.endsWith(StringPool.SEMICOLON)) {
+			if (line.endsWith(StringPool.SEMICOLON) &&
+				!previousLine.endsWith(StringPool.COLON) &&
+				!previousLine.endsWith(StringPool.OPEN_BRACKET) &&
+				!previousLine.endsWith(StringPool.OPEN_CURLY_BRACE) &&
+				!previousLine.endsWith(StringPool.OPEN_PARENTHESIS) &&
+				!previousLine.endsWith(StringPool.PERIOD) &&
+				(lineTabCount == (previousLineTabCount + 1))) {
 
-				return new Tuple(previousLine + StringPool.SPACE + line);
+				return getCombinedLinesContent(
+					content, fileName, line, trimmedLine, lineLength, lineCount,
+					previousLine, null, tabDiff, false, true, false);
 			}
 
 			if ((trimmedPreviousLine.startsWith("if ") ||
@@ -2033,24 +2174,52 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 				(previousLine.endsWith("||") || previousLine.endsWith("&&")) &&
 				line.endsWith(StringPool.OPEN_CURLY_BRACE)) {
 
-				return new Tuple(previousLine + StringPool.SPACE + line);
+				return getCombinedLinesContent(
+					content, fileName, line, trimmedLine, lineLength, lineCount,
+					previousLine, null, tabDiff, false, true, false);
 			}
 
-			if ((line.startsWith("extends ") ||
-				 line.startsWith("implements ") ||
-				 line.startsWith("throws")) &&
+			if ((trimmedLine.startsWith("extends ") ||
+				 trimmedLine.startsWith("implements ") ||
+				 trimmedLine.startsWith("throws")) &&
 				(line.endsWith(StringPool.OPEN_CURLY_BRACE) ||
 				 line.endsWith(StringPool.SEMICOLON)) &&
 				(lineTabCount == (previousLineTabCount + 1))) {
 
-				return new Tuple(previousLine + StringPool.SPACE + line);
+				return getCombinedLinesContent(
+					content, fileName, line, trimmedLine, lineLength, lineCount,
+					previousLine, null, tabDiff, false, true, false);
 			}
+
+			if (previousLine.endsWith(StringPool.EQUAL) &&
+				line.endsWith(StringPool.OPEN_PARENTHESIS)) {
+
+				String nextLine = getNextLine(content, lineCount);
+
+				if (nextLine.endsWith(StringPool.SEMICOLON)) {
+					return getCombinedLinesContent(
+						content, fileName, line, trimmedLine, lineLength,
+						lineCount, previousLine, null, tabDiff, false, true,
+						true);
+				}
+			}
+		}
+
+		if (((trimmedLine.length() + previousLineLength) <= _MAX_LINE_LENGTH) &&
+			(previousLine.endsWith(StringPool.OPEN_BRACKET) ||
+			 previousLine.endsWith(StringPool.OPEN_PARENTHESIS) ||
+			 previousLine.endsWith(StringPool.PERIOD)) &&
+			line.endsWith(StringPool.SEMICOLON)) {
+
+			return getCombinedLinesContent(
+				content, fileName, line, trimmedLine, lineLength, lineCount,
+				previousLine, null, tabDiff, false, false, false);
 		}
 
 		if (previousLine.endsWith(StringPool.EQUAL) &&
 			line.endsWith(StringPool.SEMICOLON)) {
 
-			String tempLine = line;
+			String tempLine = trimmedLine;
 
 			for (int pos = 0;;) {
 				pos = tempLine.indexOf(StringPool.DASH);
@@ -2094,25 +2263,25 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 					tempLine.substring(0, pos) + tempLine.substring(pos + 1);
 			}
 
-			int x = line.indexOf(StringPool.OPEN_PARENTHESIS);
+			int x = trimmedLine.indexOf(StringPool.OPEN_PARENTHESIS);
 
 			if (x == 0) {
-				x = line.indexOf(StringPool.OPEN_PARENTHESIS, 1);
+				x = trimmedLine.indexOf(StringPool.OPEN_PARENTHESIS, 1);
 			}
 
 			if (x != -1) {
-				int y = line.indexOf(StringPool.CLOSE_PARENTHESIS, x);
-				int z = line.indexOf(StringPool.QUOTE);
+				int y = trimmedLine.indexOf(StringPool.CLOSE_PARENTHESIS, x);
+				int z = trimmedLine.indexOf(StringPool.QUOTE);
 
 				if (((x + 1) != y) && ((z == -1) || (z > x))) {
-					char previousChar = line.charAt(x - 1);
+					char previousChar = trimmedLine.charAt(x - 1);
 
 					if ((previousChar != CharPool.CLOSE_PARENTHESIS) &&
 						(previousChar != CharPool.OPEN_PARENTHESIS) &&
 						(previousChar != CharPool.SPACE) &&
-						(previousLineLength + 1 + x) < 80) {
+						(previousLineLength + 1 + x) < _MAX_LINE_LENGTH) {
 
-						String linePart = line.substring(0, x + 1);
+						String linePart = trimmedLine.substring(0, x + 1);
 
 						if (linePart.startsWith(StringPool.OPEN_PARENTHESIS) &&
 							!linePart.contains(
@@ -2121,8 +2290,10 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 							return null;
 						}
 
-						return new Tuple(
-							previousLine + StringPool.SPACE, linePart, true);
+						return getCombinedLinesContent(
+							content, fileName, line, trimmedLine, lineLength,
+							lineCount, previousLine, linePart, tabDiff, true,
+							true, false);
 					}
 				}
 			}
@@ -2131,27 +2302,32 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 		if (previousLine.endsWith(StringPool.COMMA) &&
 			(previousLineTabCount == lineTabCount) &&
 			!previousLine.contains(StringPool.CLOSE_CURLY_BRACE) &&
-			!line.endsWith(StringPool.OPEN_CURLY_BRACE)) {
+			(line.endsWith(") {") ||
+			 !line.endsWith(StringPool.OPEN_CURLY_BRACE))) {
 
-			int x = line.indexOf(StringPool.COMMA);
+			int x = trimmedLine.indexOf(StringPool.COMMA);
 
 			if (x != -1) {
-				while ((previousLineLength + 1 + x) < 80) {
-					String linePart = line.substring(0, x + 1);
+				while ((previousLineLength + 1 + x) < _MAX_LINE_LENGTH) {
+					String linePart = trimmedLine.substring(0, x + 1);
 
 					if (isValidJavaParameter(linePart)) {
-						if (line.equals(linePart)) {
-							return new Tuple(
-								previousLine + StringPool.SPACE + linePart);
+						if (trimmedLine.equals(linePart)) {
+							return getCombinedLinesContent(
+								content, fileName, line, trimmedLine,
+								lineLength, lineCount, previousLine, null,
+								tabDiff, false, true, false);
 						}
 						else {
-							return new Tuple(
-								previousLine + StringPool.SPACE,
-								linePart + StringPool.SPACE, true);
+							return getCombinedLinesContent(
+								content, fileName, line, trimmedLine,
+								lineLength, lineCount, previousLine,
+								linePart + StringPool.SPACE, tabDiff, true,
+								true, false);
 						}
 					}
 
-					String partAfterComma = line.substring(x + 1);
+					String partAfterComma = trimmedLine.substring(x + 1);
 
 					int pos = partAfterComma.indexOf(StringPool.COMMA);
 
@@ -2165,11 +2341,14 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 			else if (!line.endsWith(StringPool.OPEN_PARENTHESIS) &&
 					 !line.endsWith(StringPool.PLUS) &&
 					 !line.endsWith(StringPool.PERIOD) &&
-					 (!line.startsWith("new ") ||
+					 (!trimmedLine.startsWith("new ") ||
 					  !line.endsWith(StringPool.OPEN_CURLY_BRACE)) &&
-					 ((line.length() + previousLineLength) < 80)) {
+					 ((trimmedLine.length() + previousLineLength) <
+						 _MAX_LINE_LENGTH)) {
 
-				return new Tuple(previousLine + StringPool.SPACE + line);
+				return getCombinedLinesContent(
+					content, fileName, line, trimmedLine, lineLength, lineCount,
+					previousLine, null, tabDiff, false, true, false);
 			}
 		}
 
@@ -2190,21 +2369,21 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 				if (!filePart.contains(StringPool.CLOSE_PARENTHESIS) &&
 					!filePart.contains(StringPool.QUOTE)) {
 
-					return new Tuple(previousLine, filePart, false);
+					return getCombinedLinesContent(
+						content, fileName, line, trimmedLine, lineLength,
+						lineCount, previousLine, filePart, tabDiff, false,
+						false, false);
 				}
 			}
 		}
 
-		if ((line.length() + previousLineLength) > 80) {
+		if ((trimmedLine.length() + previousLineLength) > _MAX_LINE_LENGTH) {
 			return null;
 		}
 
-		if (line.endsWith(StringPool.SEMICOLON)) {
-			return new Tuple(previousLine + line);
-		}
-
 		if (line.endsWith(StringPool.COMMA)) {
-			String strippedQuotesLine = stripQuotes(line, CharPool.QUOTE);
+			String strippedQuotesLine = stripQuotes(
+				trimmedLine, CharPool.QUOTE);
 
 			int openParenthesisCount = StringUtil.count(
 				strippedQuotesLine, StringPool.OPEN_PARENTHESIS);
@@ -2212,12 +2391,14 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 				strippedQuotesLine, StringPool.CLOSE_PARENTHESIS);
 
 			if (closeParenthesisCount > openParenthesisCount) {
-				return new Tuple(previousLine + line);
+				return getCombinedLinesContent(
+					content, fileName, line, trimmedLine, lineLength, lineCount,
+					previousLine, null, tabDiff, false, false, false);
 			}
 		}
 
 		if (((line.endsWith(StringPool.OPEN_CURLY_BRACE) &&
-			  !line.startsWith("new ")) ||
+			  !trimmedLine.startsWith("new ")) ||
 			 line.endsWith(StringPool.CLOSE_PARENTHESIS)) &&
 			(trimmedPreviousLine.startsWith("else ") ||
 			 trimmedPreviousLine.startsWith("if ") ||
@@ -2225,27 +2406,31 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 			 trimmedPreviousLine.startsWith("protected ") ||
 			 trimmedPreviousLine.startsWith("public "))) {
 
-			return new Tuple(previousLine + line);
+			return getCombinedLinesContent(
+				content, fileName, line, trimmedLine, lineLength, lineCount,
+				previousLine, null, tabDiff, false, false, false);
 		}
 
 		return null;
 	}
 
 	protected Set<String> getImmutableFieldTypes() {
-		Set<String> immutableFieldTypes = SetUtil.fromArray(
+		if (_immutableFieldTypes != null) {
+			return _immutableFieldTypes;
+		}
+
+		_immutableFieldTypes = SetUtil.fromArray(
 			new String[] {
 				"boolean", "byte", "char", "double", "float", "int", "long",
 				"short", "java.lang.Boolean", "java.lang.Byte",
 				"java.lang.Character", "java.lang.Class", "java.lang.Double",
 				"java.lang.Float", "java.lang.Int", "java.lang.Long",
 				"java.lang.Number", "java.lang.Short", "java.lang.String",
-				"java.lang.reflect.Constructor", "java.lang.reflect.Field",
-				"java.lang.reflect.Method"
 			});
 
-		immutableFieldTypes.addAll(getPropertyList("immutable.field.types"));
+		_immutableFieldTypes.addAll(getPropertyList("immutable.field.types"));
 
-		return immutableFieldTypes;
+		return _immutableFieldTypes;
 	}
 
 	protected List<String> getImportedExceptionClassNames(
@@ -2291,6 +2476,26 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 		}
 
 		return lineLength;
+	}
+
+	protected String getNextLine(String content, int lineCount) {
+		int x = -1;
+
+		for (int i = 0; i < lineCount; i++) {
+			x = content.indexOf("\n", x + 1);
+		}
+
+		if (x == -1) {
+			return null;
+		}
+
+		int y = content.indexOf("\n", x + 1);
+
+		if (y == -1) {
+			return content.substring(x + 1);
+		}
+
+		return content.substring(x + 1, y);
 	}
 
 	protected Collection<String> getPluginJavaFiles() {
@@ -2368,6 +2573,187 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 		return fileNames;
 	}
 
+	protected String getTruncateLongLinesContent(
+		String content, String line, String trimmedLine, int lineCount) {
+
+		String indent = StringPool.BLANK;
+
+		for (int i = 0; i < getLeadingTabCount(line); i++) {
+			indent += StringPool.TAB;
+		}
+
+		if (line.endsWith(StringPool.OPEN_PARENTHESIS) ||
+			line.endsWith(StringPool.SEMICOLON)) {
+
+			int x = line.indexOf(" = ");
+
+			if (x != -1) {
+				String firstLine = line.substring(0, x + 2);
+
+				if (firstLine.contains(StringPool.QUOTE)) {
+					return null;
+				}
+
+				String secondLine =
+					indent + StringPool.TAB + line.substring(x + 3);
+
+				if (line.endsWith(StringPool.SEMICOLON)) {
+					return StringUtil.replace(
+						content, "\n" + line + "\n",
+						"\n" + firstLine + "\n" + secondLine + "\n");
+				}
+				else if (Validator.isNotNull(
+							getNextLine(content, lineCount))) {
+
+					return StringUtil.replace(
+						content, "\n" + line + "\n",
+						"\n" + firstLine + "\n" + secondLine + "\n" +
+							StringPool.TAB);
+				}
+			}
+		}
+
+		if (line.endsWith(StringPool.CLOSE_PARENTHESIS) ||
+			line.endsWith(StringPool.COMMA) ||
+			line.endsWith(StringPool.OPEN_CURLY_BRACE) ||
+			line.endsWith(StringPool.SEMICOLON)) {
+
+			int x = 0;
+
+			while (true) {
+				x = line.indexOf(", ", x + 1);
+
+				if (x == -1) {
+					break;
+				}
+
+				if (isValidJavaParameter(line.substring(0, x))) {
+					String firstLine = line.substring(0, x + 1);
+					String secondLine = indent + line.substring(x + 2);
+
+					return StringUtil.replace(
+						content, "\n" + line + "\n",
+						"\n" + firstLine + "\n" + secondLine + "\n");
+				}
+			}
+		}
+
+		if ((line.endsWith(StringPool.OPEN_CURLY_BRACE) ||
+			 line.endsWith(StringPool.SEMICOLON)) &&
+			(trimmedLine.startsWith("private ") ||
+			 trimmedLine.startsWith("protected ") ||
+			 trimmedLine.startsWith("public "))) {
+
+			String firstLine = null;
+
+			int x = 0;
+
+			while (true) {
+				int y = line.indexOf(" extends ", x);
+
+				if (y != -1) {
+					firstLine = line.substring(0, y);
+
+					if (StringUtil.count(firstLine, StringPool.GREATER_THAN) !=
+							StringUtil.count(firstLine, StringPool.LESS_THAN)) {
+
+						x = y + 1;
+
+						continue;
+					}
+				}
+				else {
+					y = line.indexOf(" implements ");
+
+					if (y == -1) {
+						y = line.indexOf(" throws ");
+					}
+
+					if (y == -1) {
+						break;
+					}
+
+					firstLine = line.substring(0, y);
+				}
+
+				String secondLine =
+					indent + StringPool.TAB + line.substring(y + 1);
+
+				return StringUtil.replace(
+					content, "\n" + line + "\n",
+					"\n" + firstLine + "\n" + secondLine + "\n");
+			}
+		}
+
+		if ((line.endsWith(StringPool.CLOSE_PARENTHESIS) ||
+			 line.endsWith(StringPool.OPEN_CURLY_BRACE)) &&
+			(trimmedLine.startsWith("private ") ||
+			 trimmedLine.startsWith("protected ") ||
+			 trimmedLine.startsWith("public "))) {
+
+			int x = line.indexOf(StringPool.OPEN_PARENTHESIS);
+
+			if ((x != -1) &&
+				line.charAt(x + 1) != CharPool.CLOSE_PARENTHESIS) {
+
+				String secondLineIndent = indent + StringPool.TAB;
+
+				if (line.endsWith(StringPool.CLOSE_PARENTHESIS)) {
+					secondLineIndent += StringPool.TAB;
+				}
+
+				String firstLine = line.substring(0, x + 1);
+				String secondLine = secondLineIndent + line.substring(x + 1);
+
+				return StringUtil.replace(
+					content, "\n" + line + "\n",
+					"\n" + firstLine + "\n" + secondLine + "\n");
+			}
+		}
+
+		if (line.endsWith(StringPool.SEMICOLON)) {
+			int x = line.indexOf(StringPool.OPEN_PARENTHESIS);
+
+			if (x != -1) {
+				char c = line.charAt(x - 1);
+
+				if ((c != CharPool.SPACE) && (c != CharPool.TAB) &&
+					(line.charAt(x + 1) != CharPool.CLOSE_PARENTHESIS)) {
+
+					String firstLine = line.substring(0, x + 1);
+
+					if (firstLine.contains(StringPool.QUOTE)) {
+						return null;
+					}
+
+					String secondLine =
+						indent + StringPool.TAB + line.substring(x + 1);
+
+					return StringUtil.replace(
+						content, "\n" + line + "\n",
+						"\n" + firstLine + "\n" + secondLine + "\n");
+				}
+			}
+		}
+
+		if (line.contains(StringPool.TAB + "for (") && line.endsWith(" {")) {
+			int x = line.indexOf(" : ");
+
+			if (x != -1) {
+				String firstLine = line.substring(0, x + 2);
+				String secondLine =
+					indent + StringPool.TAB + StringPool.TAB +
+						line.substring(x + 3);
+
+				return StringUtil.replace(
+					content, "\n" + line + "\n",
+					"\n" + firstLine + "\n" + secondLine + "\n" + "\n");
+			}
+		}
+
+		return null;
+	}
+
 	protected boolean isAnnotationParameter(String content, String line) {
 		if (!line.contains(" = ") && !line.startsWith(StringPool.QUOTE)) {
 			return false;
@@ -2396,6 +2782,12 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 	}
 
 	protected boolean isValidJavaParameter(String javaParameter) {
+		if (javaParameter.contains(" implements ") ||
+			javaParameter.contains(" throws ")) {
+
+			return false;
+		}
+
 		int quoteCount = StringUtil.count(javaParameter, StringPool.QUOTE);
 
 		if ((quoteCount % 2) == 1) {
@@ -2428,17 +2820,28 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 	}
 
 	protected String sanitizeContent(String content) {
-		Matcher componentPropertyMatcher = _componentPropertyPattern.matcher(
-			content);
+		Matcher matcher = _componentPropertyPattern.matcher(content);
 
-		if (!componentPropertyMatcher.find()) {
+		if (!matcher.find()) {
 			return content;
 		}
 
-		String prefix = content.substring(0, componentPropertyMatcher.start(1));
-		String postfix = content.substring(componentPropertyMatcher.end(1));
+		String componentProperty = matcher.group(1);
 
-		return prefix.concat(postfix);
+		int newLineCount = StringUtil.count(
+			componentProperty, StringPool.NEW_LINE);
+
+		StringBundler sb = new StringBundler(newLineCount + 2);
+
+		sb.append(content.substring(0, matcher.start(1)));
+
+		for (int i = 0; i< newLineCount; i++) {
+			sb.append(StringPool.NEW_LINE);;
+		}
+
+		sb.append(content.substring(matcher.end(1)));
+
+		return sb.toString();
 	}
 
 	protected String sortExceptions(String line) {
@@ -2488,6 +2891,8 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 		return line;
 	}
 
+	private static final int _MAX_LINE_LENGTH = 80;
+
 	private static Pattern _importsPattern = Pattern.compile(
 		"(^[ \t]*import\\s+.*;\n+)+", Pattern.MULTILINE);
 
@@ -2507,6 +2912,7 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 			"\\(\n*\t*(.*)\\);\n");
 	private Pattern _fetchByPrimaryKeysMethodPattern = Pattern.compile(
 		"@Override\n\tpublic Map<(.+)> fetchByPrimaryKeys\\(");
+	private List<String> _finalableFieldTypesExclusions;
 	private List<String> _fitOnSingleLineExclusions;
 	private List<String> _hibernateSQLQueryExclusions;
 	private Set<String> _immutableFieldTypes;
@@ -2521,7 +2927,7 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 	private Pattern _lineBreakPattern = Pattern.compile("\\}(\\)+) \\{");
 	private List<String> _lineLengthExclusions;
 	private Pattern _logPattern = Pattern.compile(
-		"\n\tprivate static Log _log = LogFactoryUtil.getLog\\(\n*" +
+		"\n\tprivate static final Log _log = LogFactoryUtil.getLog\\(\n*" +
 			"\t*(.+)\\.class\\)");
 	private List<String> _proxyExclusions;
 	private List<String> _secureRandomExclusions;

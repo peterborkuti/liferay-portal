@@ -71,7 +71,7 @@ public class GetSyncDLObjectUpdateEvent extends BaseEvent {
 				Files.createDirectories(Paths.get(filePathName));
 
 				SyncFileService.addSyncFile(
-					null, null, null, filePathName, null, filePathName, 0,
+					null, null, null, filePathName, null, syncSite.getName(), 0,
 					syncSite.getGroupId(), SyncFile.STATE_SYNCED,
 					syncSite.getSyncAccountId(), SyncFile.TYPE_SYSTEM);
 			}
@@ -89,6 +89,6 @@ public class GetSyncDLObjectUpdateEvent extends BaseEvent {
 	private static final String _URL_PATH =
 		"/sync-web.syncdlobject/get-sync-dl-object-update";
 
-	private Handler<Void> _handler;
+	private final Handler<Void> _handler;
 
 }

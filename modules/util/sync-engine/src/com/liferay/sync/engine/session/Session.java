@@ -343,19 +343,20 @@ public class Session {
 			String.valueOf(value),
 			ContentType.create(
 				ContentType.TEXT_PLAIN.getMimeType(),
-				Charset.defaultCharset()));
+				Charset.forName("UTF-8")));
 	}
 
-	private static Logger _logger = LoggerFactory.getLogger(Session.class);
+	private static final Logger _logger = LoggerFactory.getLogger(
+		Session.class);
 
 	private static HttpRoutePlanner _httpRoutePlanner;
-	private static String _token;
 
 	private BasicHttpContext _basicHttpContext;
-	private ExecutorService _executorService;
-	private HttpClient _httpClient;
-	private HttpHost _httpHost;
-	private Set<String> _ignoredParameterKeys = new HashSet<String>(
+	private final ExecutorService _executorService;
+	private final HttpClient _httpClient;
+	private final HttpHost _httpHost;
+	private final Set<String> _ignoredParameterKeys = new HashSet<String>(
 		Arrays.asList("filePath", "syncFile", "syncSite", "uiEvent"));
+	private String _token;
 
 }

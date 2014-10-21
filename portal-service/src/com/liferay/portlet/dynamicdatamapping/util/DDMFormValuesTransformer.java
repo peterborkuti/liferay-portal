@@ -14,6 +14,7 @@
 
 package com.liferay.portlet.dynamicdatamapping.util;
 
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portlet.dynamicdatamapping.model.DDMForm;
 import com.liferay.portlet.dynamicdatamapping.model.DDMFormField;
 import com.liferay.portlet.dynamicdatamapping.storage.DDMFormFieldValue;
@@ -33,14 +34,14 @@ public class DDMFormValuesTransformer {
 	}
 
 	public void addTransformer(
-		String fieldType,
 		DDMFormFieldValueTransformer ddmFormFieldValueTransformer) {
 
 		_ddmFormFieldValueTransformersMap.put(
-			fieldType, ddmFormFieldValueTransformer);
+			ddmFormFieldValueTransformer.getFieldType(),
+			ddmFormFieldValueTransformer);
 	}
 
-	public void transform() {
+	public void transform() throws PortalException {
 		DDMForm ddmForm = _ddmFormValues.getDDMForm();
 
 		traverse(
@@ -49,8 +50,9 @@ public class DDMFormValuesTransformer {
 	}
 
 	protected void performTransformation(
-		List<DDMFormFieldValue> ddmFormFieldValues,
-		DDMFormFieldValueTransformer ddmFormFieldValueTransformer) {
+			List<DDMFormFieldValue> ddmFormFieldValues,
+			DDMFormFieldValueTransformer ddmFormFieldValueTransformer)
+		throws PortalException {
 
 		for (DDMFormFieldValue ddmFormFieldValue : ddmFormFieldValues) {
 			ddmFormFieldValueTransformer.transform(
@@ -59,8 +61,9 @@ public class DDMFormValuesTransformer {
 	}
 
 	protected void traverse(
-		List<DDMFormField> ddmFormFields,
-		Map<String, List<DDMFormFieldValue>> ddmFormFieldValuesMap) {
+			List<DDMFormField> ddmFormFields,
+			Map<String, List<DDMFormFieldValue>> ddmFormFieldValuesMap)
+		throws PortalException {
 
 		for (DDMFormField ddmFormField : ddmFormFields) {
 			List<DDMFormFieldValue> ddmFormFieldValues =
@@ -86,9 +89,9 @@ public class DDMFormValuesTransformer {
 		}
 	}
 
-	private Map<String, DDMFormFieldValueTransformer>
+	private final Map<String, DDMFormFieldValueTransformer>
 		_ddmFormFieldValueTransformersMap =
 			new HashMap<String, DDMFormFieldValueTransformer>();
-	private DDMFormValues _ddmFormValues;
+	private final DDMFormValues _ddmFormValues;
 
 }

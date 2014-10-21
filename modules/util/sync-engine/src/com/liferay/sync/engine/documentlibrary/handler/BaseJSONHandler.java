@@ -242,7 +242,9 @@ public class BaseJSONHandler extends BaseHandler {
 
 			retryServerConnection();
 		}
-		else if (exception.equals("java.lang.SecurityException")) {
+		else if (exception.equals("Authenticated access required") ||
+				 exception.equals("java.lang.SecurityException")) {
+
 			throw new HttpResponseException(
 				HttpStatus.SC_UNAUTHORIZED, "Authenticated access required");
 		}
@@ -261,7 +263,7 @@ public class BaseJSONHandler extends BaseHandler {
 	protected void processResponse(String response) throws Exception {
 	}
 
-	private static Logger _logger = LoggerFactory.getLogger(
+	private static final Logger _logger = LoggerFactory.getLogger(
 		BaseJSONHandler.class);
 
 }

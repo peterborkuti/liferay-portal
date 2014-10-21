@@ -43,22 +43,20 @@ if (recordVersion != null) {
 	fields = StorageEngineUtil.getFields(recordVersion.getDDMStorageId());
 }
 
-Locale[] availableLocales = new Locale[0];
+String defaultLanguageId = ParamUtil.getString(request, "defaultLanguageId");
+
+if (Validator.isNull(defaultLanguageId)) {
+	defaultLanguageId = themeDisplay.getLanguageId();
+}
+
+Locale[] availableLocales = new Locale[] {LocaleUtil.fromLanguageId(defaultLanguageId)};
 
 if (fields != null) {
 	Set<Locale> availableLocalesSet = fields.getAvailableLocales();
 
 	availableLocales = availableLocalesSet.toArray(new Locale[availableLocalesSet.size()]);
-}
 
-String defaultLanguageId = ParamUtil.getString(request, "defaultLanguageId");
-
-if (Validator.isNull(defaultLanguageId)) {
-	defaultLanguageId = themeDisplay.getLanguageId();
-
-	if (fields != null) {
-		defaultLanguageId = LocaleUtil.toLanguageId(fields.getDefaultLocale());
-	}
+	defaultLanguageId = LocaleUtil.toLanguageId(fields.getDefaultLocale());
 }
 
 String languageId = ParamUtil.getString(request, "languageId", defaultLanguageId);
@@ -84,7 +82,7 @@ if (translating) {
 	<portlet:param name="struts_action" value="/dynamic_data_lists/edit_record" />
 </portlet:actionURL>
 
-<aui:form action="<%= editRecordURL %>" cssClass="lfr-dynamic-form" enctype="multipart/form-data" method="post" name="fm" onSubmit='<%= "event.preventDefault();" %>'>
+<aui:form action="<%= editRecordURL %>" cssClass="lfr-dynamic-form" enctype="multipart/form-data" method="post" name="fm">
 	<aui:input name="<%= Constants.CMD %>" type="hidden" />
 	<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
 	<aui:input name="recordSetId" type="hidden" value="<%= recordSetId %>" />
@@ -162,43 +160,26 @@ if (translating) {
 		</c:if>
 
 		<aui:button-row>
-			<c:choose>
-				<c:when test="<%= translating %>">
-					<aui:button name="saveTranslationButton" onClick='<%= renderResponse.getNamespace() + "saveTranslation(event);" %>' type="submit" value="add-translation" />
 
-					<aui:button href="<%= redirect %>" name="cancelButton" type="cancel" />
+			<%
+			String saveButtonLabel = "save";
 
-					<aui:script>
-						function <portlet:namespace />saveTranslation (event) {
-							<portlet:namespace />setWorkflowAction(false);
+			if ((recordVersion == null) || recordVersion.isDraft() || recordVersion.isApproved()) {
+				saveButtonLabel = "save-as-draft";
+			}
 
-							document.<portlet:namespace />fm.<portlet:namespace /><%= Constants.CMD %>.value = '<%= Constants.TRANSLATE %>';
-						}
-					</aui:script>
-				</c:when>
-				<c:otherwise>
+			String publishButtonLabel = "publish";
 
-					<%
-					String saveButtonLabel = "save";
+			if (WorkflowDefinitionLinkLocalServiceUtil.hasWorkflowDefinitionLink(themeDisplay.getCompanyId(), scopeGroupId, DDLRecordSet.class.getName(), recordSetId)) {
+				publishButtonLabel = "submit-for-publication";
+			}
+			%>
 
-					if ((recordVersion == null) || recordVersion.isDraft() || recordVersion.isApproved()) {
-						saveButtonLabel = "save-as-draft";
-					}
+			<aui:button name="saveButton" onClick='<%= renderResponse.getNamespace() + "setWorkflowAction(true);" %>' primary="<%= false %>" type="submit" value="<%= saveButtonLabel %>" />
 
-					String publishButtonLabel = "publish";
+			<aui:button disabled="<%= pending %>" name="publishButton" onClick='<%= renderResponse.getNamespace() + "setWorkflowAction(false);" %>' type="submit" value="<%= publishButtonLabel %>" />
 
-					if (WorkflowDefinitionLinkLocalServiceUtil.hasWorkflowDefinitionLink(themeDisplay.getCompanyId(), scopeGroupId, DDLRecordSet.class.getName(), recordSetId)) {
-						publishButtonLabel = "submit-for-publication";
-					}
-					%>
-
-					<aui:button name="saveButton" onClick='<%= renderResponse.getNamespace() + "setWorkflowAction(true);" %>' primary="<%= false %>" type="submit" value="<%= saveButtonLabel %>" />
-
-					<aui:button disabled="<%= pending %>" name="publishButton" onClick='<%= renderResponse.getNamespace() + "setWorkflowAction(false);" %>' type="submit" value="<%= publishButtonLabel %>" />
-
-					<aui:button href="<%= redirect %>" name="cancelButton" type="cancel" />
-				</c:otherwise>
-			</c:choose>
+			<aui:button href="<%= redirect %>" name="cancelButton" type="cancel" />
 		</aui:button-row>
 	</aui:fieldset>
 </aui:form>

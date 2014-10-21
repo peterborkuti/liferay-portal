@@ -76,7 +76,7 @@ public class DDMFormValuesTransformerTest extends BaseDDMTestCase {
 		String prefix = "+1";
 
 		ddmFormValuesTransformer.addTransformer(
-			"text", new DDMFormFieldValuePrefixAppender(prefix));
+			new DDMFormFieldValuePrefixAppender(prefix));
 
 		ddmFormValuesTransformer.transform();
 
@@ -124,7 +124,7 @@ public class DDMFormValuesTransformerTest extends BaseDDMTestCase {
 		String prefix = StringPool.UNDERLINE;
 
 		ddmFormValuesTransformer.addTransformer(
-			"text", new DDMFormFieldValuePrefixAppender(prefix));
+			new DDMFormFieldValuePrefixAppender(prefix));
 
 		ddmFormValuesTransformer.transform();
 
@@ -156,6 +156,11 @@ public class DDMFormValuesTransformerTest extends BaseDDMTestCase {
 		implements DDMFormFieldValueTransformer {
 
 		@Override
+		public String getFieldType() {
+			return "text";
+		}
+
+		@Override
 		public void transform(Value value) {
 			for (Locale locale : value.getAvailableLocales()) {
 				value.addString(
@@ -167,7 +172,7 @@ public class DDMFormValuesTransformerTest extends BaseDDMTestCase {
 			_prefix = prefix;
 		}
 
-		private String _prefix;
+		private final String _prefix;
 
 	}
 

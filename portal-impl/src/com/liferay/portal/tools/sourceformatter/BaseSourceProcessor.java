@@ -292,7 +292,9 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 	protected void checkInefficientStringMethods(
 		String line, String fileName, String absolutePath, int lineCount) {
 
-		if (isRunsOutsidePortal(absolutePath)) {
+		if (isRunsOutsidePortal(absolutePath) ||
+			fileName.endsWith("GetterUtil.java")) {
+
 			return;
 		}
 
@@ -1389,7 +1391,7 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 
 		StringBundler sb = new StringBundler();
 
-		try (UnsyncBufferedReader unsyncBufferedReader = 
+		try (UnsyncBufferedReader unsyncBufferedReader =
 				new UnsyncBufferedReader(new UnsyncStringReader(content))) {
 
 			String line = null;

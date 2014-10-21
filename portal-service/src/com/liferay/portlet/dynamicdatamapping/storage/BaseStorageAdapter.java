@@ -26,6 +26,11 @@ import com.liferay.portlet.dynamicdatamapping.model.DDMStructure;
 import com.liferay.portlet.dynamicdatamapping.service.DDMStorageLinkLocalServiceUtil;
 import com.liferay.portlet.dynamicdatamapping.service.DDMStructureLocalServiceUtil;
 import com.liferay.portlet.dynamicdatamapping.storage.query.Condition;
+import com.liferay.portlet.dynamicdatamapping.util.DDMFormValuesToFieldsConverterUtil;
+import com.liferay.portlet.dynamicdatamapping.util.DDMFormValuesTransformer;
+import com.liferay.portlet.dynamicdatamapping.util.DocumentLibraryDDMFormFieldValueTransformer;
+import com.liferay.portlet.dynamicdatamapping.util.FieldsToDDMFormValuesConverterUtil;
+import com.liferay.portlet.dynamicdatamapping.util.HTMLSanitizerDDMFormFieldValueTransformer;
 
 import java.util.List;
 import java.util.Map;
@@ -45,6 +50,8 @@ public abstract class BaseStorageAdapter implements StorageAdapter {
 
 		try {
 			validateDDMStructureFields(ddmStructureId, fields);
+
+			fields = transformFields(ddmStructureId, fields, serviceContext);
 
 			return doCreate(companyId, ddmStructureId, fields, serviceContext);
 		}
@@ -228,7 +235,13 @@ public abstract class BaseStorageAdapter implements StorageAdapter {
 		throws StorageException {
 
 		try {
-			validateClassFields(classPK, fields);
+			DDMStorageLink ddmStorageLink =
+				DDMStorageLinkLocalServiceUtil.getClassStorageLink(classPK);
+
+			validateDDMStructureFields(ddmStorageLink.getStructureId(), fields);
+
+			fields = transformFields(
+				ddmStorageLink.getStructureId(), fields, serviceContext);
 
 			doUpdate(classPK, fields, mergeFields, serviceContext);
 		}
@@ -286,13 +299,31 @@ public abstract class BaseStorageAdapter implements StorageAdapter {
 			ServiceContext serviceContext)
 		throws Exception;
 
-	protected void validateClassFields(long classPK, Fields fields)
+	protected Fields transformFields(
+			long ddmStructureId, Fields fields, ServiceContext serviceContext)
 		throws PortalException {
 
-		DDMStorageLink ddmStorageLink =
-			DDMStorageLinkLocalServiceUtil.getClassStorageLink(classPK);
+		DDMStructure ddmStructure =
+			DDMStructureLocalServiceUtil.getDDMStructure(ddmStructureId);
 
-		validateDDMStructureFields(ddmStorageLink.getStructureId(), fields);
+		DDMFormValues ddmFormValues =
+			FieldsToDDMFormValuesConverterUtil.convert(ddmStructure, fields);
+
+		DDMFormValuesTransformer ddmFormValuesTransformer =
+			new DDMFormValuesTransformer(ddmFormValues);
+
+		ddmFormValuesTransformer.addTransformer(
+			new DocumentLibraryDDMFormFieldValueTransformer());
+
+		ddmFormValuesTransformer.addTransformer(
+			new HTMLSanitizerDDMFormFieldValueTransformer(
+				serviceContext.getCompanyId(), serviceContext.getScopeGroupId(),
+				serviceContext.getUserId()));
+
+		ddmFormValuesTransformer.transform();
+
+		return DDMFormValuesToFieldsConverterUtil.convert(
+			ddmStructure, ddmFormValues);
 	}
 
 	protected void validateDDMStructureFields(
