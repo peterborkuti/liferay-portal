@@ -303,11 +303,14 @@ public interface Localization {
 	/**
 	 * Returns the localized preferences key in the language. Generally this is
 	 * just the preferences key, followed by an underscore, and the language ID.
+	 * @deprecated replaced by {@link
+	 *             #getLocalizedName(String, String)}
 	 *
 	 * @param  key the preferences key
 	 * @param  languageId the ID of the language
 	 * @return the localized preferences key
 	 */
+	@Deprecated
 	public String getPreferencesKey(String key, String languageId);
 
 	/**
