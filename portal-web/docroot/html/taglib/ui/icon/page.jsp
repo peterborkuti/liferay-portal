@@ -86,7 +86,7 @@ boolean urlIsNotNull = Validator.isNotNull(url);
 		</li>
 	</c:when>
 	<c:otherwise>
-		<span class="<%= cssClass %>"
+		<span class="<%= cssClass %>" data-title="<%= message %>"
 			<c:if test="<%= !label && Validator.isNotNull(message) %>">
 				onmouseover="Liferay.Portal.ToolTip.show(this, '<liferay-ui:message key="<%= HtmlUtil.escapeJS(message) %>" />')"
 			</c:if>
