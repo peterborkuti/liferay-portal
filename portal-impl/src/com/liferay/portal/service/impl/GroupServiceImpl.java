@@ -553,7 +553,8 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 			int max)
 		throws PortalException {
 
-		return getUserSitesGroups(userId, classNames, includeControlPanel, max);
+		return getUserSitesOrPlaces(
+			userId, classNames, includeControlPanel, max, true);
 	}
 
 	/**
@@ -596,7 +597,7 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 	public List<Group> getUserPlaces(long userId, String[] classNames, int max)
 		throws PortalException {
 
-		return getUserSitesGroups(userId, classNames, max);
+		return getUserPlaces(userId, classNames, false, max);
 	}
 
 	/**
@@ -638,7 +639,7 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 	public List<Group> getUserPlaces(String[] classNames, int max)
 		throws PortalException {
 
-		return getUserSitesGroups(classNames, max);
+		return getUserPlaces(getGuestOrUserId(), classNames, max);
 	}
 
 	/**
@@ -654,7 +655,10 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 	@Deprecated
 	@Override
 	public int getUserPlacesCount() throws PortalException {
-		return getUserSitesGroupsCount();
+		List<Group> userPlaces = getUserPlaces(
+			getGuestOrUserId(), null, true, QueryUtil.ALL_POS);
+
+		return userPlaces.size();
 	}
 
 	/**
