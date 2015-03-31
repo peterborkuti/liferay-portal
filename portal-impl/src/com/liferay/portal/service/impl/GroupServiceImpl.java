@@ -1277,4 +1277,23 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 			ListUtil.subList(ListUtil.unique(userSiteGroups), start, end));
 	}
 
+	protected boolean hasOrganizationSiteOrLayout(
+		Organization organization, boolean checkLayout) {
+
+		boolean hasSiteOrLayout = false;
+
+		if (checkLayout) {
+			hasSiteOrLayout =
+				organization.hasPrivateLayouts() ||
+				organization.hasPublicLayouts();
+		}
+		else {
+			Group group = organization.getGroup();
+
+			hasSiteOrLayout = group.isSite();
+		}
+
+		return hasSiteOrLayout;
+	}
+
 }
