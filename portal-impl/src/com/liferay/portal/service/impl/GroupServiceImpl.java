@@ -1219,25 +1219,23 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 					userId, start, end, null);
 
 			for (Organization organization : userOrgs) {
-				if (!hasOrganizationSiteOrLayout(organization, places)) {
-
-					userSiteGroups.remove(organization.getGroup());
+				if (hasOrganizationSiteOrLayout(organization, places)) {
+					userSiteGroups.add(0, organization.getGroup());
 				}
 				else {
-					userSiteGroups.add(0, organization.getGroup());
+					userSiteGroups.remove(organization.getGroup());
 				}
 
 				if (!PropsValues.ORGANIZATIONS_MEMBERSHIP_STRICT) {
 					for (Organization ancestorOrganization :
 							organization.getAncestors()) {
 
-						if (!hasOrganizationSiteOrLayout(
-							ancestorOrganization, places)) {
+						if (hasOrganizationSiteOrLayout(
+								ancestorOrganization, places)) {
 
-							continue;
+							userSiteGroups.add(
+								0, ancestorOrganization.getGroup());
 						}
-
-						userSiteGroups.add(0, ancestorOrganization.getGroup());
 					}
 				}
 			}
