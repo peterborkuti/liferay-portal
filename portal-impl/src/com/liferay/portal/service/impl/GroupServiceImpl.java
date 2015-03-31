@@ -684,7 +684,7 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 		throws PortalException {
 
 		return getUserSitesOrPlaces(
-			userId, classNames, includeControlPanel, max);
+			userId, classNames, includeControlPanel, max, false);
 	}
 
 	/**
@@ -1175,7 +1175,7 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 
 	protected List<Group> getUserSitesOrPlaces(
 			long userId, String[] classNames, boolean includeControlPanel,
-			int max)
+			int max, boolean places)
 		throws PortalException {
 
 		User user = userPersistence.fetchByPrimaryKey(userId);
@@ -1215,8 +1215,7 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 					userId, start, end, null);
 
 			for (Organization organization : userOrgs) {
-				if (!organization.hasPrivateLayouts() &&
-					!organization.hasPublicLayouts()) {
+				if (!hasOrganizationSiteOrLayout(organization, places)) {
 
 					userSiteGroups.remove(organization.getGroup());
 				}
@@ -1228,8 +1227,8 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 					for (Organization ancestorOrganization :
 							organization.getAncestors()) {
 
-						if (!ancestorOrganization.hasPrivateLayouts() &&
-							!ancestorOrganization.hasPublicLayouts()) {
+						if (!hasOrganizationSiteOrLayout(
+							ancestorOrganization, places)) {
 
 							continue;
 						}
