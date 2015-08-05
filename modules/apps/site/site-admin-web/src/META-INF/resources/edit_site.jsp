@@ -78,8 +78,13 @@ if (layoutSetPrototypeId > 0) {
 }
 
 boolean showPrototypes = ParamUtil.getBoolean(request, "showPrototypes", true);
+%>
 
-if (!portletName.equals(SiteAdminPortletKeys.SITE_SETTINGS)) {
+<liferay-ui:success key='<%= SiteAdminPortletKeys.SITE_SETTINGS + "requestProcessed" %>' message="site-was-added" />
+
+<c:if test="<%= !portletName.equals(SiteAdminPortletKeys.SITE_SETTINGS) %>">
+
+	<%
 	if (group != null) {
 		PortalUtil.addPortletBreadcrumbEntry(request, group.getDescriptiveName(locale), null);
 		PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "edit"), currentURL);
@@ -89,34 +94,26 @@ if (!portletName.equals(SiteAdminPortletKeys.SITE_SETTINGS)) {
 
 		PortalUtil.addPortletBreadcrumbEntry(request, parentGroup.getDescriptiveName(locale), null);
 	}
-}
-%>
+	%>
 
-<liferay-ui:success key='<%= SiteAdminPortletKeys.SITE_SETTINGS + "requestProcessed" %>' message="site-was-added" />
-
-<c:if test="<%= (group == null) || !layout.isTypeControlPanel() %>">
+	<div id="breadcrumb">
+		<liferay-ui:breadcrumb showCurrentGroup="<%= false %>" showGuestGroup="<%= false %>" showLayout="<%= false %>" showPortletBreadcrumb="<%= true %>" />
+	</div>
 
 	<%
 	boolean localizeTitle = true;
 	String title = "new-site";
 
 	if (group != null) {
-		localizeTitle= false;
+		localizeTitle = false;
 		title = group.getDescriptiveName(locale);
 	}
 	else if (layoutSetPrototype != null) {
-		localizeTitle= false;
+		localizeTitle = false;
 		title = layoutSetPrototype.getName(locale);
 	}
 	else if (parentGroupId != GroupConstants.DEFAULT_PARENT_GROUP_ID) {
 		title = "new-child-site";
-	%>
-
-		<div id="breadcrumb">
-			<liferay-ui:breadcrumb showCurrentGroup="<%= false %>" showGuestGroup="<%= false %>" showLayout="<%= false %>" showPortletBreadcrumb="<%= true %>" />
-		</div>
-
-	<%
 	}
 	%>
 
@@ -144,9 +141,9 @@ if (!portletName.equals(SiteAdminPortletKeys.SITE_SETTINGS)) {
 	<%
 	request.setAttribute("site.group", group);
 	request.setAttribute("site.liveGroup", liveGroup);
-	request.setAttribute("site.liveGroupId", new Long(liveGroupId));
+	request.setAttribute("site.liveGroupId", Long.valueOf(liveGroupId));
 	request.setAttribute("site.stagingGroup", stagingGroup);
-	request.setAttribute("site.stagingGroupId", new Long(stagingGroupId));
+	request.setAttribute("site.stagingGroupId", Long.valueOf(stagingGroupId));
 	request.setAttribute("site.liveGroupTypeSettings", liveGroupTypeSettings);
 	request.setAttribute("site.layoutSetPrototype", layoutSetPrototype);
 	request.setAttribute("site.showPrototypes", String.valueOf(showPrototypes));

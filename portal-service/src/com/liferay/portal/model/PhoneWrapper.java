@@ -16,8 +16,9 @@ package com.liferay.portal.model;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.util.Validator;
+
+import com.liferay.portlet.exportimport.lar.StagedModelType;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -66,6 +67,7 @@ public class PhoneWrapper implements Phone, ModelWrapper<Phone> {
 		attributes.put("extension", getExtension());
 		attributes.put("typeId", getTypeId());
 		attributes.put("primary", getPrimary());
+		attributes.put("lastPublishDate", getLastPublishDate());
 
 		return attributes;
 	}
@@ -155,6 +157,12 @@ public class PhoneWrapper implements Phone, ModelWrapper<Phone> {
 		if (primary != null) {
 			setPrimary(primary);
 		}
+
+		Date lastPublishDate = (Date)attributes.get("lastPublishDate");
+
+		if (lastPublishDate != null) {
+			setLastPublishDate(lastPublishDate);
+		}
 	}
 
 	@Override
@@ -230,6 +238,16 @@ public class PhoneWrapper implements Phone, ModelWrapper<Phone> {
 	@Override
 	public java.lang.String getExtension() {
 		return _phone.getExtension();
+	}
+
+	/**
+	* Returns the last publish date of this phone.
+	*
+	* @return the last publish date of this phone
+	*/
+	@Override
+	public Date getLastPublishDate() {
+		return _phone.getLastPublishDate();
 	}
 
 	/**
@@ -463,6 +481,16 @@ public class PhoneWrapper implements Phone, ModelWrapper<Phone> {
 	@Override
 	public void setExtension(java.lang.String extension) {
 		_phone.setExtension(extension);
+	}
+
+	/**
+	* Sets the last publish date of this phone.
+	*
+	* @param lastPublishDate the last publish date of this phone
+	*/
+	@Override
+	public void setLastPublishDate(Date lastPublishDate) {
+		_phone.setLastPublishDate(lastPublishDate);
 	}
 
 	/**

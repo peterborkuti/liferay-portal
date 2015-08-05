@@ -17,6 +17,7 @@ package com.liferay.portal.kernel.comment;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.util.Function;
+import com.liferay.portal.kernel.util.ProxyFactory;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.service.ServiceContext;
 
@@ -25,13 +26,13 @@ import com.liferay.portal.service.ServiceContext;
  */
 public class CommentManagerUtil {
 
-	public static void addComment(
+	public static long addComment(
 			long userId, long groupId, String className, long classPK,
 			String body,
 			Function<String, ServiceContext> serviceContextFunction)
 		throws PortalException {
 
-		getCommentManager().addComment(
+		return getCommentManager().addComment(
 			userId, groupId, className, classPK, body, serviceContextFunction);
 	}
 
@@ -76,6 +77,16 @@ public class CommentManagerUtil {
 		getCommentManager().deleteDiscussion(className, classPK);
 	}
 
+	public static void deleteGroupComments(long groupId)
+		throws PortalException {
+
+		getCommentManager().deleteGroupComments(groupId);
+	}
+
+	public static Comment fetchComment(long commentId) {
+		return getCommentManager().fetchComment(commentId);
+	}
+
 	public static CommentManager getCommentManager() {
 		PortalRuntimePermission.checkGetBeanProperty(CommentManagerUtil.class);
 
@@ -99,6 +110,16 @@ public class CommentManagerUtil {
 		PermissionChecker permissionChecker) {
 
 		return getCommentManager().getDiscussionPermission(permissionChecker);
+	}
+
+	public static DiscussionStagingHandler getDiscussionStagingHandler() {
+		return getCommentManager().getDiscussionStagingHandler();
+	}
+
+	public static boolean hasDiscussion(String className, long classPK)
+		throws PortalException {
+
+		return getCommentManager().hasDiscussion(className, classPK);
 	}
 
 	public static void subscribeDiscussion(
@@ -127,12 +148,7 @@ public class CommentManagerUtil {
 			serviceContextFunction);
 	}
 
-	public void setCommentManager(CommentManager commentManager) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
-		_commentManager = commentManager;
-	}
-
-	private static CommentManager _commentManager;
+	private static final CommentManager _commentManager =
+		ProxyFactory.newServiceTrackedInstance(CommentManager.class);
 
 }

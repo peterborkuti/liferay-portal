@@ -24,6 +24,8 @@ int cur = (Integer)request.getAttribute("edit_team_assignments.jsp-cur");
 
 String redirect = (String)request.getAttribute("edit_team_assignments.jsp-redirect");
 
+Group group = (Group)request.getAttribute("edit_team_assignments.jsp-group");
+
 Team team = (Team)request.getAttribute("edit_team_assignments.jsp-team");
 
 PortletURL portletURL = (PortletURL)request.getAttribute("edit_team_assignments.jsp-portletURL");
@@ -32,7 +34,7 @@ PortletURL portletURL = (PortletURL)request.getAttribute("edit_team_assignments.
 <liferay-ui:tabs
 	names="current,available"
 	param="tabs2"
-	url="<%= portletURL.toString() %>"
+	portletURL="<%= portletURL %>"
 />
 
 <liferay-ui:search-container
@@ -44,7 +46,6 @@ PortletURL portletURL = (PortletURL)request.getAttribute("edit_team_assignments.
 		<portlet:param name="mvcPath" value="/edit_team_assignments.jsp" />
 		<portlet:param name="tabs1" value="<%= tabs1 %>" />
 		<portlet:param name="tabs2" value="<%= tabs2 %>" />
-		<portlet:param name="redirect" value="<%= redirect %>" />
 		<portlet:param name="teamId" value="<%= String.valueOf(team.getTeamId()) %>" />
 	</portlet:renderURL>
 
@@ -58,7 +59,7 @@ PortletURL portletURL = (PortletURL)request.getAttribute("edit_team_assignments.
 	LinkedHashMap<String, Object> userParams = new LinkedHashMap<String, Object>();
 
 	userParams.put("inherit", Boolean.TRUE);
-	userParams.put("usersGroups", team.getGroupId());
+	userParams.put("usersGroups", group.getGroupId());
 
 	if (tabs2.equals("current")) {
 		userParams.put("usersTeams", team.getTeamId());

@@ -16,9 +16,10 @@ package com.liferay.portlet.documentlibrary.model;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.ModelWrapper;
+
+import com.liferay.portlet.exportimport.lar.StagedModelType;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -83,6 +84,7 @@ public class DLFileEntryWrapper implements DLFileEntry,
 		attributes.put("custom1ImageId", getCustom1ImageId());
 		attributes.put("custom2ImageId", getCustom2ImageId());
 		attributes.put("manualCheckInRequired", getManualCheckInRequired());
+		attributes.put("lastPublishDate", getLastPublishDate());
 
 		return attributes;
 	}
@@ -262,6 +264,12 @@ public class DLFileEntryWrapper implements DLFileEntry,
 
 		if (manualCheckInRequired != null) {
 			setManualCheckInRequired(manualCheckInRequired);
+		}
+
+		Date lastPublishDate = (Date)attributes.get("lastPublishDate");
+
+		if (lastPublishDate != null) {
+			setLastPublishDate(lastPublishDate);
 		}
 	}
 
@@ -527,6 +535,16 @@ public class DLFileEntryWrapper implements DLFileEntry,
 		return _dlFileEntry.getLargeImageId();
 	}
 
+	/**
+	* Returns the last publish date of this document library file entry.
+	*
+	* @return the last publish date of this document library file entry
+	*/
+	@Override
+	public Date getLastPublishDate() {
+		return _dlFileEntry.getLastPublishDate();
+	}
+
 	@Override
 	public com.liferay.portlet.documentlibrary.model.DLFileVersion getLatestFileVersion(
 		boolean trusted)
@@ -535,7 +553,7 @@ public class DLFileEntryWrapper implements DLFileEntry,
 	}
 
 	@Override
-	public com.liferay.portal.model.Lock getLock() {
+	public com.liferay.portal.kernel.lock.Lock getLock() {
 		return _dlFileEntry.getLock();
 	}
 
@@ -1039,6 +1057,16 @@ public class DLFileEntryWrapper implements DLFileEntry,
 	@Override
 	public void setLargeImageId(long largeImageId) {
 		_dlFileEntry.setLargeImageId(largeImageId);
+	}
+
+	/**
+	* Sets the last publish date of this document library file entry.
+	*
+	* @param lastPublishDate the last publish date of this document library file entry
+	*/
+	@Override
+	public void setLastPublishDate(Date lastPublishDate) {
+		_dlFileEntry.setLastPublishDate(lastPublishDate);
 	}
 
 	/**

@@ -1,5 +1,5 @@
 <definition component-name="portal-wcm">
-	<property name="testray.main.component.name" value="WCM" />
+	<property name="testray.main.component.name" value="Recycle Bin" />
 
 	<set-up>
 		<execute macro="User#firstLoginPG" />
@@ -27,7 +27,7 @@
 		<execute macro="Site#tearDownCP" />
 	</tear-down>
 
-	<command known-issues="LPS-51696" name="RecycleBinBlogs" priority="3">
+	<command name="RecycleBinBlogs" priority="3">
 		<execute macro="Page#gotoPG">
 			<var name="pageName" value="Test Page" />
 			<var name="siteName" value="Site Name" />
@@ -217,7 +217,7 @@
 		</execute>
 	</command>
 
-	<command known-issues="LPS-51696" name="RecycleBinEntriesMaxAge" priority="4">
+	<command name="RecycleBinEntriesMaxAge" priority="4">
 		<property name="custom.properties" value="trash.entries.max.age=86400${line.separator}company.settings.form.configuration=general,authentication,users,mail-host-names,email-notifications,content-sharing,recycle-bin" />
 
 		<execute macro="Page#gotoCP">
@@ -273,7 +273,7 @@
 		</execute>
 	</command>
 
-	<command name="RecycleBinGeneralRestoring" priority="5">
+	<command name="RecycleBinGeneralRestoring" priority="4">
 		<execute macro="Page#gotoPG">
 			<var name="pageName" value="Test Page" />
 			<var name="siteName" value="Site Name" />
@@ -476,7 +476,7 @@
 		</execute>
 	</command>
 
-	<command known-issues="LPS-51696" name="RecycleBinScheduledCleanup" priority="3">
+	<command name="RecycleBinScheduledCleanup" priority="3">
 		<property name="custom.properties" value="trash.entry.check.interval=1${line.separator}trash.entries.max.age=1" />
 
 		<execute macro="Page#gotoPG">
@@ -521,7 +521,7 @@
 		</execute>
 	</command>
 
-	<command known-issues="LPS-51696" name="RecycleBinSearchBlogsEntries" priority="3">
+	<command name="RecycleBinSearchBlogsEntries" priority="3">
 		<execute macro="Page#gotoPG">
 			<var name="pageName" value="Test Page" />
 			<var name="siteName" value="Site Name" />
@@ -716,7 +716,7 @@
 		</execute>
 	</command>
 
-	<command known-issues="LPS-51696" name="RecycleBinStaging" priority="3">
+	<command name="RecycleBinStaging" priority="3">
 		<execute macro="Page#gotoPG">
 			<var name="pageName" value="Test Page" />
 			<var name="siteName" value="Site Name" />
@@ -724,18 +724,14 @@
 		</execute>
 
 		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Message Boards" />
+			<var name="portletName" value="Web Content Display" />
 		</execute>
 
-		<execute macro="Page#gotoPG">
-			<var name="pageName" value="Test Page" />
-			<var name="siteName" value="Site Name" />
-			<var name="siteURL" value="true" />
-		</execute>
+		<execute function="Refresh" />
 
-		<execute macro="MessageboardsThread#addPG">
-			<var name="threadBody" value="MB Thread Body" />
-			<var name="threadSubject" value="MB Thread Subject" />
+		<execute macro="WebContent#addPGViaWCD">
+			<var name="webContentContent" value="WC Content" />
+			<var name="webContentTitle" value="WC Title" />
 		</execute>
 
 		<execute macro="Page#gotoConfigurationCP">
@@ -746,7 +742,7 @@
 
 		<execute macro="Staging#activateStagingCP">
 			<var name="siteName" value="Site Name" />
-			<var name="uncheckContent" value="Message Boards" />
+			<var name="uncheckContent" value="Web Content" />
 		</execute>
 
 		<execute macro="Page#gotoPG">
@@ -760,27 +756,20 @@
 			<var name="portletName" value="Blogs" />
 		</execute>
 
-		<execute macro="Page#gotoPG">
-			<var name="pageName" value="Test Page" />
-			<var name="pageStaging" value="true" />
-			<var name="siteName" value="Site Name" />
-			<var name="siteURL" value="true" />
-		</execute>
+		<execute function="Refresh" />
 
 		<execute macro="BlogsEntry#addPG">
 			<var name="entryContent" value="Blogs Entry Content" />
 			<var name="entryTitle" value="Blogs Entry Title" />
 		</execute>
 
-		<execute macro="Page#gotoPG">
-			<var name="pageName" value="Test Page" />
-			<var name="siteName" value="Site Name" />
-			<var name="siteURL" value="true" />
+		<execute macro="Page#gotoContentCP">
+			<var name="portletName" value="Web Content" />
+			<var name="siteScopeName" value="Site Name" />
 		</execute>
 
-		<execute macro="MessageboardsThread#deletePG">
-			<var name="assetType" value="Message Boards Thread" />
-			<var name="threadSubject" value="MB Thread Subject" />
+		<execute macro="WebContent#moveToRecycleBinCP">
+			<var name="webContentTitle" value="WC Title" />
 		</execute>
 
 		<execute macro="Page#gotoPG">
@@ -810,13 +799,13 @@
 		<execute function="AssertClick" locator1="CPRecyclebin#LIVE_TOOLBAR" value1="Live" />
 
 		<execute macro="RecycleBin#viewCP">
-			<var name="assetName" value="MB Thread Subject" />
-			<var name="assetType" value="Message Boards Thread" />
+			<var name="assetName" value="WC Title" />
+			<var name="assetType" value="Web Content Article" />
 			<var name="deleteUser" value="Test Test" />
 		</execute>
 	</command>
 
-	<command name="RecycleBinWebContent" priority="3">
+	<command known-issues="LPS-56568" name="RecycleBinWebContent" priority="3">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Web Content" />
 			<var name="siteScopeName" value="Site Name" />
@@ -856,12 +845,18 @@
 			<var name="siteScopeName" value="Site Name" />
 		</execute>
 
-		<execute macro="WebContentNavigator#gotoAddWithStructureCP" />
+		<execute macro="WebContentNavigator#gotoAddWithStructureCP">
+			<var name="structureName" value="WC Structure Name" />
+		</execute>
 
 		<execute macro="WebContent#addWithStructureCP">
-			<var name="structureName" value="WC Structure Name" />
-			<var name="templateName" value="WC Template Name" />
 			<var name="webContentText" value="WC WebContent Text" />
+			<var name="webContentTitle" value="WC WebContent Title" />
+		</execute>
+
+		<execute macro="WebContent#publish" />
+
+		<execute macro="WebContent#viewTitle">
 			<var name="webContentTitle" value="WC WebContent Title" />
 		</execute>
 
@@ -896,7 +891,7 @@
 			<var name="siteScopeName" value="Site Name" />
 		</execute>
 
-		<execute macro="WebContent#viewCPWithStructure">
+		<execute macro="WebContent#viewWithStructureCP">
 			<var name="webContentTitle" value="WC WebContent Title" />
 		</execute>
 
@@ -1217,7 +1212,7 @@
 		</execute>
 	</command>
 
-	<command known-issues="LPS-51687" name="RestoreWebContentFromFolderCP" priority="5">
+	<command known-issues="LPS-51687" name="RestoreWebContentFromFolderCP" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Web Content" />
 			<var name="siteScopeName" value="Site Name" />
@@ -1242,6 +1237,12 @@
 
 		<execute macro="WebContent#addCP">
 			<var name="webContentContent" value="Web Content Content" />
+			<var name="webContentTitle" value="Web Content Title" />
+		</execute>
+
+		<execute macro="WebContent#publish" />
+
+		<execute macro="WebContent#viewTitle">
 			<var name="webContentTitle" value="Web Content Title" />
 		</execute>
 
@@ -1307,6 +1308,12 @@
 
 		<execute macro="WebContent#addCP">
 			<var name="webContentContent" value="Web Content Content" />
+			<var name="webContentTitle" value="Web Content Title" />
+		</execute>
+
+		<execute macro="WebContent#publish" />
+
+		<execute macro="WebContent#viewTitle">
 			<var name="webContentTitle" value="Web Content Title" />
 		</execute>
 

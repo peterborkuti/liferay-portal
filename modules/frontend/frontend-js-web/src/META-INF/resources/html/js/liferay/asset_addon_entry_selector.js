@@ -21,14 +21,16 @@ AUI.add(
 
 		var STR_SELECTED_ASSET_ADDON_ENTRIES = 'selectedAssetAddonEntries';
 
+		var TPL_SELECT_LIST = '<ul class="list-inline list-unstyled">{entries}</ul>';
+
 		var TPL_STR_SELECTED_ASSET_ADDON_ENTRY = '<li>' +
 				'<label>' +
 					'<input {checked} class="toggle-card" data-key={key} data-label={label} type="checkbox">' +
 					'<div class="toggle-card-container">' +
 						'<div class="toggle-card-cell">' +
 							'<div class="toggle-card-icon">' +
-								'<span class="toggle-card-off icon-{icon}"></span>' +
-								'<span class="toggle-card-on icon-ok"></span>' +
+								'<span class="icon-{icon} toggle-card-off"></span>' +
+								'<span class="icon-ok toggle-card-on"></span>' +
 							'</div>' +
 							'<div class="toggle-card-label">' +
 								'<span>{label}</span>' +
@@ -38,10 +40,8 @@ AUI.add(
 				'</label>' +
 			'</li>';
 
-		var TPL_SELECT_LIST = '<ul class="list-inline list-unstyled">{entries}</ul>';
-
 		var TPL_SUMMARY_ASSET_ADDON_ENTRY = '<li class="list-entry" data-key="{key}" data-label="{label}">' +
-				'<span class="label label-entry label-circle">' +
+				'<span class="label label-circle label-entry">' +
 					'{label}' +
 					'<button class="remove-button" type="button">' +
 						'<i class="icon-remove"></i>' +
@@ -54,7 +54,7 @@ AUI.add(
 				ATTRS: {
 					assetAddonEntries: {
 						setter: '_setAssetAddonEntries',
-						validator: Lang.isArray
+						validator: Array.isArray
 					},
 
 					dialogTitle: {
@@ -63,7 +63,7 @@ AUI.add(
 					},
 
 					selectedAssetAddonEntries: {
-						validator: Lang.isArray
+						validator: Array.isArray
 					}
 				},
 
@@ -110,7 +110,7 @@ AUI.add(
 								width: 540
 							};
 
-							dialog = Liferay.Util.Window.getWindow(
+							dialog = Liferay.Util.getTop().Liferay.Util.Window.getWindow(
 								{
 									dialog: dialogConfig,
 									id: instance._dialogId,
@@ -131,14 +131,13 @@ AUI.add(
 
 						var selectedAssetAddonEntries = instance.get(STR_SELECTED_ASSET_ADDON_ENTRIES);
 
-						var entriesContent = AArray.reduce(
-							instance.get(STR_ASSET_ADDON_ENTRIES),
-							STR_BLANK,
+						var entriesContent = instance.get(STR_ASSET_ADDON_ENTRIES).reduce(
 							function(previousValue, currentValue) {
 								currentValue.checked = selectedAssetAddonEntries.indexOf(currentValue.key) !== -1 ? STR_CHECKED : STR_BLANK;
 
 								return previousValue + Lang.sub(TPL_STR_SELECTED_ASSET_ADDON_ENTRY, currentValue);
-							}
+							},
+							STR_BLANK
 						);
 
 						var content = Lang.sub(
@@ -191,8 +190,7 @@ AUI.add(
 
 						var removedItem = event.currentTarget.ancestor('.list-entry').attr(STR_DATA_KEY);
 
-						selectedAssetAddonEntries = AArray.filter(
-							selectedAssetAddonEntries,
+						selectedAssetAddonEntries = selectedAssetAddonEntries.filter(
 							function(item) {
 								return item !== removedItem;
 							}

@@ -24,13 +24,16 @@ import com.liferay.site.navigation.menu.web.constants.NavigationMenuPortletKeys;
 import java.util.Map;
 
 import javax.portlet.PortletConfig;
-import javax.portlet.RenderRequest;
-import javax.portlet.RenderResponse;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Modified;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Brian Wing Shun Chan
@@ -47,16 +50,30 @@ public class NavigationMenuConfigurationAction
 	extends DefaultConfigurationAction {
 
 	@Override
-	public String render(
-			PortletConfig portletConfig, RenderRequest renderRequest,
-			RenderResponse renderResponse)
+	public String getJspPath(HttpServletRequest request) {
+		return "/configuration.jsp";
+	}
+
+	@Override
+	public void include(
+			PortletConfig portletConfig, HttpServletRequest request,
+			HttpServletResponse response)
 		throws Exception {
 
-		renderRequest.setAttribute(
+		request.setAttribute(
 			NavigationMenuWebConfiguration.class.getName(),
 			_navigationMenuWebConfiguration);
 
-		return super.render(portletConfig, renderRequest, renderResponse);
+		super.include(portletConfig, request, response);
+	}
+
+	@Override
+	@Reference(
+		target = "(osgi.web.symbolicname=com.liferay.site.navigation.menu.web)",
+		unbind = "-"
+	)
+	public void setServletContext(ServletContext servletContext) {
+		super.setServletContext(servletContext);
 	}
 
 	@Activate

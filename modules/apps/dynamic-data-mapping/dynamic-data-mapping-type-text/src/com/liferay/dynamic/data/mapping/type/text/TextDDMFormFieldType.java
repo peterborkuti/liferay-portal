@@ -14,12 +14,13 @@
 
 package com.liferay.dynamic.data.mapping.type.text;
 
-import com.liferay.portlet.dynamicdatamapping.registry.DDMFormFieldRenderer;
-import com.liferay.portlet.dynamicdatamapping.registry.DDMFormFieldType;
-import com.liferay.portlet.dynamicdatamapping.registry.DDMFormFieldValueAccessor;
-import com.liferay.portlet.dynamicdatamapping.registry.DDMFormFieldValueParameterSerializer;
-import com.liferay.portlet.dynamicdatamapping.registry.DDMFormFieldValueRendererAccessor;
-import com.liferay.portlet.dynamicdatamapping.registry.DefaultDDMFormFieldValueParameterSerializer;
+import com.liferay.dynamic.data.mapping.registry.BaseDDMFormFieldType;
+import com.liferay.dynamic.data.mapping.registry.DDMFormFieldRenderer;
+import com.liferay.dynamic.data.mapping.registry.DDMFormFieldType;
+import com.liferay.dynamic.data.mapping.registry.DDMFormFieldValueAccessor;
+import com.liferay.dynamic.data.mapping.registry.DDMFormFieldValueParameterSerializer;
+import com.liferay.dynamic.data.mapping.registry.DDMFormFieldValueRendererAccessor;
+import com.liferay.dynamic.data.mapping.registry.DefaultDDMFormFieldValueParameterSerializer;
 
 import java.util.Locale;
 
@@ -30,7 +31,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Marcellus Tavares
  */
 @Component(immediate = true, service = DDMFormFieldType.class)
-public class TextDDMFormFieldType implements DDMFormFieldType {
+public class TextDDMFormFieldType extends BaseDDMFormFieldType {
 
 	@Override
 	public DDMFormFieldRenderer getDDMFormFieldRenderer() {
@@ -57,6 +58,11 @@ public class TextDDMFormFieldType implements DDMFormFieldType {
 
 		return new TextDDMFormFieldValueRendererAccessor(
 			getDDMFormFieldValueAccessor(locale));
+	}
+
+	@Override
+	public String getIcon() {
+		return "icon-font";
 	}
 
 	@Override

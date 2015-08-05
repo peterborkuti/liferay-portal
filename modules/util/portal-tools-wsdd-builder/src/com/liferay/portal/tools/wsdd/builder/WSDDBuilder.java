@@ -18,7 +18,7 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.tools.ArgumentsUtil;
-import com.liferay.portal.tools.servicebuilder.ServiceBuilder;
+import com.liferay.portal.tools.ToolsUtil;
 import com.liferay.portal.xml.SAXReaderFactory;
 import com.liferay.util.ant.Java2WsddTask;
 import com.liferay.util.xml.XMLSafeReader;
@@ -47,12 +47,16 @@ public class WSDDBuilder {
 			WSDDBuilder wsddBuilder = new WSDDBuilder();
 
 			wsddBuilder._classPath = arguments.get("wsdd.class.path");
-			wsddBuilder._fileName = arguments.get("wsdd.input.file");
-			wsddBuilder._outputPath = arguments.get("wsdd.output.path");
-			wsddBuilder._serverConfigFileName = arguments.get(
-				"wsdd.server.config.file");
-			wsddBuilder._serviceNamespace = arguments.get(
-				"wsdd.service.namespace");
+			wsddBuilder._fileName = GetterUtil.getString(
+				arguments.get("wsdd.input.file"), WSDDBuilderArgs.FILE_NAME);
+			wsddBuilder._outputPath = GetterUtil.getString(
+				arguments.get("wsdd.output.path"), WSDDBuilderArgs.OUTPUT_PATH);
+			wsddBuilder._serverConfigFileName = GetterUtil.getString(
+				arguments.get("wsdd.server.config.file"),
+				WSDDBuilderArgs.SERVER_CONFIG_FILE_NAME);
+			wsddBuilder._serviceNamespace = GetterUtil.getString(
+				arguments.get("wsdd.service.namespace"),
+				WSDDBuilderArgs.SERVICE_NAMESPACE);
 
 			wsddBuilder.build();
 		}
@@ -77,7 +81,7 @@ public class WSDDBuilder {
 
 		SAXReader saxReader = _getSAXReader();
 
-		String content = ServiceBuilder.getContent(_fileName);
+		String content = ToolsUtil.getContent(_fileName);
 
 		Document document = saxReader.read(new XMLSafeReader(content));
 
@@ -116,6 +120,10 @@ public class WSDDBuilder {
 					_serverConfigFileName);
 			}
 		}
+	}
+
+	public void setClassPath(String classPath) {
+		_classPath = classPath;
 	}
 
 	public void setFileName(String fileName) {

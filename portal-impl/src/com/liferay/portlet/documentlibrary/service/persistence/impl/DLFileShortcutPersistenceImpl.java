@@ -24,7 +24,6 @@ import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
-import com.liferay.portal.kernel.lar.ExportImportThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -5856,8 +5855,9 @@ public class DLFileShortcutPersistenceImpl extends BasePersistenceImpl<DLFileSho
 		}
 	}
 
-	protected void cacheUniqueFindersCache(DLFileShortcut dlFileShortcut) {
-		if (dlFileShortcut.isNew()) {
+	protected void cacheUniqueFindersCache(DLFileShortcut dlFileShortcut,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					dlFileShortcut.getUuid(), dlFileShortcut.getGroupId()
 				};
@@ -6025,29 +6025,26 @@ public class DLFileShortcutPersistenceImpl extends BasePersistenceImpl<DLFileSho
 			dlFileShortcut.setUuid(uuid);
 		}
 
-		if (!ExportImportThreadLocal.isImportInProcess()) {
-			ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
+		ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
 
-			Date now = new Date();
+		Date now = new Date();
 
-			if (isNew && (dlFileShortcut.getCreateDate() == null)) {
-				if (serviceContext == null) {
-					dlFileShortcut.setCreateDate(now);
-				}
-				else {
-					dlFileShortcut.setCreateDate(serviceContext.getCreateDate(
-							now));
-				}
+		if (isNew && (dlFileShortcut.getCreateDate() == null)) {
+			if (serviceContext == null) {
+				dlFileShortcut.setCreateDate(now);
 			}
+			else {
+				dlFileShortcut.setCreateDate(serviceContext.getCreateDate(now));
+			}
+		}
 
-			if (!dlFileShortcutModelImpl.hasSetModifiedDate()) {
-				if (serviceContext == null) {
-					dlFileShortcut.setModifiedDate(now);
-				}
-				else {
-					dlFileShortcut.setModifiedDate(serviceContext.getModifiedDate(
-							now));
-				}
+		if (!dlFileShortcutModelImpl.hasSetModifiedDate()) {
+			if (serviceContext == null) {
+				dlFileShortcut.setModifiedDate(now);
+			}
+			else {
+				dlFileShortcut.setModifiedDate(serviceContext.getModifiedDate(
+						now));
 			}
 		}
 
@@ -6230,7 +6227,7 @@ public class DLFileShortcutPersistenceImpl extends BasePersistenceImpl<DLFileSho
 			dlFileShortcut, false);
 
 		clearUniqueFindersCache(dlFileShortcut);
-		cacheUniqueFindersCache(dlFileShortcut);
+		cacheUniqueFindersCache(dlFileShortcut, isNew);
 
 		dlFileShortcut.resetOriginalValues();
 
@@ -6260,6 +6257,7 @@ public class DLFileShortcutPersistenceImpl extends BasePersistenceImpl<DLFileSho
 		dlFileShortcutImpl.setToFileEntryId(dlFileShortcut.getToFileEntryId());
 		dlFileShortcutImpl.setTreePath(dlFileShortcut.getTreePath());
 		dlFileShortcutImpl.setActive(dlFileShortcut.isActive());
+		dlFileShortcutImpl.setLastPublishDate(dlFileShortcut.getLastPublishDate());
 		dlFileShortcutImpl.setStatus(dlFileShortcut.getStatus());
 		dlFileShortcutImpl.setStatusByUserId(dlFileShortcut.getStatusByUserId());
 		dlFileShortcutImpl.setStatusByUserName(dlFileShortcut.getStatusByUserName());
@@ -6625,6 +6623,11 @@ public class DLFileShortcutPersistenceImpl extends BasePersistenceImpl<DLFileSho
 	@Override
 	protected Set<String> getBadColumnNames() {
 		return _badColumnNames;
+	}
+
+	@Override
+	protected Map<String, Integer> getTableColumnsMap() {
+		return DLFileShortcutModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

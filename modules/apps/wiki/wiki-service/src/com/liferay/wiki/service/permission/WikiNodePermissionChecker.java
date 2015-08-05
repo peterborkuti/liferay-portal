@@ -15,10 +15,10 @@
 package com.liferay.wiki.service.permission;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.staging.permission.StagingPermissionUtil;
 import com.liferay.portal.security.auth.PrincipalException;
 import com.liferay.portal.security.permission.BaseModelPermissionChecker;
 import com.liferay.portal.security.permission.PermissionChecker;
+import com.liferay.portlet.exportimport.staging.permission.StagingPermissionUtil;
 import com.liferay.wiki.constants.WikiPortletKeys;
 import com.liferay.wiki.model.WikiNode;
 import com.liferay.wiki.service.WikiNodeLocalServiceUtil;
@@ -38,9 +38,9 @@ public class WikiNodePermissionChecker implements BaseModelPermissionChecker {
 			PermissionChecker permissionChecker, long nodeId, String actionId)
 		throws PortalException {
 
-		if (!contains(permissionChecker, nodeId, actionId)) {
-			throw new PrincipalException();
-		}
+		WikiNode node = WikiNodeLocalServiceUtil.getNode(nodeId);
+
+		check(permissionChecker, node, actionId);
 	}
 
 	public static void check(
@@ -48,9 +48,9 @@ public class WikiNodePermissionChecker implements BaseModelPermissionChecker {
 			String actionId)
 		throws PortalException {
 
-		if (!contains(permissionChecker, groupId, name, actionId)) {
-			throw new PrincipalException();
-		}
+		WikiNode node = WikiNodeLocalServiceUtil.getNode(groupId, name);
+
+		check(permissionChecker, node, actionId);
 	}
 
 	public static void check(
@@ -58,7 +58,9 @@ public class WikiNodePermissionChecker implements BaseModelPermissionChecker {
 		throws PortalException {
 
 		if (!contains(permissionChecker, node, actionId)) {
-			throw new PrincipalException();
+			throw new PrincipalException.MustHavePermission(
+				permissionChecker, WikiNode.class.getName(), node.getNodeId(),
+				actionId);
 		}
 	}
 

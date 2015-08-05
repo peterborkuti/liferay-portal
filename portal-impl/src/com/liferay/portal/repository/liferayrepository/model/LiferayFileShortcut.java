@@ -15,7 +15,6 @@
 package com.liferay.portal.repository.liferayrepository.model;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.repository.model.FileShortcut;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.repository.model.Folder;
@@ -26,6 +25,7 @@ import com.liferay.portlet.documentlibrary.model.DLFileShortcut;
 import com.liferay.portlet.documentlibrary.model.DLFileShortcutConstants;
 import com.liferay.portlet.documentlibrary.service.permission.DLFileShortcutPermission;
 import com.liferay.portlet.expando.model.ExpandoBridge;
+import com.liferay.portlet.exportimport.lar.StagedModelType;
 
 import java.io.Serializable;
 
@@ -138,6 +138,11 @@ public class LiferayFileShortcut extends LiferayModel implements FileShortcut {
 	}
 
 	@Override
+	public Date getLastPublishDate() {
+		return _dlFileShortcut.getLastPublishDate();
+	}
+
+	@Override
 	public Object getModel() {
 		return _dlFileShortcut;
 	}
@@ -218,8 +223,8 @@ public class LiferayFileShortcut extends LiferayModel implements FileShortcut {
 	}
 
 	@Override
-	public void setCreateDate(Date date) {
-		_dlFileShortcut.setCreateDate(date);
+	public void setCreateDate(Date createDate) {
+		_dlFileShortcut.setCreateDate(createDate);
 	}
 
 	@Override
@@ -228,8 +233,13 @@ public class LiferayFileShortcut extends LiferayModel implements FileShortcut {
 	}
 
 	@Override
-	public void setModifiedDate(Date date) {
-		_dlFileShortcut.setModifiedDate(date);
+	public void setLastPublishDate(Date lastPublishDate) {
+		_dlFileShortcut.setLastPublishDate(lastPublishDate);
+	}
+
+	@Override
+	public void setModifiedDate(Date modifiedDate) {
+		_dlFileShortcut.setModifiedDate(modifiedDate);
 	}
 
 	public void setPrimaryKey(long primaryKey) {

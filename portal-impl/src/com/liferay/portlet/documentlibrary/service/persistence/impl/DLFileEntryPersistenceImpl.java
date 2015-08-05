@@ -24,7 +24,6 @@ import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
-import com.liferay.portal.kernel.lar.ExportImportThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -11426,8 +11425,9 @@ public class DLFileEntryPersistenceImpl extends BasePersistenceImpl<DLFileEntry>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(DLFileEntry dlFileEntry) {
-		if (dlFileEntry.isNew()) {
+	protected void cacheUniqueFindersCache(DLFileEntry dlFileEntry,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					dlFileEntry.getUuid(), dlFileEntry.getGroupId()
 				};
@@ -11723,28 +11723,25 @@ public class DLFileEntryPersistenceImpl extends BasePersistenceImpl<DLFileEntry>
 			dlFileEntry.setUuid(uuid);
 		}
 
-		if (!ExportImportThreadLocal.isImportInProcess()) {
-			ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
+		ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
 
-			Date now = new Date();
+		Date now = new Date();
 
-			if (isNew && (dlFileEntry.getCreateDate() == null)) {
-				if (serviceContext == null) {
-					dlFileEntry.setCreateDate(now);
-				}
-				else {
-					dlFileEntry.setCreateDate(serviceContext.getCreateDate(now));
-				}
+		if (isNew && (dlFileEntry.getCreateDate() == null)) {
+			if (serviceContext == null) {
+				dlFileEntry.setCreateDate(now);
 			}
+			else {
+				dlFileEntry.setCreateDate(serviceContext.getCreateDate(now));
+			}
+		}
 
-			if (!dlFileEntryModelImpl.hasSetModifiedDate()) {
-				if (serviceContext == null) {
-					dlFileEntry.setModifiedDate(now);
-				}
-				else {
-					dlFileEntry.setModifiedDate(serviceContext.getModifiedDate(
-							now));
-				}
+		if (!dlFileEntryModelImpl.hasSetModifiedDate()) {
+			if (serviceContext == null) {
+				dlFileEntry.setModifiedDate(now);
+			}
+			else {
+				dlFileEntry.setModifiedDate(serviceContext.getModifiedDate(now));
 			}
 		}
 
@@ -12041,7 +12038,7 @@ public class DLFileEntryPersistenceImpl extends BasePersistenceImpl<DLFileEntry>
 			false);
 
 		clearUniqueFindersCache(dlFileEntry);
-		cacheUniqueFindersCache(dlFileEntry);
+		cacheUniqueFindersCache(dlFileEntry, isNew);
 
 		dlFileEntry.resetOriginalValues();
 
@@ -12087,6 +12084,7 @@ public class DLFileEntryPersistenceImpl extends BasePersistenceImpl<DLFileEntry>
 		dlFileEntryImpl.setCustom1ImageId(dlFileEntry.getCustom1ImageId());
 		dlFileEntryImpl.setCustom2ImageId(dlFileEntry.getCustom2ImageId());
 		dlFileEntryImpl.setManualCheckInRequired(dlFileEntry.isManualCheckInRequired());
+		dlFileEntryImpl.setLastPublishDate(dlFileEntry.getLastPublishDate());
 
 		return dlFileEntryImpl;
 	}
@@ -12447,6 +12445,11 @@ public class DLFileEntryPersistenceImpl extends BasePersistenceImpl<DLFileEntry>
 	@Override
 	protected Set<String> getBadColumnNames() {
 		return _badColumnNames;
+	}
+
+	@Override
+	protected Map<String, Integer> getTableColumnsMap() {
+		return DLFileEntryModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

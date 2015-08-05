@@ -25,7 +25,6 @@ import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
-import com.liferay.portal.kernel.lar.ExportImportThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -3422,8 +3421,9 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 		}
 	}
 
-	protected void cacheUniqueFindersCache(PasswordPolicy passwordPolicy) {
-		if (passwordPolicy.isNew()) {
+	protected void cacheUniqueFindersCache(PasswordPolicy passwordPolicy,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					passwordPolicy.getCompanyId(),
 					passwordPolicy.getDefaultPolicy()
@@ -3632,29 +3632,26 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 			passwordPolicy.setUuid(uuid);
 		}
 
-		if (!ExportImportThreadLocal.isImportInProcess()) {
-			ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
+		ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
 
-			Date now = new Date();
+		Date now = new Date();
 
-			if (isNew && (passwordPolicy.getCreateDate() == null)) {
-				if (serviceContext == null) {
-					passwordPolicy.setCreateDate(now);
-				}
-				else {
-					passwordPolicy.setCreateDate(serviceContext.getCreateDate(
-							now));
-				}
+		if (isNew && (passwordPolicy.getCreateDate() == null)) {
+			if (serviceContext == null) {
+				passwordPolicy.setCreateDate(now);
 			}
+			else {
+				passwordPolicy.setCreateDate(serviceContext.getCreateDate(now));
+			}
+		}
 
-			if (!passwordPolicyModelImpl.hasSetModifiedDate()) {
-				if (serviceContext == null) {
-					passwordPolicy.setModifiedDate(now);
-				}
-				else {
-					passwordPolicy.setModifiedDate(serviceContext.getModifiedDate(
-							now));
-				}
+		if (!passwordPolicyModelImpl.hasSetModifiedDate()) {
+			if (serviceContext == null) {
+				passwordPolicy.setModifiedDate(now);
+			}
+			else {
+				passwordPolicy.setModifiedDate(serviceContext.getModifiedDate(
+						now));
 			}
 		}
 
@@ -3749,7 +3746,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 			passwordPolicy, false);
 
 		clearUniqueFindersCache(passwordPolicy);
-		cacheUniqueFindersCache(passwordPolicy);
+		cacheUniqueFindersCache(passwordPolicy, isNew);
 
 		passwordPolicy.resetOriginalValues();
 
@@ -3801,6 +3798,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 		passwordPolicyImpl.setRequireUnlock(passwordPolicy.isRequireUnlock());
 		passwordPolicyImpl.setResetFailureCount(passwordPolicy.getResetFailureCount());
 		passwordPolicyImpl.setResetTicketMaxAge(passwordPolicy.getResetTicketMaxAge());
+		passwordPolicyImpl.setLastPublishDate(passwordPolicy.getLastPublishDate());
 
 		return passwordPolicyImpl;
 	}
@@ -4162,6 +4160,11 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 	@Override
 	protected Set<String> getBadColumnNames() {
 		return _badColumnNames;
+	}
+
+	@Override
+	protected Map<String, Integer> getTableColumnsMap() {
+		return PasswordPolicyModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

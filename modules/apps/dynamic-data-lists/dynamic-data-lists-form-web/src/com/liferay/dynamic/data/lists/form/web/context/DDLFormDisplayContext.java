@@ -14,45 +14,39 @@
 
 package com.liferay.dynamic.data.lists.form.web.context;
 
+import com.liferay.dynamic.data.lists.form.web.constants.DDLFormWebKeys;
+import com.liferay.dynamic.data.lists.model.DDLRecordSet;
+import com.liferay.dynamic.data.lists.service.DDLRecordSetLocalServiceUtil;
+import com.liferay.dynamic.data.lists.service.permission.DDLRecordSetPermission;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.util.PrefsParamUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.service.permission.PortletPermissionUtil;
 import com.liferay.portal.theme.PortletDisplay;
 import com.liferay.portal.theme.ThemeDisplay;
-import com.liferay.portal.util.PortalUtil;
-import com.liferay.portal.util.PortletKeys;
 import com.liferay.portal.util.WebKeys;
-import com.liferay.portlet.dynamicdatalists.model.DDLRecordSet;
-import com.liferay.portlet.dynamicdatalists.service.DDLRecordSetLocalServiceUtil;
-import com.liferay.portlet.dynamicdatalists.service.permission.DDLRecordSetPermission;
 
-import javax.portlet.PortletPreferences;
-
-import javax.servlet.http.HttpServletRequest;
+import javax.portlet.RenderRequest;
 
 /**
  * @author Marcellus Tavares
  */
 public class DDLFormDisplayContext {
 
-	public DDLFormDisplayContext(
-			HttpServletRequest request, PortletPreferences portletPreferences)
+	public DDLFormDisplayContext(RenderRequest renderRequest)
 		throws PortalException {
 
-		_request = request;
-		_portletPreferences = portletPreferences;
+		_renderRequest = renderRequest;
 
-		String portletId = PortalUtil.getPortletId(request);
-
-		if (portletId.equals(PortletKeys.PORTLET_CONFIGURATION)) {
+		if (Validator.isNull(getPortletResource())) {
 			return;
 		}
 
 		DDLRecordSet recordSet = getRecordSet();
 
 		if ((recordSet == null) || !hasViewPermission()) {
-			request.setAttribute(
+			renderRequest.setAttribute(
 				WebKeys.PORTLET_CONFIGURATOR_VISIBILITY, Boolean.TRUE);
 		}
 	}
@@ -62,8 +56,8 @@ public class DDLFormDisplayContext {
 			return _recordSet;
 		}
 
-		_recordSet = (DDLRecordSet)_request.getAttribute(
-			WebKeys.DYNAMIC_DATA_LISTS_RECORD_SET);
+		_recordSet = (DDLRecordSet)_renderRequest.getAttribute(
+			DDLFormWebKeys.DYNAMIC_DATA_LISTS_RECORD_SET);
 
 		if (_recordSet != null) {
 			return _recordSet;
@@ -81,7 +75,7 @@ public class DDLFormDisplayContext {
 		}
 
 		_recordSetId = PrefsParamUtil.getLong(
-			_portletPreferences, _request, "recordSetId");
+			_renderRequest.getPreferences(), _renderRequest, "recordSetId");
 
 		return _recordSetId;
 	}
@@ -108,8 +102,16 @@ public class DDLFormDisplayContext {
 		return portletDisplay.getId();
 	}
 
+	protected String getPortletResource() {
+		ThemeDisplay themeDisplay = getThemeDisplay();
+
+		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
+
+		return portletDisplay.getPortletResource();
+	}
+
 	protected ThemeDisplay getThemeDisplay() {
-		ThemeDisplay themeDisplay = (ThemeDisplay)_request.getAttribute(
+		ThemeDisplay themeDisplay = (ThemeDisplay)_renderRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
 		return themeDisplay;
@@ -136,10 +138,9 @@ public class DDLFormDisplayContext {
 	}
 
 	private Boolean _hasViewPermission;
-	private final PortletPreferences _portletPreferences;
 	private DDLRecordSet _recordSet;
 	private long _recordSetId;
-	private final HttpServletRequest _request;
+	private final RenderRequest _renderRequest;
 	private Boolean _showConfigurationIcon;
 
 }

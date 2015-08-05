@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsUtil;
+import com.liferay.portal.search.test.TestIndexerRegistry;
 import com.liferay.portlet.documentlibrary.model.DLFileEntry;
 import com.liferay.portlet.documentlibrary.util.DLFileEntryIndexer;
 import com.liferay.portlet.messageboards.model.MBMessage;
@@ -49,17 +50,17 @@ import org.powermock.modules.junit4.PowerMockRunner;
  * @author André de Oliveira
  */
 @PrepareOnlyThisForTest( {
-	BooleanQueryFactoryUtil.class, SearchEngineUtil.class
+	SearchEngineUtil.class
 })
 @RunWith(PowerMockRunner.class)
 public class BaseIndexerGetFullQueryTest extends PowerMockito {
 
 	@Before
 	public void setUp() throws Exception {
-		setUpBooleanQueryFactoryUtil();
 		setUpJSONFactoryUtil();
 		setUpPropsUtil();
 		setUpRegistryUtil();
+		setUpIndexerRegistry();
 		setUpSearchEngineUtil();
 
 		_indexer = new TestIndexer();
@@ -138,16 +139,11 @@ public class BaseIndexerGetFullQueryTest extends PowerMockito {
 			expectedEntryClassNames, actualEntryClassNames);
 	}
 
-	protected void setUpBooleanQueryFactoryUtil() {
-		mockStatic(BooleanQueryFactoryUtil.class, Mockito.CALLS_REAL_METHODS);
+	protected void setUpIndexerRegistry() {
+		Registry registry = RegistryUtil.getRegistry();
 
-		stub(
-			method(
-				BooleanQueryFactoryUtil.class, "create", SearchContext.class
-			)
-		).toReturn(
-			mock(BooleanQuery.class)
-		);
+		registry.registerService(
+			IndexerRegistry.class, new TestIndexerRegistry());
 	}
 
 	protected void setUpJSONFactoryUtil() {
@@ -189,14 +185,22 @@ public class BaseIndexerGetFullQueryTest extends PowerMockito {
 		).toReturn(
 			new String[0]
 		);
+
+		stub(
+			method(
+				SearchEngineUtil.class, "getSearchEngine", String.class
+			)
+		).toReturn(
+			new BaseSearchEngine()
+		);
 	}
 
 	private static final String _CLASS_NAME = RandomTestUtil.randomString();
 
-	private Indexer _indexer;
+	private Indexer<Object> _indexer;
 	private final SearchContext _searchContext = new SearchContext();
 
-	private class TestIndexer extends BaseIndexer {
+	private class TestIndexer extends BaseIndexer<Object> {
 
 		@Override
 		public String getClassName() {
@@ -204,11 +208,11 @@ public class BaseIndexerGetFullQueryTest extends PowerMockito {
 		}
 
 		@Override
-		protected void doDelete(Object obj) throws Exception {
+		protected void doDelete(Object object) throws Exception {
 		}
 
 		@Override
-		protected Document doGetDocument(Object obj) throws Exception {
+		protected Document doGetDocument(Object object) throws Exception {
 			return null;
 		}
 
@@ -222,7 +226,7 @@ public class BaseIndexerGetFullQueryTest extends PowerMockito {
 		}
 
 		@Override
-		protected void doReindex(Object obj) throws Exception {
+		protected void doReindex(Object object) throws Exception {
 		}
 
 		@Override

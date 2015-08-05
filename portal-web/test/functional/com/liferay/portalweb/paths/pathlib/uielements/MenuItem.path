@@ -40,12 +40,17 @@
 </tr>
 <tr>
 	<td>ADD_FOLDER</td>
-	<td>//a[@role='menuitem' and contains(.,'Folder')]</td>
+	<td>//a[@role='menuitem' and contains(.,'Add Folder')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ADD_LOCATION</td>
 	<td>//a[@role='menuitem' and contains(.,'Add Location')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ADD_POLL</td>
+	<td>//a[@role='menuitem' and contains(.,'Add Poll')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -174,13 +179,13 @@
 	<td></td>
 </tr>
 <tr>
-	<td>DISCARD_DRAFT</td>
-	<td>//a[@role='menuitem' and contains(.,'Discard Draft')]</td>
+	<td>DELETE_VERSION</td>
+	<td>//a[@role='menuitem' and contains(.,'Delete Version')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>DISPLAY_STYLE_ICON</td>
-	<td>//a[@role='menuitem' and contains(.,'Icon')]</td>
+	<td>DISCARD_DRAFT</td>
+	<td>//a[@role='menuitem' and contains(.,'Discard Draft')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -191,6 +196,11 @@
 <tr>
 	<td>DISPLAY_STYLE_LIST</td>
 	<td>//a[@role='menuitem' and @title='List']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DISPLAY_STYLE_ICON</td>
+	<td>//a[@role='menuitem' and contains(.,'Icon')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -301,6 +311,11 @@
 <tr>
 	<td>MANAGE_PAGES</td>
 	<td>//a[@role='menuitem' and contains(.,'Manage Pages')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MANAGE_PORTLETS</td>
+	<td>//a[@role='menuitem' and contains(.,'Manage Portlets')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -419,6 +434,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>REVERT</td>
+	<td>//a[@role='menuitem' and contains(.,'Revert')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>RSS</td>
 	<td>//a[@role='menuitem' and contains(.,'RSS')]</td>
 	<td></td>
@@ -431,6 +451,21 @@
 <tr>
 	<td>SAVE</td>
 	<td>//a[@role='menuitem' and contains(.,'Save')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SCOPE</td>
+	<td>//div[contains(.,'Scope')]//a[contains(@id,'_menu')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SCOPE_DEFAULT</td>
+	<td>//div[contains(.,'Scope')]//a[contains(@id,'_menu')]/span[contains(.,'${key_scopeDefault}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SCOPE_SELECTION</td>
+	<td>//ul[contains(@class,'lfr-menu-list')]/li/a[contains(.,'${key_scopeSelection}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -506,6 +541,11 @@
 <tr>
 	<td>UNLOCK_THREAD</td>
 	<td>//a[@role='menuitem' and contains(.,'Unlock Thread')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>UNINSTALL</td>
+	<td>//a[@role='menuitem' and contains(.,'Uninstall')]</td>
 	<td></td>
 </tr>
 <tr>

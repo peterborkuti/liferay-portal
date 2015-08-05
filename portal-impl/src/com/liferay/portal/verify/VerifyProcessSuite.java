@@ -38,9 +38,7 @@ public class VerifyProcessSuite extends VerifyProcess {
 		verify(new VerifyAuditedModel());
 		verify(new VerifyBlogs());
 		verify(new VerifyCalendar());
-		verify(new VerifyDocumentLibrary());
 		verify(new VerifyGroupedModel());
-		verify(new VerifyJournal());
 		verify(new VerifyLayout());
 		verify(new VerifyMessageBoards());
 		verify(new VerifyOrganization());
@@ -48,7 +46,6 @@ public class VerifyProcessSuite extends VerifyProcess {
 		verify(new VerifyRatings());
 		verify(new VerifyResourcePermissions());
 		verify(new VerifySocial());
-		verify(new VerifySystemEvent());
 		verify(new VerifyUser());
 		verify(new VerifyWorkflow());
 

@@ -348,29 +348,20 @@ public interface Portal {
 		throws PortalException;
 
 	/**
-	 * Returns the user's ID from the HTTP authentication headers after
-	 * validating their credentials.
-	 *
-	 * @param  request the servlet request from which to retrieve the HTTP
-	 *         authentication headers
-	 * @return the user's ID if HTTP authentication headers are present and
-	 *         their credentials are valid; 0 otherwise
-	 * @throws PortalException if an authentication exception occurred
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             com.liferay.portal.kernel.security.auth.http.HttpAuthManagerUtil#getBasicUserId(
+	 *             HttpServletRequest)}
 	 */
+	@Deprecated
 	public long getBasicAuthUserId(HttpServletRequest request)
 		throws PortalException;
 
 	/**
-	 * Returns the user's ID from the HTTP authentication headers after
-	 * validation their credentials.
-	 *
-	 * @param  request the servlet request to retrieve the HTTP authentication
-	 *         headers from
-	 * @param  companyId unused
-	 * @return the user's ID if HTTP authentication headers are present and
-	 *         their credentials are valid; 0 otherwise
-	 * @throws PortalException if an authentication exception occurred
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             com.liferay.portal.kernel.security.auth.http.HttpAuthManagerUtil#getBasicUserId(
+	 *             HttpServletRequest)}
 	 */
+	@Deprecated
 	public long getBasicAuthUserId(HttpServletRequest request, long companyId)
 		throws PortalException;
 
@@ -659,6 +650,12 @@ public interface Portal {
 
 	public long getDefaultCompanyId();
 
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             com.liferay.portal.kernel.security.auth.http.HttpAuthManagerUtil#getDigestUserId(
+	 *             HttpServletRequest)}
+	 */
+	@Deprecated
 	public long getDigestAuthUserId(HttpServletRequest request)
 		throws PortalException;
 
@@ -764,12 +761,20 @@ public interface Portal {
 	public String getI18nPathLanguageId(
 		Locale locale, String defaultI18nPathLanguageId);
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public String getJournalArticleActualURL(
 			long groupId, boolean privateLayout, String mainPath,
 			String friendlyURL, Map<String, String[]> params,
 			Map<String, Object> requestContext)
 		throws PortalException;
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public Layout getJournalArticleLayout(
 			long groupId, boolean privateLayout, String friendlyURL)
 		throws PortalException;
@@ -1232,12 +1237,20 @@ public interface Portal {
 
 	public String getVirtualHostname(LayoutSet layoutSet);
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public String getVirtualLayoutActualURL(
 			long groupId, boolean privateLayout, String mainPath,
 			String friendlyURL, Map<String, String[]> params,
 			Map<String, Object> requestContext)
 		throws PortalException;
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public LayoutFriendlyURLComposite getVirtualLayoutFriendlyURLComposite(
 			boolean privateLayout, String friendlyURL,
 			Map<String, String[]> params, Map<String, Object> requestContext)
@@ -1250,11 +1263,19 @@ public interface Portal {
 
 	public User initUser(HttpServletRequest request) throws Exception;
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public void invokeTaglibDiscussion(
 			PortletConfig portletConfig, ActionRequest actionRequest,
 			ActionResponse actionResponse)
 		throws Exception;
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public void invokeTaglibDiscussionPagination(
 			PortletConfig portletConfig, ResourceRequest resourceRequest,
 			ResourceResponse resourceResponse)
@@ -1452,8 +1473,9 @@ public interface Portal {
 		throws PortalException;
 
 	public PortletMode updatePortletMode(
-		String portletId, User user, Layout layout, PortletMode portletMode,
-		HttpServletRequest request);
+			String portletId, User user, Layout layout, PortletMode portletMode,
+			HttpServletRequest request)
+		throws PortalException;
 
 	public String updateRedirect(
 		String redirect, String oldPath, String newPath);

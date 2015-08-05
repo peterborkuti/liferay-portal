@@ -16,9 +16,10 @@ package com.liferay.portlet.blogs.model;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.ModelWrapper;
+
+import com.liferay.portlet.exportimport.lar.StagedModelType;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -77,6 +78,7 @@ public class BlogsEntryWrapper implements BlogsEntry, ModelWrapper<BlogsEntry> {
 		attributes.put("smallImageFileEntryId", getSmallImageFileEntryId());
 		attributes.put("smallImageId", getSmallImageId());
 		attributes.put("smallImageURL", getSmallImageURL());
+		attributes.put("lastPublishDate", getLastPublishDate());
 		attributes.put("status", getStatus());
 		attributes.put("statusByUserId", getStatusByUserId());
 		attributes.put("statusByUserName", getStatusByUserName());
@@ -231,6 +233,12 @@ public class BlogsEntryWrapper implements BlogsEntry, ModelWrapper<BlogsEntry> {
 
 		if (smallImageURL != null) {
 			setSmallImageURL(smallImageURL);
+		}
+
+		Date lastPublishDate = (Date)attributes.get("lastPublishDate");
+
+		if (lastPublishDate != null) {
+			setLastPublishDate(lastPublishDate);
 		}
 
 		Integer status = (Integer)attributes.get("status");
@@ -418,6 +426,16 @@ public class BlogsEntryWrapper implements BlogsEntry, ModelWrapper<BlogsEntry> {
 	@Override
 	public long getGroupId() {
 		return _blogsEntry.getGroupId();
+	}
+
+	/**
+	* Returns the last publish date of this blogs entry.
+	*
+	* @return the last publish date of this blogs entry
+	*/
+	@Override
+	public Date getLastPublishDate() {
+		return _blogsEntry.getLastPublishDate();
 	}
 
 	/**
@@ -970,6 +988,16 @@ public class BlogsEntryWrapper implements BlogsEntry, ModelWrapper<BlogsEntry> {
 	@Override
 	public void setGroupId(long groupId) {
 		_blogsEntry.setGroupId(groupId);
+	}
+
+	/**
+	* Sets the last publish date of this blogs entry.
+	*
+	* @param lastPublishDate the last publish date of this blogs entry
+	*/
+	@Override
+	public void setLastPublishDate(Date lastPublishDate) {
+		_blogsEntry.setLastPublishDate(lastPublishDate);
 	}
 
 	/**

@@ -1,5 +1,7 @@
 alter table AssetEntry add listable BOOLEAN;
 
+alter table AssetTag add uuid_ VARCHAR(75);
+
 COMMIT_TRANSACTION;
 
 update AssetEntry set listable = TRUE;
@@ -12,8 +14,12 @@ alter table BlogsEntry add coverImageFileEntryId LONG;
 alter table BlogsEntry add coverImageURL STRING null;
 alter table BlogsEntry add smallImageFileEntryId LONG;
 
+alter table DDMStructure add versionUserId LONG;
+alter table DDMStructure add versionUserName VARCHAR(75) null;
 alter table DDMStructure add version VARCHAR(75) null;
 
+update DDMStructure set versionUserId = userId;
+update DDMStructure set versionUserName = userName;
 update DDMStructure set version = '1.0';
 
 create table DDMStructureLayout (
@@ -29,6 +35,8 @@ create table DDMStructureLayout (
 	definition TEXT null
 );
 
+drop index IX_C803899D on DDMStructureLink;
+
 create table DDMStructureVersion (
 	structureVersionId LONG not null primary key,
 	groupId LONG,
@@ -38,17 +46,33 @@ create table DDMStructureVersion (
 	createDate DATE null,
 	structureId LONG,
 	version VARCHAR(75) null,
+	parentStructureId LONG,
 	name STRING null,
-	description STRING null,
+	description TEXT null,
 	definition TEXT null,
 	storageType VARCHAR(75) null,
-	type_ INTEGER
+	type_ INTEGER,
+	status INTEGER,
+	statusByUserId LONG,
+	statusByUserName VARCHAR(75) null,
+	statusDate DATE null
 );
 
+alter table DDMTemplate add versionUserId LONG;
+alter table DDMTemplate add versionUserName VARCHAR(75) null;
 alter table DDMTemplate add resourceClassNameId LONG;
 alter table DDMTemplate add version VARCHAR(75) null;
 
+update DDMTemplate set versionUserId = userId;
+update DDMTemplate set versionUserName = userName;
 update DDMTemplate set version = '1.0';
+
+create table DDMTemplateLink (
+	templateLinkId LONG not null primary key,
+	classNameId LONG,
+	classPK LONG,
+	templateId LONG
+);
 
 create table DDMTemplateVersion (
 	templateVersionId LONG not null primary key,
@@ -62,9 +86,13 @@ create table DDMTemplateVersion (
 	templateId LONG,
 	version VARCHAR(75) null,
 	name STRING null,
-	description STRING null,
+	description TEXT null,
 	language VARCHAR(75) null,
-	script TEXT null
+	script TEXT null,
+	status INTEGER,
+	statusByUserId LONG,
+	statusByUserName VARCHAR(75) null,
+	statusDate DATE null
 );
 
 alter table DLFileEntryMetadata drop column fileEntryTypeId;
@@ -136,5 +164,7 @@ update Region set regionCode = 'BB' where regionId = 4004 and regionCode = 'BR';
 update Region set name = 'Monza e Brianza', regionCode = 'MB' where regionId = 8060 and regionCode = 'MZ';
 
 alter table Subscription add groupId LONG;
+
+alter table Team add uuid_ VARCHAR(75);
 
 alter table UserNotificationEvent add actionRequired BOOLEAN;

@@ -22,7 +22,6 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.BaseIndexer;
-import com.liferay.portal.kernel.search.BooleanQuery;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.DocumentImpl;
 import com.liferay.portal.kernel.search.Field;
@@ -30,6 +29,7 @@ import com.liferay.portal.kernel.search.FolderIndexer;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchEngineUtil;
 import com.liferay.portal.kernel.search.Summary;
+import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -49,7 +49,8 @@ import javax.portlet.PortletResponse;
  * @author Alexander Chow
  */
 @OSGiBeanProperties
-public class DLFolderIndexer extends BaseIndexer implements FolderIndexer {
+public class DLFolderIndexer
+	extends BaseIndexer<DLFolder> implements FolderIndexer {
 
 	public static final String CLASS_NAME = DLFolder.class.getName();
 
@@ -84,19 +85,17 @@ public class DLFolderIndexer extends BaseIndexer implements FolderIndexer {
 	}
 
 	@Override
-	public void postProcessContextQuery(
-			BooleanQuery contextQuery, SearchContext searchContext)
+	public void postProcessContextBooleanFilter(
+			BooleanFilter contextBooleanFilter, SearchContext searchContext)
 		throws Exception {
 
-		addStatus(contextQuery, searchContext);
+		addStatus(contextBooleanFilter, searchContext);
 
-		contextQuery.addRequiredTerm(Field.HIDDEN, false);
+		contextBooleanFilter.addRequiredTerm(Field.HIDDEN, false);
 	}
 
 	@Override
-	protected void doDelete(Object obj) throws Exception {
-		DLFolder dlFolder = (DLFolder)obj;
-
+	protected void doDelete(DLFolder dlFolder) throws Exception {
 		Document document = new DocumentImpl();
 
 		document.addUID(CLASS_NAME, dlFolder.getFolderId());
@@ -107,9 +106,7 @@ public class DLFolderIndexer extends BaseIndexer implements FolderIndexer {
 	}
 
 	@Override
-	protected Document doGetDocument(Object obj) throws Exception {
-		DLFolder dlFolder = (DLFolder)obj;
-
+	protected Document doGetDocument(DLFolder dlFolder) throws Exception {
 		if (_log.isDebugEnabled()) {
 			_log.debug("Indexing folder " + dlFolder);
 		}
@@ -147,9 +144,7 @@ public class DLFolderIndexer extends BaseIndexer implements FolderIndexer {
 	}
 
 	@Override
-	protected void doReindex(Object obj) throws Exception {
-		DLFolder dlFolder = (DLFolder)obj;
-
+	protected void doReindex(DLFolder dlFolder) throws Exception {
 		if (!dlFolder.isApproved() && !dlFolder.isInTrash()) {
 			return;
 		}
@@ -198,15 +193,23 @@ public class DLFolderIndexer extends BaseIndexer implements FolderIndexer {
 			new ActionableDynamicQuery.PerformActionMethod() {
 
 				@Override
-				public void performAction(Object object)
-					throws PortalException {
-
+				public void performAction(Object object) {
 					DLFolder dlFolder = (DLFolder)object;
 
-					Document document = getDocument(dlFolder);
+					try {
+						Document document = getDocument(dlFolder);
 
-					if (document != null) {
-						actionableDynamicQuery.addDocument(document);
+						if (document != null) {
+							actionableDynamicQuery.addDocument(document);
+						}
+					}
+					catch (PortalException pe) {
+						if (_log.isWarnEnabled()) {
+							_log.warn(
+								"Unable to index document library folder " +
+									dlFolder.getFolderId(),
+								pe);
+						}
 					}
 				}
 

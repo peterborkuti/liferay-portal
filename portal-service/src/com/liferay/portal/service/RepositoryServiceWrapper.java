@@ -65,39 +65,9 @@ public class RepositoryServiceWrapper implements RepositoryService,
 	}
 
 	@Override
-	public com.liferay.portal.kernel.repository.LocalRepository getLocalRepositoryImpl(
-		long folderId, long fileEntryId, long fileVersionId, long fileShortcutId)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _repositoryService.getLocalRepositoryImpl(folderId, fileEntryId,
-			fileVersionId, fileShortcutId);
-	}
-
-	@Override
-	public com.liferay.portal.kernel.repository.LocalRepository getLocalRepositoryImpl(
-		long repositoryId)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _repositoryService.getLocalRepositoryImpl(repositoryId);
-	}
-
-	@Override
 	public com.liferay.portal.model.Repository getRepository(long repositoryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return _repositoryService.getRepository(repositoryId);
-	}
-
-	@Override
-	public com.liferay.portal.kernel.repository.Repository getRepositoryImpl(
-		long folderId, long fileEntryId, long fileVersionId, long fileShortcutId)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _repositoryService.getRepositoryImpl(folderId, fileEntryId,
-			fileVersionId, fileShortcutId);
-	}
-
-	@Override
-	public com.liferay.portal.kernel.repository.Repository getRepositoryImpl(
-		long repositoryId)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _repositoryService.getRepositoryImpl(repositoryId);
 	}
 
 	@Override
@@ -113,7 +83,8 @@ public class RepositoryServiceWrapper implements RepositoryService,
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #getSupportedParameters(String, String)}
+	* @deprecated As of 7.0.0, replaced by {@link
+	#getSupportedParameters(String, String)}
 	*/
 	@Deprecated
 	@Override

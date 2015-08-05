@@ -2,41 +2,15 @@ AUI.add(
 	'liferay-ddm-form-renderer-field-types',
 	function(A) {
 		var AArray = A.Array;
-		var AObject = A.Object;
-		var Util = Liferay.DDM.Renderer.Util;
+
+		var _fieldTypes = [];
 
 		var FieldTypes = {
-			_fieldTypes: [],
-
-			_getFieldType: function(config) {
-				var instance = this;
-
-				var defaultConfig = {
-					fieldType: config.name
-				};
-
-				var fieldClass = Util.getFieldClass(defaultConfig);
-
-				var fieldType = new A.FormBuilderFieldType(
-					{
-						defaultConfig: defaultConfig,
-						fieldClass: fieldClass,
-						icon: config.icon,
-						label: config.label
-					}
-				);
-
-				fieldType.set('name', config.name);
-				fieldType.set('templateNamespace', config.templateNamespace);
-
-				return fieldType;
-			},
-
 			get: function(type) {
 				var instance = this;
 
 				return AArray.find(
-					instance._fieldTypes,
+					_fieldTypes,
 					function(item, index) {
 						return item.get('name') === type;
 					}
@@ -46,25 +20,40 @@ AUI.add(
 			getAll: function() {
 				var instance = this;
 
-				return instance._fieldTypes;
-			},
-
-			getFieldTypeTemplate: function(type, context) {
-				var instance = this;
-
-				var fieldType = instance.get(type);
-
-				var templateNamespace = fieldType.get('templateNamespace');
-
-				var renderer = AObject.getValue(window, templateNamespace.split('.'));
-
-				return renderer(context);
+				return _fieldTypes;
 			},
 
 			register: function(fieldTypes) {
 				var instance = this;
 
-				instance._fieldTypes = AArray.map(AArray(fieldTypes), instance._getFieldType);
+				_fieldTypes = AArray(fieldTypes).map(instance._getFieldType);
+			},
+
+			_getFieldType: function(config) {
+				var instance = this;
+
+				var defaultConfig = A.merge(
+					config.settings,
+					{
+						type: config.name
+					}
+				);
+
+				var fieldType = new A.FormBuilderFieldType(
+					{
+						defaultConfig: defaultConfig,
+						fieldClass: Liferay.DDM.Renderer.Field,
+						icon: config.icon,
+						label: config.name
+					}
+				);
+
+				fieldType.set('className', config.javaScriptClass);
+				fieldType.set('name', config.name);
+				fieldType.set('settings', config.settings);
+				fieldType.set('templateNamespace', config.templateNamespace);
+
+				return fieldType;
 			}
 		};
 
@@ -72,6 +61,6 @@ AUI.add(
 	},
 	'',
 	{
-		requires: ['array-extras', 'aui-form-builder-field-type', 'liferay-ddm-form-renderer-util']
+		requires: ['array-extras', 'aui-form-builder-field-type']
 	}
 );

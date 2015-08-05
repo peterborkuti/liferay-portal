@@ -25,6 +25,24 @@
 		</if>
 	</command>
 
+	<command name="addPageTitle">
+		<execute function="Type#mouseOverFocusType" locator1="CPSitepagesAddpage#ADD_PAGE_NAME_FIELD" value1="${pageName}" />
+	</command>
+
+	<command name="addPageToSiteTemplates">
+		<execute macro="SiteTemplatesNavigator#gotoManageSiteTemplates">
+			<var name="siteTemplateName" value="${siteTemplateName}" />
+		</execute>
+
+		<execute macro="SitePageNavigator#gotoAddPage" />
+
+		<execute macro="Page#addPageTitle">
+			<var name="pageName" value="${pageName}" />
+		</execute>
+
+		<execute macro="Page#saveAddPage" />
+	</command>
+
 	<command name="addPageTypePanelPG">
 		<var name="key_componentName" value="${componentName}" />
 
@@ -39,6 +57,53 @@
 	</command>
 
 	<command name="addPG" summary="Add a page named '${pageName}'">
+		<execute macro="Page#gotoPagesCP">
+			<var name="friendlyURL" value="${friendlyURL}" />
+			<var name="pageAccess" value="${pageAccess}" />
+			<var name="pageStaging" value="${pageStaging}" />
+			<var name="portletName" value="Site Pages" />
+			<var name="siteName" value="${siteName}" />
+			<var name="siteNameURL" value="${siteNameURL}" />
+			<var name="siteURL" value="${siteURL}" />
+			<var name="specificURL" value="${specificURL}" />
+			<var name="virtualHostsURL" value="${virtualHostsURL}" />
+		</execute>
+
+		<execute function="AssertClick" locator1="CPSitepages#NAVIGATION_PUBLIC_PAGES" value1="Public Pages" />
+
+		<execute function="AssertClick" locator1="CPSitepages#TOOLBAR_ADD_PAGE" value1="Add Page" />
+
+		<execute function="Type#mouseOverFocusType" locator1="CPSitepagesAddpage#ADD_PAGE_NAME_FIELD" value1="${pageName}" />
+
+		<var name="key_pageType" value="${pageTemplateName}" />
+
+		<if>
+			<isset var="pageTemplateName" />
+			<then>
+				<execute function="AssertTextEquals" locator1="CPSitepagesAddpage#PAGE_TYPE_LABEL" value1="${pageTemplateName}" />
+
+				<execute function="Click" locator1="CPSitepagesAddpage#PAGE_TYPE_RADIO" />
+				<execute function="AssertTextEquals" locator1="CPSitepagesAddpage#PAGE_TYPE_TEMPLATE_AUTOMATICALLY_APPLY_CHANGES_LABEL"  value1="Automatically apply changes done to the page template." />
+				<execute function="Check" locator1="CPSitepagesAddpage#PAGE_TYPE_TEMPLATE_AUTOMATICALLY_APPLY_CHANGES_CHECKBOX" />
+			</then>
+		</if>
+
+		<if>
+			<isset var="pageType" />
+			<then>
+				<execute macro="SitePage#selectSitePageTypeRadioCP">
+					<var name="componentName" value="${componentName}" />
+					<var name="pageTypeDescription" value="${pageTypeDescription}" />
+					<var name="pageTypeURL" value="${pageTypeURL}" />
+					<var name="sitePageType" value="${pageType}" />
+				</execute>
+			</then>
+		</if>
+
+		<execute function="AssertClick" locator1="CPSitepagesAddpage#ADD_PAGE_BUTTON" value1="Add Page" />
+
+		<execute function="AssertTextEquals" locator1="CPSitepages#SUCCESS_MESSAGE" value1="Your request completed successfully." />
+
 		<if>
 			<isset var="nodePort" />
 			<then>
@@ -52,38 +117,19 @@
 					</and>
 				</not>
 				<then>
-					<execute macro="Page#openURL" />
+					<execute macro="Page#openURL">
+						<var name="friendlyURL" value="${friendlyURL}" />
+						<var name="pageAccess" value="${pageAccess}" />
+						<var name="pageStaging" value="${pageStaging}" />
+						<var name="siteName" value="${siteName}" />
+						<var name="siteNameURL" value="${siteNameURL}" />
+						<var name="siteURL" value="${siteURL}" />
+						<var name="specificURL" value="${specificURL}" />
+						<var name="virtualHostsURL" value="${virtualHostsURL}" />
+					</execute>
 				</then>
 			</elseif>
 		</if>
-
-		<execute function="Click#clickAtSidebarClickAtWaitForScript" locator1="Dockbar#ADD_ICON" value1="Add" />
-
-		<execute function="AssertClick" locator1="DockbarAddpanelpage#PAGE_TAB" value1="Page" />
-		<execute function="Type#mouseOverFocusType" locator1="DockbarAddpanelpage#NAME_FIELD" value1="${pageName}" />
-
-		<if>
-			<isset var="pageType" />
-			<then>
-				<execute macro="Page#selectPageTypeRadioPG">
-					<var name="pageType" value="${pageType}" />
-				</execute>
-			</then>
-		</if>
-
-		<if>
-			<isset var="pageTemplateName" />
-			<then>
-				<var name="key_pageType" value="${pageTemplateName}" />
-
-				<execute function="AssertTextEquals" locator1="CPSitepagesAddpage#PAGE_TYPE_LABEL" value1="${pageTemplateName}" />
-				<execute function="Click" locator1="CPSitepagesAddpage#PAGE_TYPE_RADIO" />
-				<execute function="AssertTextEquals" locator1="CPSitepagesAddpage#PAGE_TYPE_TEMPLATE_AUTOMATICALLY_APPLY_CHANGES_LABEL"  value1="Automatically apply changes done to the page template." />
-				<execute function="Check" locator1="CPSitepagesAddpage#PAGE_TYPE_TEMPLATE_AUTOMATICALLY_APPLY_CHANGES_CHECKBOX" />
-			</then>
-		</if>
-
-		<execute function="AssertClick#pauseAssertTextClickAt" locator1="DockbarAddpanelpage#ADD_PAGE_BUTTON" value1="Add Page" />
 
 		<var name="key_pageName" value="${pageName}" />
 
@@ -99,7 +145,16 @@
 	</command>
 
 	<command name="addWithWorkflowPG">
-		<execute macro="Page#openURL" />
+		<execute macro="Page#openURL">
+			<var name="friendlyURL" value="${friendlyURL}" />
+			<var name="pageAccess" value="${pageAccess}" />
+			<var name="pageStaging" value="${pageStaging}" />
+			<var name="siteName" value="${siteName}" />
+			<var name="siteNameURL" value="${siteNameURL}" />
+			<var name="siteURL" value="${siteURL}" />
+			<var name="specificURL" value="${specificURL}" />
+			<var name="virtualHostsURL" value="${virtualHostsURL}" />
+		</execute>
 
 		<execute function="Click#clickAtSidebarClickAtWaitForScript" locator1="Dockbar#ADD" value1="Add" />
 
@@ -120,10 +175,10 @@
 		<execute function="AssertTextEquals" locator1="Dockbar#ADMIN" value1="${localizedAdmin}" />
 	</command>
 
-	<command name="assertnodePortPG">
+	<command name="assertNodePortPG">
 		<var name="key_nodePort" value="${nodePort}" />
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="Home#NODE_NAME" />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Home#NODE_NAME" value1="${nodePort}" />
 	</command>
 
 	<command name="changeLogoViaPageCP">
@@ -141,6 +196,18 @@
 		<execute function="SelectFrameTop" />
 		<execute function="AssertClick" locator1="CPSitepages#SAVE_BUTTON" value1="Save" />
 		<execute function="AssertTextEquals" locator1="CPSitepages#SUCCESS_MESSAGE" value1="Your request completed successfully." />
+	</command>
+
+	<command name="changeSiteScope">
+		<execute function="AssertClick" locator1="ProductMenu#PRODUCT_MENU_TABS_SITES_NAVIGATION" value1="Sites" />
+
+		<execute function="Click" locator1="ProductMenu#PRODUCT_MENU_PANEL_SITE_SELECTOR" />
+
+		<var name="key_portletCategoryName" value="${portletCategoryName}" />
+
+		<execute function="AssertClick" locator1="ProductMenu#PRODUCT_MENU_PANEL_SITES_PANEL_TITLE" value1="${portletCategoryName}" />
+
+		<execute function="AssertClick" locator1="ProductMenu#PRODUCT_MENU_PANEL_SITE_NAME" value1="${siteName}" />
 	</command>
 
 	<command name="deleteFriendlyURLPG">
@@ -183,8 +250,28 @@
 		<execute function="AssertClick#pauseAssertTextClickAt" locator1="DockbarEditpanel#SAVE_BUTTON" value1="Save" />
 	</command>
 
+	<command name="gotoAdmin">
+		<execute function="AssertClick#assertTextClickAtClickDockbar" locator1="Dockbar#ADMIN_DROP_DOWN_BUTTON" value1="Admin" />
+
+		<execute function="AssertClick" locator1="Dockbar#${portletCategoryKey}" value1="${portletCategoryName}" />
+
+		<var name="key_portletName" value="${portletName}" />
+
+		<execute function="AssertClick#assertPartialTextClickAtCPNavigation" locator1="Home#SITE_ADMINISTRATION_NAVIGATION" value1="${portletName}" />
+	</command>
+
 	<command name="gotoChildPagePG">
-		<execute macro="Page#gotoPG" />
+		<execute macro="Page#gotoPG">
+			<var name="friendlyURL" value="${friendlyURL}" />
+			<var name="pageAccess" value="${pageAccess}" />
+			<var name="pageName" value="${pageName}" />
+			<var name="pageStaging" value="${pageStaging}" />
+			<var name="siteName" value="${siteName}" />
+			<var name="siteNameURL" value="${siteNameURL}" />
+			<var name="siteURL" value="${siteURL}" />
+			<var name="specificURL" value="${specificURL}" />
+			<var name="virtualHostsURL" value="${virtualHostsURL}" />
+		</execute>
 
 		<var name="key_pageName" value="${pageName}" />
 
@@ -202,25 +289,36 @@
 				<execute function="Open" locator1="http://localhost:${nodePort}" />
 			</then>
 			<else>
-				<execute macro="Page#openURL" />
+				<execute macro="Page#openURL">
+					<var name="friendlyURL" value="${friendlyURL}" />
+					<var name="pageAccess" value="${pageAccess}" />
+					<var name="pageStaging" value="${pageStaging}" />
+					<var name="siteName" value="${siteName}" />
+					<var name="siteNameURL" value="${siteNameURL}" />
+					<var name="siteURL" value="${siteURL}" />
+					<var name="specificURL" value="${specificURL}" />
+					<var name="virtualHostsURL" value="${virtualHostsURL}" />
+				</execute>
 			</else>
 		</if>
 
-		<execute function="AssertClick#assertTextClickAtClickDockbar" locator1="Dockbar#ADMIN_DROP_DOWN_BUTTON" value1="Admin" />
-		<execute function="AssertClick" locator1="Dockbar#${portletCategoryKey}" value1="${portletCategoryName}" />
+		<execute function="AssertClick" locator1="ProductMenu#PRODUCT_MENU_TABS_SITES_NAVIGATION" value1="Sites" />
 
 		<if>
 			<isset var="siteScopeName" />
 			<then>
-				<execute function="Click" locator1="Home#SCOPE_SELECTOR" />
-
-				<var name="key_siteScopeName" value="${siteScopeName}" />
-
-				<execute function="Click" locator1="Home#SCOPE_SELECTOR_MENULIST_ITEM" />
+				<execute macro="Page#changeSiteScope">
+					<var name="portletCategoryName" value="My Sites" />
+					<var name="siteName" value="{siteScopeName}" />
+				</execute>
 			</then>
 		</if>
 
+		<execute function="AssertClick" locator1="ProductMenu#PRODUCT_MENU_TABS_SITES_NAVIGATION" value1="Sites" />
+
 		<var name="key_portletCategoryName" value="${portletCategoryName}" />
+
+		<execute function="AssertClick" locator1="ProductMenu#PRODUCT_MENU_PANEL_SITES_PANEL_TITLE" value1="${portletCategoryName}" />
 
 		<if>
 			<not>
@@ -242,7 +340,7 @@
 					<then>
 						<var name="key_portletName" value="${portletName}" />
 
-						<execute function="AssertClick#assertPartialTextClickAtCPNavigation" locator1="Home#SITE_ADMINISTRATION_NAVIGATION" value1="${portletName}" />
+						<execute function="AssertClick" locator1="ProductMenu#PRODUCT_MENU_PANEL_MENU_ITEM" value1="${portletName}" />
 					</then>
 				</if>
 			</then>
@@ -250,7 +348,16 @@
 	</command>
 
 	<command name="gotoCmdLocalizedCP">
-		<execute macro="Page#openURL" />
+		<execute macro="Page#openURL">
+			<var name="friendlyURL" value="${friendlyURL}" />
+			<var name="pageAccess" value="${pageAccess}" />
+			<var name="pageStaging" value="${pageStaging}" />
+			<var name="siteName" value="${siteName}" />
+			<var name="siteNameURL" value="${siteNameURL}" />
+			<var name="siteURL" value="${siteURL}" />
+			<var name="specificURL" value="${specificURL}" />
+			<var name="virtualHostsURL" value="${virtualHostsURL}" />
+		</execute>
 
 		<var name="key_localizedPortletCategoryName" value="${localizedPortletCategoryName}" />
 
@@ -295,9 +402,19 @@
 		<description message="Navigate to Site Administration > Configuration > ${portletName}." />
 
 		<execute macro="Page#gotoCmdCP">
+			<var name="friendlyURL" value="${friendlyURL}" />
+			<var name="nodePort" value="${nodePort}" />
+			<var name="pageAccess" value="${pageAccess}" />
+			<var name="pageStaging" value="${pageStaging}" />
 			<var name="portletCategoryKey" value="ADMIN_SITE_ADMINISTRATION_CONFIGURATION" />
 			<var name="portletCategoryName" value="Configuration" />
 			<var name="portletName" value="${portletName}" />
+			<var name="siteName" value="${siteName}" />
+			<var name="siteNameURL" value="${siteNameURL}" />
+			<var name="siteScopeName" value="${siteScopeName}" />
+			<var name="siteURL" value="${siteURL}" />
+			<var name="specificURL" value="${specificURL}" />
+			<var name="virtualHostsURL" value="${virtualHostsURL}" />
 		</execute>
 	</command>
 
@@ -305,34 +422,111 @@
 		<description message="Navigate to Site Administration > Configuration > ${portletName}." />
 
 		<execute macro="Page#gotoCmdLocalizedCP">
+			<var name="localizedAdmin" value="${localizedAdmin}" />
 			<var name="localizedPortletCategoryName" value="${localizedPortletCategoryName}" />
 			<var name="localizedPortletName" value="${localizedPortletName}" />
 			<var name="portletCategoryKey" value="ADMIN_SITE_ADMINISTRATION_CONFIGURATION_LOCALIZED" />
+			<var name="portletCategoryName" value="${portletCategoryName}" />
+			<var name="portletName" value="${portletName}" />
+			<var name="siteScopeName" value="${siteScopeName}" />
 		</execute>
 	</command>
 
 	<command name="gotoContentCP" summary="Navigate to Admin > Site Administration > Content > ${portletName}">
 		<execute macro="Page#gotoCmdCP">
+			<var name="friendlyURL" value="${friendlyURL}" />
+			<var name="nodePort" value="${nodePort}" />
+			<var name="pageAccess" value="${pageAccess}" />
+			<var name="pageStaging" value="${pageStaging}" />
 			<var name="portletCategoryKey" value="ADMIN_SITE_ADMINISTRATION_CONTENT" />
 			<var name="portletCategoryName" value="Content" />
 			<var name="portletName" value="${portletName}" />
+			<var name="siteName" value="${siteName}" />
+			<var name="siteNameURL" value="${siteNameURL}" />
+			<var name="siteScopeName" value="${siteScopeName}" />
+			<var name="siteURL" value="${siteURL}" />
+			<var name="specificURL" value="${specificURL}" />
+			<var name="virtualHostsURL" value="${virtualHostsURL}" />
 		</execute>
 	</command>
 
 	<command name="gotoCP">
 		<description message="Navigate to Control Panel > ${portletName}." />
 
-		<execute macro="Page#openURL" />
+		<execute macro="Page#openURL">
+			<var name="friendlyURL" value="${friendlyURL}" />
+			<var name="pageAccess" value="${pageAccess}" />
+			<var name="pageStaging" value="${pageStaging}" />
+			<var name="siteName" value="${siteName}" />
+			<var name="siteNameURL" value="${siteNameURL}" />
+			<var name="siteURL" value="${siteURL}" />
+			<var name="specificURL" value="${specificURL}" />
+			<var name="virtualHostsURL" value="${virtualHostsURL}" />
+		</execute>
 
-		<execute function="AssertClick#assertTextClickAtClickDockbar" locator1="Dockbar#ADMIN" value1="Admin" />
-		<execute function="AssertClick" locator1="Dockbar#ADMIN_CONTROL_PANEL" value1="Control Panel" />
+		<var name="appsPortletList" value="App Manager,Purchased,Store,Plugins Configuration,License Manager" />
+		<var name="configurationPortletList" value="Portal Settings,Custom Fields,Server Administration,Portal Instances,Workflow Configuration,Workflow Definition, Configuration Admin,Server Access Policy" />
+		<var name="sitesPortletList" value="Sites,Site Templates,Page Templates" />
+		<var name="usersPortletList" value="Users and Organizations,User Groups,Roles,Password Policies,Monitoring" />
+
+		<for list="${usersPortletList}" param="usersPortletName">
+			<if>
+				<equals arg1="${portletName}" arg2="${usersPortletName}" />
+				<then>
+					<var name="portletCategoryName" value="Users" />
+				</then>
+			</if>
+		</for>
+
+		<for list="${sitesPortletList}" param="sitesPortletName">
+			<if>
+				<equals arg1="${portletName}" arg2="${sitesPortletName}" />
+				<then>
+					<var name="portletCategoryName" value="Administration" />
+				</then>
+			</if>
+		</for>
+
+		<for list="${appsPortletList}" param="appsPortletName">
+			<if>
+				<equals arg1="${portletName}" arg2="${appsPortletName}" />
+				<then>
+					<var name="portletCategoryName" value="Apps" />
+				</then>
+			</if>
+		</for>
+
+		<for list="${configurationPortletList}" param="configurationPortletName">
+			<if>
+				<equals arg1="${portletName}" arg2="${configurationPortletName}" />
+				<then>
+					<var name="portletCategoryName" value="Configuration" />
+				</then>
+			</if>
+		</for>
+
+		<var name="key_portletCategoryName" value="${portletCategoryName}" />
+
+		<if>
+			<equals arg1="${portletCategoryName}" arg2="Administration" />
+			<then>
+				<execute function="Click" locator1="ProductMenu#PRODUCT_MENU_PANEL_SITE_SELECTOR" />
+
+				<execute function="AssertClick" locator1="ProductMenu#PRODUCT_MENU_PANEL_SITES_PANEL_TITLE" value1="Administration" />
+			</then>
+			<else>
+				<execute function="AssertClick" locator1="ProductMenu#PRODUCT_MENU_TABS_CONTROL_PANEL_NAVIGATION" value1="Control Panel" />
+
+				<execute function="AssertClick" locator1="ProductMenu#PRODUCT_MENU_PANEL_CONTROL_PANEL_PANEL_TITLE" value1="${portletCategoryName}" />
+			</else>
+		</if>
 
 		<if>
 			<isset var="portletName" />
 			<then>
 				<var name="key_portletName" value="${portletName}" />
 
-				<execute function="Click#click" locator1="Home#CONTROL_PANEL_NAVIGATION" />
+				<execute function="AssertClick" locator1="ProductMenu#PRODUCT_MENU_PANEL_MENU_ITEM" value1="${portletName}" />
 			</then>
 		</if>
 	</command>
@@ -340,7 +534,16 @@
 	<command name="gotoCPLocalized">
 		<description message="Navigate to Control Panel > ${portletName}." />
 
-		<execute macro="Page#openURL" />
+		<execute macro="Page#openURL">
+			<var name="friendlyURL" value="${friendlyURL}" />
+			<var name="pageAccess" value="${pageAccess}" />
+			<var name="pageStaging" value="${pageStaging}" />
+			<var name="siteName" value="${siteName}" />
+			<var name="siteNameURL" value="${siteNameURL}" />
+			<var name="siteURL" value="${siteURL}" />
+			<var name="specificURL" value="${specificURL}" />
+			<var name="virtualHostsURL" value="${virtualHostsURL}" />
+		</execute>
 
 		<var name="key_localizedControlPanel" value="${localizedControlPanel}" />
 
@@ -349,7 +552,7 @@
 
 		<var name="key_portletName" value="${localizedPortletName}" />
 
-		<execute function="AssertClick#assertPartialTextClickAtCPNavigation" locator1="Home#CONTROL_PANEL_NAVIGATION" />
+		<execute function="AssertClick" locator1="Home#CONTROL_PANEL_NAVIGATION" value1="${localizedPortletName}" />
 	</command>
 
 	<command name="gotoEdit">
@@ -359,31 +562,61 @@
 	<command name="gotoMyAccount">
 		<description message="Navigate to My Account > ${portletName}." />
 
-		<execute macro="Page#openURL" />
+		<execute macro="Page#openURL">
+			<var name="friendlyURL" value="${friendlyURL}" />
+			<var name="pageAccess" value="${pageAccess}" />
+			<var name="pageStaging" value="${pageStaging}" />
+			<var name="siteName" value="${siteName}" />
+			<var name="siteNameURL" value="${siteNameURL}" />
+			<var name="siteURL" value="${siteURL}" />
+			<var name="specificURL" value="${specificURL}" />
+			<var name="virtualHostsURL" value="${virtualHostsURL}" />
+		</execute>
 
-		<execute function="Click" locator1="Dockbar#USER_NAME" />
-		<execute function="AssertClick" locator1="Dockbar#USER_MY_ACCOUNT" value1="My Account" />
+		<execute function="AssertClick" locator1="ProductMenu#PRODUCT_MENU_TABS_MY_SPACE_NAVIGATION" value1="My Space" />
+
+		<var name="key_portletCategoryName" value="My Account" />
+
+		<execute function="AssertClick" locator1="ProductMenu#PRODUCT_MENU_PANEL_MY_SPACE_PANEL_TITLE" value1="My Account" />
 
 		<var name="key_portletName" value="${portletName}" />
 
-		<execute function="AssertClick" locator1="Myaccount#NAVIGATION_MY" value1="${portletName}" />
+		<execute function="AssertClick" locator1="ProductMenu#PRODUCT_MENU_PANEL_MENU_ITEM" value1="${portletName}" />
 	</command>
 
 	<command name="gotoMyDashboard">
 		<description message="Navigate to My Dashboard." />
 
-		<execute macro="Page#openURL" />
+		<execute macro="Page#openURL">
+			<var name="friendlyURL" value="${friendlyURL}" />
+			<var name="pageAccess" value="${pageAccess}" />
+			<var name="pageStaging" value="${pageStaging}" />
+			<var name="siteName" value="${siteName}" />
+			<var name="siteNameURL" value="${siteNameURL}" />
+			<var name="siteURL" value="${siteURL}" />
+			<var name="specificURL" value="${specificURL}" />
+			<var name="virtualHostsURL" value="${virtualHostsURL}" />
+		</execute>
 
-		<execute function="Click" locator1="Dockbar#USER_NAME" />
+		<execute function="Click" locator1="Dockbar#USER_AVATAR_IMAGE" />
 		<execute function="AssertClick" locator1="Dockbar#USER_MY_DASHBOARD" value1="My Dashboard" />
 	</command>
 
 	<command name="gotoMyProfile">
 		<description message="Navigate to My Profile." />
 
-		<execute macro="Page#openURL" />
+		<execute macro="Page#openURL">
+			<var name="friendlyURL" value="${friendlyURL}" />
+			<var name="pageAccess" value="${pageAccess}" />
+			<var name="pageStaging" value="${pageStaging}" />
+			<var name="siteName" value="${siteName}" />
+			<var name="siteNameURL" value="${siteNameURL}" />
+			<var name="siteURL" value="${siteURL}" />
+			<var name="specificURL" value="${specificURL}" />
+			<var name="virtualHostsURL" value="${virtualHostsURL}" />
+		</execute>
 
-		<execute function="Click" locator1="Dockbar#USER_NAME" />
+		<execute function="Click" locator1="Dockbar#USER_AVATAR_IMAGE" />
 		<execute function="AssertClick" locator1="Dockbar#USER_MY_PROFILE" value1="My Profile" />
 	</command>
 
@@ -391,9 +624,19 @@
 		<description message="Navigate to Site Administration > Pages > ${portletName}." />
 
 		<execute macro="Page#gotoCmdCP">
+			<var name="friendlyURL" value="${friendlyURL}" />
+			<var name="nodePort" value="${nodePort}" />
+			<var name="pageAccess" value="${pageAccess}" />
+			<var name="pageStaging" value="${pageStaging}" />
 			<var name="portletCategoryKey" value="ADMIN_SITE_ADMINISTRATION_PAGES" />
 			<var name="portletCategoryName" value="Pages" />
 			<var name="portletName" value="${portletName}" />
+			<var name="siteName" value="${siteName}" />
+			<var name="siteNameURL" value="${siteNameURL}" />
+			<var name="siteScopeName" value="${siteScopeName}" />
+			<var name="siteURL" value="${siteURL}" />
+			<var name="specificURL" value="${specificURL}" />
+			<var name="virtualHostsURL" value="${virtualHostsURL}" />
 		</execute>
 	</command>
 
@@ -411,7 +654,16 @@
 					</and>
 				</not>
 				<then>
-					<execute macro="Page#openURL" />
+					<execute macro="Page#openURL">
+						<var name="friendlyURL" value="${friendlyURL}" />
+						<var name="pageAccess" value="${pageAccess}" />
+						<var name="pageStaging" value="${pageStaging}" />
+						<var name="siteName" value="${siteName}" />
+						<var name="siteNameURL" value="${siteNameURL}" />
+						<var name="siteURL" value="${siteURL}" />
+						<var name="specificURL" value="${specificURL}" />
+						<var name="virtualHostsURL" value="${virtualHostsURL}" />
+					</execute>
 				</then>
 			</elseif>
 		</if>
@@ -452,7 +704,16 @@
 	</command>
 
 	<command name="gotoSALocalizedCP">
-		<execute macro="Page#openURL" />
+		<execute macro="Page#openURL">
+			<var name="friendlyURL" value="${friendlyURL}" />
+			<var name="pageAccess" value="${pageAccess}" />
+			<var name="pageStaging" value="${pageStaging}" />
+			<var name="siteName" value="${siteName}" />
+			<var name="siteNameURL" value="${siteNameURL}" />
+			<var name="siteURL" value="${siteURL}" />
+			<var name="specificURL" value="${specificURL}" />
+			<var name="virtualHostsURL" value="${virtualHostsURL}" />
+		</execute>
 
 		<execute function="AssertClick#assertTextClickAtClickDockbar" locator1="Dockbar#ADMIN" value1="${adminLocalized}" />
 
@@ -469,14 +730,33 @@
 		<description message="Navigate to Site Administration > Users > ${portletName}." />
 
 		<execute macro="Page#gotoCmdCP">
+			<var name="friendlyURL" value="${friendlyURL}" />
+			<var name="nodePort" value="${nodePort}" />
+			<var name="pageAccess" value="${pageAccess}" />
+			<var name="pageStaging" value="${pageStaging}" />
 			<var name="portletCategoryKey" value="ADMIN_SITE_ADMINISTRATION_USERS" />
 			<var name="portletCategoryName" value="Users" />
 			<var name="portletName" value="${portletName}" />
+			<var name="siteName" value="${siteName}" />
+			<var name="siteNameURL" value="${siteNameURL}" />
+			<var name="siteScopeName" value="${siteScopeName}" />
+			<var name="siteURL" value="${siteURL}" />
+			<var name="specificURL" value="${specificURL}" />
+			<var name="virtualHostsURL" value="${virtualHostsURL}" />
 		</execute>
 	</command>
 
 	<command name="isPresent">
-		<execute macro="Page#openURL" />
+		<execute macro="Page#openURL">
+			<var name="friendlyURL" value="${friendlyURL}" />
+			<var name="pageAccess" value="${pageAccess}" />
+			<var name="pageStaging" value="${pageStaging}" />
+			<var name="siteName" value="${siteName}" />
+			<var name="siteNameURL" value="${siteNameURL}" />
+			<var name="siteURL" value="${siteURL}" />
+			<var name="specificURL" value="${specificURL}" />
+			<var name="virtualHostsURL" value="${virtualHostsURL}" />
+		</execute>
 
 		<var name="key_pageName" value="${pageName}" />
 
@@ -555,6 +835,24 @@
 		<execute function="AssertLocation" value1="${localizationPageURL}" />
 	</command>
 
+	<command name="pageTypeTemplate">
+		<var name="key_pageType" value="${pageTemplateName}" />
+
+		<execute function="AssertTextEquals" locator1="CPSitepagesAddpage#PAGE_TYPE_LABEL" value1="${pageTemplateName}" />
+
+		<execute function="Click" locator1="CPSitepagesAddpage#PAGE_TYPE_RADIO" />
+
+		<execute function="AssertTextEquals" locator1="CPSitepagesAddpage#PAGE_TYPE_TEMPLATE_AUTOMATICALLY_APPLY_CHANGES_LABEL"  value1="Automatically apply changes done to the page template." />
+
+		<execute function="Check" locator1="CPSitepagesAddpage#PAGE_TYPE_TEMPLATE_AUTOMATICALLY_APPLY_CHANGES_CHECKBOX" />
+	</command>
+
+	<command name="saveAddPage">
+		<execute function="AssertClick" locator1="CPSitepagesAddpage#ADD_PAGE_BUTTON" value1="Add Page" />
+
+		<execute function="AssertTextEquals" locator1="CPSitepages#SUCCESS_MESSAGE" value1="Your request completed successfully." />
+	</command>
+
 	<command name="selectPageTypeRadioPG">
 		<var name="key_pageType" value="${pageType}" />
 
@@ -564,14 +862,52 @@
 			<equals arg1="${pageType}" arg2="Panel" />
 			<then>
 				<execute macro="Page#addPageTypePanelPG">
+					<var name="componentName" value="${componentName}" />
+					<var name="portletName" value="${portletName}" />
 					<var name="portletNameList" value="${portletNameList}" />
 				</execute>
 			</then>
 		</if>
 	</command>
 
+	<command name="tearDownCP" summary="Delete all pages except the Welcome Page">
+		<execute macro="Page#gotoPagesCP">
+			<var name="friendlyURL" value="${friendlyURL}" />
+			<var name="pageAccess" value="${pageAccess}" />
+			<var name="pageStaging" value="${pageStaging}" />
+			<var name="portletName" value="Site Pages" />
+			<var name="siteName" value="${siteName}" />
+			<var name="siteNameURL" value="${siteNameURL}" />
+			<var name="siteURL" value="${siteURL}" />
+			<var name="specificURL" value="${specificURL}" />
+			<var name="virtualHostsURL" value="${virtualHostsURL}" />
+		</execute>
+
+		<execute function="AssertClick" locator1="CPSitepages#NAVIGATION_PUBLIC_PAGES" value1="Public Pages" />
+
+		<while>
+			<condition function="IsElementPresent" locator1="CPSitepages#PAGE_TREE_PAGE_LINK_2" />
+			<then>
+				<execute function="Click" locator1="CPSitepages#PAGE_TREE_PAGE_LINK_2" />
+
+				<execute function="ClickNoError" locator1="CPSitepages#TOOLBAR_DELETE" />
+
+				<execute function="Confirm#waitForConfirmation" value1="Are you sure you want to delete the selected page?" />
+			</then>
+		</while>
+	</command>
+
 	<command name="tearDownPG" summary="Delete all pages except the Welcome Page">
-		<execute macro="Page#openURL" />
+		<execute macro="Page#openURL">
+			<var name="friendlyURL" value="${friendlyURL}" />
+			<var name="pageAccess" value="${pageAccess}" />
+			<var name="pageStaging" value="${pageStaging}" />
+			<var name="siteName" value="${siteName}" />
+			<var name="siteNameURL" value="${siteNameURL}" />
+			<var name="siteURL" value="${siteURL}" />
+			<var name="specificURL" value="${specificURL}" />
+			<var name="virtualHostsURL" value="${virtualHostsURL}" />
+		</execute>
 
 		<while>
 			<condition function="IsElementPresent#isElementPresentClickNavigation" locator1="Home#PAGE_2" />
@@ -604,7 +940,7 @@
 				<execute function="AssertTextEquals" locator1="Home#PAGE_CHILD_PAGE" value1="${childPageName}" />
 			</then>
 			<else>
-				<execute function="AssertTextEquals" locator1="Home#BREADCRUMB_3" value1="${childPageName}" />
+				<execute function="Pause" locator1="1073" />
 			</else>
 		</if>
 	</command>
@@ -637,8 +973,12 @@
 		<execute function="AssertElementNotPresent" locator1="Home#CUSTOM_LOGO" />
 	</command>
 
+	<command name="viewEmbeddedPagePG">
+		<execute function="AssertTextPresent" locator1="Home#EMBEDDED_SITE_LIFERAY_BANNER_LOGO" value1="Liferay" />
+	</command>
+
 	<command name="viewFriendlyURLLanguageOptionsPG">
-		<execute function="Click" locator1="DockbarEditpanel#EDIT" />
+		<execute function="Click#clickAt" locator1="Dockbar#EDIT" />
 
 		<if>
 			<condition function="IsElementPresent" locator1="DockbarEditpanel#DETAILS_FRIENDLY_URL_TITLE" />
@@ -686,19 +1026,19 @@
 			</then>
 		</if>
 
-		<execute function="Click#clickAtSidebarClickAt" locator1="Dockbar#EDIT" />
+		<execute function="Click#clickAt" locator1="Dockbar#EDIT" />
 
 		<var name="key_defaultSiteLanguageKey" value="${defaultSiteLanguageKey}" />
 
 		<if>
-			<condition function="IsElementNotPresent" locator1="DockbarEditpanel#SEO_HTML_TITLE" />
+			<condition function="IsElementNotPresent" locator1="SitePagesEditPage#SEO_HTML_TITLE" />
 			<then>
-				<execute function="AssertClick" locator1="DockbarEditpanel#SEO_PANEL_TOGGLE" value1="SEO" />
+				<execute function="AssertClick" locator1="SitePagesEditPage#SEO_PANEL_LINK" value1="SEO" />
 			</then>
 		</if>
 
-		<execute function="AssertElementPresent" locator1="DockbarEditpanel#SEO_HTML_TITLE" />
-		<execute function="AssertElementPresent" locator1="DockbarEditpanel#SEO_META_TAGS_DESCRIPTION" />
+		<execute function="AssertElementPresent" locator1="SitePagesEditPage#SEO_HTML_TITLE" />
+		<execute function="AssertElementPresent" locator1="SitePagesEditPage#SEO_HTML_TITLE_META_TAGS" />
 	</command>
 
 	<command name="viewPageOrderStagingLivePG">
@@ -728,10 +1068,10 @@
 		<if>
 			<equals arg1="${liferaySite}" arg2="true" />
 			<then>
-				<execute function="AssertTextEquals" locator1="Home#BREADCRUMB_1" value1="${pageName}" />
+				<execute function="Pause" locator1="1073" />
 			</then>
 			<else>
-				<execute function="AssertTextEquals" locator1="Home#BREADCRUMB_2" value1="${pageName}" />
+				<execute function="Pause" locator1="1073" />
 			</else>
 		</if>
 	</command>
@@ -760,10 +1100,10 @@
 		<if>
 			<isset var="childPageName" />
 			<then>
-				<execute function="AssertTextEquals" locator1="Home#BREADCRUMB_3" value1="${childPageName}" />
+				<execute function="Pause" locator1="1073" />
 			</then>
 			<else>
-				<execute function="AssertTextEquals" locator1="Home#BREADCRUMB_2" value1="${pageName}" />
+				<execute function="Pause" locator1="1073" />
 			</else>
 		</if>
 
@@ -788,15 +1128,24 @@
 	</command>
 
 	<command name="viewUserPageLayoutPG">
-		<execute macro="Page#openURL" />
+		<execute macro="Page#openURL">
+			<var name="friendlyURL" value="${friendlyURL}" />
+			<var name="pageAccess" value="${pageAccess}" />
+			<var name="pageStaging" value="${pageStaging}" />
+			<var name="siteName" value="${siteName}" />
+			<var name="siteNameURL" value="${siteNameURL}" />
+			<var name="siteURL" value="${siteURL}" />
+			<var name="specificURL" value="${specificURL}" />
+			<var name="virtualHostsURL" value="${virtualHostsURL}" />
+		</execute>
 
-		<execute function="Click" locator1="Dockbar#USER_NAME" />
+		<execute function="Click" locator1="Dockbar#USER_AVATAR_IMAGE" />
 		<execute function="AssertTextNotPresent" locator1="Dockbar#USER_MY_PROFILE" value1="My Profile" />
 		<execute function="AssertTextNotPresent" locator1="Dockbar#USER_MY_DASHBOARD" value1="My Dashboard" />
 	</command>
 
 	<command name="viewWithWorkflowPG">
-		<execute function="AssertTextEquals" locator1="Home#BREADCRUMB_2" value1="${pageName}" />
+		<execute function="Pause" locator1="1073" />
 		<execute function="Pause" locator1="5000" />
 
 		<execute function="AssertClick#assertTextClickAtClickDockbar" locator1="PGStaging#STAGING_DROP_DOWN_BUTTON" value1="Staging" />

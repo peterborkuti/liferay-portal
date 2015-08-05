@@ -20,12 +20,12 @@ import com.liferay.bookmarks.model.BookmarksFolder;
 import com.liferay.bookmarks.model.BookmarksFolderConstants;
 import com.liferay.bookmarks.service.BookmarksFolderLocalServiceUtil;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.staging.permission.StagingPermissionUtil;
 import com.liferay.portal.security.auth.PrincipalException;
 import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.security.permission.BaseModelPermissionChecker;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.util.PropsValues;
+import com.liferay.portlet.exportimport.staging.permission.StagingPermissionUtil;
 
 import org.osgi.service.component.annotations.Component;
 
@@ -46,7 +46,9 @@ public class BookmarksFolderPermissionChecker
 		throws PortalException {
 
 		if (!contains(permissionChecker, folder, actionId)) {
-			throw new PrincipalException();
+			throw new PrincipalException.MustHavePermission(
+				permissionChecker, BookmarksFolder.class.getName(),
+				folder.getFolderId(), actionId);
 		}
 	}
 
@@ -56,7 +58,9 @@ public class BookmarksFolderPermissionChecker
 		throws PortalException {
 
 		if (!contains(permissionChecker, groupId, folderId, actionId)) {
-			throw new PrincipalException();
+			throw new PrincipalException.MustHavePermission(
+				permissionChecker, BookmarksFolder.class.getName(), folderId,
+				actionId);
 		}
 	}
 

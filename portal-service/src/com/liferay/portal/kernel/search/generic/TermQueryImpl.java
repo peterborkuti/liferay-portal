@@ -16,8 +16,8 @@ package com.liferay.portal.kernel.search.generic;
 
 import com.liferay.portal.kernel.search.BaseQueryImpl;
 import com.liferay.portal.kernel.search.QueryTerm;
-import com.liferay.portal.kernel.search.QueryVisitor;
 import com.liferay.portal.kernel.search.TermQuery;
+import com.liferay.portal.kernel.search.query.QueryVisitor;
 
 /**
  * @author Michael C. Han
@@ -28,6 +28,10 @@ public class TermQueryImpl extends BaseQueryImpl implements TermQuery {
 		_queryTerm = queryTerm;
 	}
 
+	public TermQueryImpl(String field, String value) {
+		this(new QueryTermImpl(field, value));
+	}
+
 	@Override
 	public <T> T accept(QueryVisitor<T> queryVisitor) {
 		return queryVisitor.visitQuery(this);
@@ -36,11 +40,6 @@ public class TermQueryImpl extends BaseQueryImpl implements TermQuery {
 	@Override
 	public QueryTerm getQueryTerm() {
 		return _queryTerm;
-	}
-
-	@Override
-	public Object getWrappedQuery() {
-		return this;
 	}
 
 	private final QueryTerm _queryTerm;

@@ -50,64 +50,76 @@ public abstract class AbstractPortalCacheManager<K extends Serializable, V>
 	}
 
 	@Override
-	public PortalCache<K, V> getCache(String name) throws PortalCacheException {
-		return getCache(name, false);
+	public PortalCache<K, V> getPortalCache(String portalCacheName)
+		throws PortalCacheException {
+
+		return getPortalCache(portalCacheName, false);
 	}
 
 	@Override
-	public PortalCache<K, V> getCache(String name, boolean blocking)
+	public PortalCache<K, V> getPortalCache(
+			String portalCacheName, boolean blocking)
 		throws PortalCacheException {
 
-		PortalCache<K, V> portalCache = portalCaches.get(name);
+		PortalCache<K, V> portalCache = portalCaches.get(portalCacheName);
 
 		if (portalCache != null) {
 			return portalCache;
 		}
 
-		portalCache = createPortalCache(name);
-
 		PortalCacheConfiguration portalCacheConfiguration =
 			_portalCacheManagerConfiguration.getPortalCacheConfiguration(
-				portalCache.getName());
+				portalCacheName);
 
 		if (portalCacheConfiguration == null) {
 			portalCacheConfiguration =
-				_portalCacheManagerConfiguration.
-					getDefaultPortalCacheConfiguration();
+				_defaultPortalCacheConfiguration.newPortalCacheConfiguration(
+					portalCacheName);
+
+			_portalCacheManagerConfiguration.putPortalCacheConfiguration(
+				portalCacheName, portalCacheConfiguration);
 		}
+
+		portalCache = createPortalCache(portalCacheConfiguration);
 
 		_initPortalCacheListeners(portalCache, portalCacheConfiguration);
 
-		if (isTransactionalCacheEnabled() && isTransactionalPortalCache(name)) {
+		if (isTransactionalPortalCacheEnabled() &&
+			isTransactionalPortalCache(portalCacheName)) {
+
 			portalCache = new TransactionalPortalCache<>(portalCache);
 		}
 
-		if (isBlockingCacheAllowed() && blocking) {
+		if (isBlockingPortalCacheAllowed() && blocking) {
 			portalCache = new BlockingPortalCache<>(portalCache);
 		}
 
 		PortalCache<K, V> previousPortalCache = portalCaches.putIfAbsent(
-			name, portalCache);
+			portalCacheName, portalCache);
 
 		if (previousPortalCache != null) {
 			portalCache = previousPortalCache;
 		}
-		else if (isBootstrapCacheLoaderEnabled() &&
+		else if (isPortalCacheBootstrapLoaderEnabled() &&
 				 (portalCacheConfiguration != null)) {
 
-			CallbackConfiguration bootstrapLoaderConfiguration =
-				portalCacheConfiguration.getBootstrapLoaderConfiguration();
+			CallbackConfiguration portalCacheBootstrapLoaderConfiguration =
+				portalCacheConfiguration.
+					getPortalCacheBootstrapLoaderConfiguration();
 
-			if (bootstrapLoaderConfiguration != null) {
-				CallbackFactory callbackFactory =
-					bootstrapLoaderConfiguration.getCallbackFactory();
+			if (portalCacheBootstrapLoaderConfiguration != null) {
+				CallbackFactory<?> callbackFactory =
+					portalCacheBootstrapLoaderConfiguration.
+						getCallbackFactory();
 
-				BootstrapLoader bootstrapLoader =
-					callbackFactory.createBootstrapLoader(
-						bootstrapLoaderConfiguration.getProperties());
+				PortalCacheBootstrapLoader portalCacheBootstrapLoader =
+					callbackFactory.createPortalCacheBootstrapLoader(
+						portalCacheBootstrapLoaderConfiguration.
+							getProperties());
 
-				if (bootstrapLoader != null) {
-					bootstrapLoader.load(getName(), name);
+				if (portalCacheBootstrapLoader != null) {
+					portalCacheBootstrapLoader.loadPortalCache(
+						getPortalCacheManagerName(), portalCacheName);
 				}
 			}
 		}
@@ -116,25 +128,22 @@ public abstract class AbstractPortalCacheManager<K extends Serializable, V>
 	}
 
 	@Override
-	public Set<CacheManagerListener> getCacheManagerListeners() {
-		return aggregatedCacheManagerListener.getCacheManagerListeners();
+	public Set<PortalCacheManagerListener> getPortalCacheManagerListeners() {
+		return aggregatedPortalCacheManagerListener.
+			getPortalCacheManagerListeners();
 	}
 
 	@Override
-	public String getName() {
-		return _name;
+	public String getPortalCacheManagerName() {
+		return _portalCacheManagerName;
 	}
 
-	public String[] getTransactionalCacheNames() {
-		return _transactionalCacheNames;
+	public String[] getTransactionalPortalCacheNames() {
+		return _transactionalPortalCacheNames;
 	}
 
-	public boolean isBlockingCacheAllowed() {
-		return _blockingCacheAllowed;
-	}
-
-	public boolean isBootstrapCacheLoaderEnabled() {
-		return _bootstrapCacheLoaderEnabled;
+	public boolean isBlockingPortalCacheAllowed() {
+		return _blockingPortalCacheAllowed;
 	}
 
 	@Override
@@ -142,33 +151,33 @@ public abstract class AbstractPortalCacheManager<K extends Serializable, V>
 		return _clusterAware;
 	}
 
-	public boolean isTransactionalCacheEnabled() {
-		return _transactionalCacheEnabled;
+	public boolean isPortalCacheBootstrapLoaderEnabled() {
+		return _portalCacheBootstrapLoaderEnabled;
+	}
+
+	public boolean isTransactionalPortalCacheEnabled() {
+		return _transactionalPortalCacheEnabled;
 	}
 
 	@Override
-	public boolean registerCacheManagerListener(
-		CacheManagerListener cacheManagerListener) {
+	public boolean registerPortalCacheManagerListener(
+		PortalCacheManagerListener portalCacheManagerListener) {
 
-		return aggregatedCacheManagerListener.addCacheListener(
-			cacheManagerListener);
+		return aggregatedPortalCacheManagerListener.addPortalCacheListener(
+			portalCacheManagerListener);
 	}
 
 	@Override
-	public void removeCache(String name) {
-		portalCaches.remove(name);
+	public void removePortalCache(String portalCacheName) {
+		portalCaches.remove(portalCacheName);
 
-		doRemoveCache(name);
+		doRemovePortalCache(portalCacheName);
 	}
 
-	public void setBlockingCacheAllowed(boolean blockingCacheAllowed) {
-		_blockingCacheAllowed = blockingCacheAllowed;
-	}
+	public void setBlockingPortalCacheAllowed(
+		boolean blockingPortalCacheAllowed) {
 
-	public void setBootstrapCacheLoaderEnabled(
-		boolean bootstrapCacheLoaderEnabled) {
-
-		_bootstrapCacheLoaderEnabled = bootstrapCacheLoaderEnabled;
+		_blockingPortalCacheAllowed = blockingPortalCacheAllowed;
 	}
 
 	public void setClusterAware(boolean clusterAware) {
@@ -179,45 +188,54 @@ public abstract class AbstractPortalCacheManager<K extends Serializable, V>
 		_mpiOnly = mpiOnly;
 	}
 
-	public void setName(String name) {
-		_name = name;
+	public void setPortalCacheBootstrapLoaderEnabled(
+		boolean portalCacheBootstrapLoaderEnabled) {
+
+		_portalCacheBootstrapLoaderEnabled = portalCacheBootstrapLoaderEnabled;
 	}
 
-	public void setTransactionalCacheEnabled(
-		boolean transactionalCacheEnabled) {
-
-		_transactionalCacheEnabled = transactionalCacheEnabled;
+	public void setPortalCacheManagerName(String portalCacheManagerName) {
+		_portalCacheManagerName = portalCacheManagerName;
 	}
 
-	public void setTransactionalCacheNames(String[] transactionalCacheNames) {
-		_transactionalCacheNames = transactionalCacheNames;
+	public void setTransactionalPortalCacheEnabled(
+		boolean transactionalPortalCacheEnabled) {
+
+		_transactionalPortalCacheEnabled = transactionalPortalCacheEnabled;
+	}
+
+	public void setTransactionalPortalCacheNames(
+		String[] transactionalPortalCacheNames) {
+
+		_transactionalPortalCacheNames = transactionalPortalCacheNames;
 	}
 
 	@Override
-	public boolean unregisterCacheManagerListener(
-		CacheManagerListener cacheManagerListener) {
+	public boolean unregisterPortalCacheManagerListener(
+		PortalCacheManagerListener portalCacheManagerListener) {
 
-		return aggregatedCacheManagerListener.removeCacheListener(
-			cacheManagerListener);
+		return aggregatedPortalCacheManagerListener.removePortalCacheListener(
+			portalCacheManagerListener);
 	}
 
 	@Override
-	public void unregisterCacheManagerListeners() {
-		aggregatedCacheManagerListener.clearAll();
+	public void unregisterPortalCacheManagerListeners() {
+		aggregatedPortalCacheManagerListener.clearAll();
 	}
 
-	protected abstract PortalCache<K, V> createPortalCache(String cacheName);
+	protected abstract PortalCache<K, V> createPortalCache(
+		PortalCacheConfiguration portalCacheConfiguration);
 
 	protected abstract void doClearAll();
 
 	protected abstract void doDestroy();
 
-	protected abstract void doRemoveCache(String cacheName);
+	protected abstract void doRemovePortalCache(String portalCacheName);
 
 	protected abstract PortalCacheManagerConfiguration
 		getPortalCacheManagerConfiguration();
 
-	protected abstract String getType();
+	protected abstract String getPortalCacheManagerType();
 
 	protected void initialize() {
 		if ((_portalCacheManagerConfiguration != null) ||
@@ -226,7 +244,7 @@ public abstract class AbstractPortalCacheManager<K extends Serializable, V>
 			return;
 		}
 
-		if (Validator.isNull(_name)) {
+		if (Validator.isNull(_portalCacheManagerName)) {
 			throw new IllegalArgumentException(
 				"Portal cache manager name is not specified");
 		}
@@ -235,30 +253,35 @@ public abstract class AbstractPortalCacheManager<K extends Serializable, V>
 
 		_portalCacheManagerConfiguration = getPortalCacheManagerConfiguration();
 
+		_defaultPortalCacheConfiguration =
+			_portalCacheManagerConfiguration.
+				getDefaultPortalCacheConfiguration();
+
 		for (CallbackConfiguration callbackConfiguration :
 				_portalCacheManagerConfiguration.
-					getCacheManagerListenerConfigurations()) {
+					getPortalCacheManagerListenerConfigurations()) {
 
-			CallbackFactory callbackFactory =
-				callbackConfiguration.getCallbackFactory();
+			CallbackFactory<PortalCacheManager<?, ?>> callbackFactory =
+				(CallbackFactory<PortalCacheManager<?, ?>>)
+					callbackConfiguration.getCallbackFactory();
 
-			CacheManagerListener cacheManagerListener =
-				callbackFactory.createCacheManagerListener(
-					callbackConfiguration.getProperties());
+			PortalCacheManagerListener portalCacheManagerListener =
+				callbackFactory.createPortalCacheManagerListener(
+					this, callbackConfiguration.getProperties());
 
-			if (cacheManagerListener != null) {
-				registerCacheManagerListener(cacheManagerListener);
+			if (portalCacheManagerListener != null) {
+				registerPortalCacheManagerListener(portalCacheManagerListener);
 			}
 		}
 	}
 
 	protected abstract void initPortalCacheManager();
 
-	protected boolean isTransactionalPortalCache(String name) {
-		for (String namePattern : getTransactionalCacheNames()) {
+	protected boolean isTransactionalPortalCache(String portalCacheName) {
+		for (String namePattern : getTransactionalPortalCacheNames()) {
 			if (StringUtil.wildcardMatches(
-					name, namePattern, CharPool.QUESTION, CharPool.STAR,
-					CharPool.PERCENT, true)) {
+					portalCacheName, namePattern, CharPool.QUESTION,
+					CharPool.STAR, CharPool.PERCENT, true)) {
 
 				return true;
 			}
@@ -286,14 +309,15 @@ public abstract class AbstractPortalCacheManager<K extends Serializable, V>
 				continue;
 			}
 
-			portalCache.unregisterCacheListeners();
+			portalCache.unregisterPortalCacheListeners();
 
 			_initPortalCacheListeners(portalCache, portalCacheConfiguration);
 		}
 	}
 
-	protected final AggregatedCacheManagerListener
-		aggregatedCacheManagerListener = new AggregatedCacheManagerListener();
+	protected final AggregatedPortalCacheManagerListener
+		aggregatedPortalCacheManagerListener =
+			new AggregatedPortalCacheManagerListener();
 	protected final ConcurrentMap<String, PortalCache<K, V>> portalCaches =
 		new ConcurrentHashMap<>();
 
@@ -305,33 +329,35 @@ public abstract class AbstractPortalCacheManager<K extends Serializable, V>
 			return;
 		}
 
-		Map<CallbackConfiguration, CacheListenerScope>
+		Map<CallbackConfiguration, PortalCacheListenerScope>
 			cacheListenerConfigurations =
-				portalCacheConfiguration.getCacheListenerConfigurations();
+				portalCacheConfiguration.getPortalCacheListenerConfigurations();
 
-		for (Map.Entry<CallbackConfiguration, CacheListenerScope> entry :
+		for (Map.Entry<CallbackConfiguration, PortalCacheListenerScope> entry :
 				cacheListenerConfigurations.entrySet()) {
 
 			CallbackConfiguration callbackConfiguration = entry.getKey();
 
-			CallbackFactory callbackFactory =
+			CallbackFactory<?> callbackFactory =
 				callbackConfiguration.getCallbackFactory();
 
-			CacheListener<K, V> cacheListener =
-				callbackFactory.createCacheListener(
+			PortalCacheListener<K, V> portalCacheListener =
+				callbackFactory.createPortalCacheListener(
 					callbackConfiguration.getProperties());
 
-			portalCache.registerCacheListener(cacheListener, entry.getValue());
+			portalCache.registerPortalCacheListener(
+				portalCacheListener, entry.getValue());
 		}
 	}
 
-	private boolean _blockingCacheAllowed;
-	private boolean _bootstrapCacheLoaderEnabled;
+	private boolean _blockingPortalCacheAllowed;
 	private boolean _clusterAware;
+	private PortalCacheConfiguration _defaultPortalCacheConfiguration;
 	private boolean _mpiOnly;
-	private String _name;
+	private boolean _portalCacheBootstrapLoaderEnabled;
 	private PortalCacheManagerConfiguration _portalCacheManagerConfiguration;
-	private boolean _transactionalCacheEnabled;
-	private String[] _transactionalCacheNames = StringPool.EMPTY_ARRAY;
+	private String _portalCacheManagerName;
+	private boolean _transactionalPortalCacheEnabled;
+	private String[] _transactionalPortalCacheNames = StringPool.EMPTY_ARRAY;
 
 }

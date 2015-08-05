@@ -16,7 +16,6 @@ package com.liferay.document.library.repository.cmis.internal.model;
 
 import com.liferay.document.library.repository.cmis.internal.CMISRepository;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
@@ -34,6 +33,7 @@ import com.liferay.portlet.documentlibrary.NoSuchFileEntryException;
 import com.liferay.portlet.documentlibrary.service.DLAppHelperLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.util.DLUtil;
 import com.liferay.portlet.expando.model.ExpandoBridge;
+import com.liferay.portlet.exportimport.lar.StagedModelType;
 
 import java.io.InputStream;
 import java.io.Serializable;
@@ -170,6 +170,9 @@ public class CMISFileVersion extends CMISModel implements FileVersion {
 			return getFileEntry().getFileEntryId();
 		}
 		catch (NoSuchFileEntryException nsfee) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(nsfee, nsfee);
+			}
 		}
 		catch (Exception e) {
 			_log.error(e, e);
@@ -196,6 +199,11 @@ public class CMISFileVersion extends CMISModel implements FileVersion {
 	@Override
 	public String getIcon() {
 		return DLUtil.getFileIcon(getExtension());
+	}
+
+	@Override
+	public Date getLastPublishDate() {
+		return null;
 	}
 
 	@Override
@@ -359,7 +367,7 @@ public class CMISFileVersion extends CMISModel implements FileVersion {
 	}
 
 	@Override
-	public void setCreateDate(Date date) {
+	public void setCreateDate(Date createDate) {
 	}
 
 	public void setFileVersionId(long fileVersionId) {
@@ -372,7 +380,11 @@ public class CMISFileVersion extends CMISModel implements FileVersion {
 	}
 
 	@Override
-	public void setModifiedDate(Date date) {
+	public void setLastPublishDate(Date lastPublishDate) {
+	}
+
+	@Override
+	public void setModifiedDate(Date modifiedDate) {
 	}
 
 	public void setPrimaryKey(long primaryKey) {

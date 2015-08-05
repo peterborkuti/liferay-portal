@@ -14,14 +14,17 @@
 
 package com.liferay.portlet.sites.action;
 
+import com.liferay.portal.kernel.portlet.PortletLayoutListener;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.model.Layout;
 import com.liferay.portal.model.LayoutTypePortlet;
+import com.liferay.portal.model.Portlet;
 import com.liferay.portal.model.PortletPreferencesIds;
 import com.liferay.portal.service.GroupLocalServiceUtil;
 import com.liferay.portal.service.LayoutServiceUtil;
+import com.liferay.portal.service.PortletLocalServiceUtil;
 import com.liferay.portal.service.PortletPreferencesLocalServiceUtil;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.util.PortalUtil;
@@ -40,8 +43,7 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * @author Brian Wing Shun Chan
  */
-public class ActionUtil
-	extends com.liferay.portlet.rolesadmin.action.ActionUtil {
+public class ActionUtil {
 
 	public static void copyPreferences(
 			HttpServletRequest request, Layout targetLayout,
@@ -106,6 +108,17 @@ public class ActionUtil
 				themeDisplay.getUserId(), sourceLayout, targetLayout,
 				sourcePreferences, targetPreferences, sourcePortletId,
 				themeDisplay.getLanguageId());
+
+			Portlet sourcePortlet = PortletLocalServiceUtil.getPortletById(
+				sourceLayout.getCompanyId(), sourcePortletId);
+
+			PortletLayoutListener sourcePortletLayoutListener =
+				sourcePortlet.getPortletLayoutListenerInstance();
+
+			if (sourcePortletLayoutListener != null) {
+				sourcePortletLayoutListener.onAddToLayout(
+					sourcePortletId, targetLayout.getPlid());
+			}
 		}
 	}
 

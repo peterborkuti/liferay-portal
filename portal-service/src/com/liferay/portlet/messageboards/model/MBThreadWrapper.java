@@ -16,9 +16,10 @@ package com.liferay.portlet.messageboards.model;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.ModelWrapper;
+
+import com.liferay.portlet.exportimport.lar.StagedModelType;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -70,6 +71,7 @@ public class MBThreadWrapper implements MBThread, ModelWrapper<MBThread> {
 		attributes.put("lastPostDate", getLastPostDate());
 		attributes.put("priority", getPriority());
 		attributes.put("question", getQuestion());
+		attributes.put("lastPublishDate", getLastPublishDate());
 		attributes.put("status", getStatus());
 		attributes.put("statusByUserId", getStatusByUserId());
 		attributes.put("statusByUserName", getStatusByUserName());
@@ -180,6 +182,12 @@ public class MBThreadWrapper implements MBThread, ModelWrapper<MBThread> {
 
 		if (question != null) {
 			setQuestion(question);
+		}
+
+		Date lastPublishDate = (Date)attributes.get("lastPublishDate");
+
+		if (lastPublishDate != null) {
+			setLastPublishDate(lastPublishDate);
 		}
 
 		Integer status = (Integer)attributes.get("status");
@@ -339,8 +347,18 @@ public class MBThreadWrapper implements MBThread, ModelWrapper<MBThread> {
 		return _mbThread.getLastPostDate();
 	}
 
+	/**
+	* Returns the last publish date of this message boards thread.
+	*
+	* @return the last publish date of this message boards thread
+	*/
 	@Override
-	public com.liferay.portal.model.Lock getLock() {
+	public Date getLastPublishDate() {
+		return _mbThread.getLastPublishDate();
+	}
+
+	@Override
+	public com.liferay.portal.kernel.lock.Lock getLock() {
 		return _mbThread.getLock();
 	}
 
@@ -841,6 +859,16 @@ public class MBThreadWrapper implements MBThread, ModelWrapper<MBThread> {
 	@Override
 	public void setLastPostDate(Date lastPostDate) {
 		_mbThread.setLastPostDate(lastPostDate);
+	}
+
+	/**
+	* Sets the last publish date of this message boards thread.
+	*
+	* @param lastPublishDate the last publish date of this message boards thread
+	*/
+	@Override
+	public void setLastPublishDate(Date lastPublishDate) {
+		_mbThread.setLastPublishDate(lastPublishDate);
 	}
 
 	/**

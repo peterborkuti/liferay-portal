@@ -72,7 +72,7 @@ boolean allowPingbacks = PropsValues.MESSAGE_BOARDS_PINGBACK_ENABLED && BeanPara
 if (Validator.isNull(redirect)) {
 	PortletURL viewMessageURL = renderResponse.createRenderURL();
 
-	viewMessageURL.setParameter("struts_action", "/message_boards/view_message");
+	viewMessageURL.setParameter("mvcRenderCommandName", "/message_boards/view_message");
 	viewMessageURL.setParameter("messageId", String.valueOf(messageId));
 
 	redirect = viewMessageURL.toString();
@@ -159,8 +159,7 @@ else {
 	<br />
 </c:if>
 
-<portlet:actionURL var="editMessageURL">
-	<portlet:param name="struts_action" value="/message_boards/edit_message" />
+<portlet:actionURL name="/message_boards/edit_message" var="editMessageURL">
 	<liferay-portlet:param name="uploadExceptionRedirect" value="<%= uploadExceptionRedirect %>" />
 </portlet:actionURL>
 
@@ -183,6 +182,7 @@ else {
 		<liferay-ui:message key="<%= ase.getMessageKey() %>" />
 	</liferay-ui:error>
 
+	<liferay-ui:error exception="<%= CaptchaConfigurationException.class %>" message="a-captcha-error-occurred-please-contact-an-administrator" />
 	<liferay-ui:error exception="<%= CaptchaMaxChallengesException.class %>" message="maximum-number-of-captcha-attempts-exceeded" />
 	<liferay-ui:error exception="<%= CaptchaTextException.class %>" message="text-verification-failed" />
 	<liferay-ui:error exception="<%= DuplicateFileException.class %>" message="please-enter-a-unique-document-name" />
@@ -433,9 +433,7 @@ else {
 	</aui:fieldset>
 
 	<c:if test="<%= (message == null) && PropsValues.CAPTCHA_CHECK_PORTLET_MESSAGE_BOARDS_EDIT_MESSAGE %>">
-		<portlet:resourceURL var="captchaURL">
-			<portlet:param name="struts_action" value="/message_boards/captcha" />
-		</portlet:resourceURL>
+		<portlet:resourceURL id="/message_boards/captcha" var="captchaURL" />
 
 		<liferay-ui:captcha url="<%= captchaURL %>" />
 	</c:if>

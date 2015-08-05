@@ -16,8 +16,9 @@ package com.liferay.portal.model;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.util.Validator;
+
+import com.liferay.portlet.exportimport.lar.StagedModelType;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -85,6 +86,7 @@ public class LayoutWrapper implements Layout, ModelWrapper<Layout> {
 			getLayoutPrototypeLinkEnabled());
 		attributes.put("sourcePrototypeLayoutUuid",
 			getSourcePrototypeLayoutUuid());
+		attributes.put("lastPublishDate", getLastPublishDate());
 
 		return attributes;
 	}
@@ -278,6 +280,12 @@ public class LayoutWrapper implements Layout, ModelWrapper<Layout> {
 
 		if (sourcePrototypeLayoutUuid != null) {
 			setSourcePrototypeLayoutUuid(sourcePrototypeLayoutUuid);
+		}
+
+		Date lastPublishDate = (Date)attributes.get("lastPublishDate");
+
+		if (lastPublishDate != null) {
+			setLastPublishDate(lastPublishDate);
 		}
 	}
 
@@ -743,6 +751,16 @@ public class LayoutWrapper implements Layout, ModelWrapper<Layout> {
 	@Override
 	public Map<java.util.Locale, java.lang.String> getKeywordsMap() {
 		return _layout.getKeywordsMap();
+	}
+
+	/**
+	* Returns the last publish date of this layout.
+	*
+	* @return the last publish date of this layout
+	*/
+	@Override
+	public Date getLastPublishDate() {
+		return _layout.getLastPublishDate();
 	}
 
 	/**
@@ -1582,11 +1600,6 @@ public class LayoutWrapper implements Layout, ModelWrapper<Layout> {
 	}
 
 	@Override
-	public boolean isTypeUserPersonalPanel() {
-		return _layout.isTypeUserPersonalPanel();
-	}
-
-	@Override
 	public boolean matches(javax.servlet.http.HttpServletRequest request,
 		java.lang.String friendlyURL) {
 		return _layout.matches(request, friendlyURL);
@@ -1837,6 +1850,16 @@ public class LayoutWrapper implements Layout, ModelWrapper<Layout> {
 		Map<java.util.Locale, java.lang.String> keywordsMap,
 		java.util.Locale defaultLocale) {
 		_layout.setKeywordsMap(keywordsMap, defaultLocale);
+	}
+
+	/**
+	* Sets the last publish date of this layout.
+	*
+	* @param lastPublishDate the last publish date of this layout
+	*/
+	@Override
+	public void setLastPublishDate(Date lastPublishDate) {
+		_layout.setLastPublishDate(lastPublishDate);
 	}
 
 	/**

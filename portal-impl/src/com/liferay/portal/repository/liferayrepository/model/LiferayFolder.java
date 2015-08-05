@@ -15,7 +15,6 @@
 package com.liferay.portal.repository.liferayrepository.model;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.repository.model.RepositoryModelOperation;
 import com.liferay.portal.kernel.util.Validator;
@@ -25,6 +24,7 @@ import com.liferay.portlet.documentlibrary.model.DLFolderConstants;
 import com.liferay.portlet.documentlibrary.service.permission.DLFolderPermission;
 import com.liferay.portlet.documentlibrary.util.RepositoryModelUtil;
 import com.liferay.portlet.expando.model.ExpandoBridge;
+import com.liferay.portlet.exportimport.lar.StagedModelType;
 
 import java.io.Serializable;
 
@@ -143,6 +143,11 @@ public class LiferayFolder extends LiferayModel implements Folder {
 	@Override
 	public Date getLastPostDate() {
 		return _dlFolder.getLastPostDate();
+	}
+
+	@Override
+	public Date getLastPublishDate() {
+		return _dlFolder.getLastPublishDate();
 	}
 
 	@Override
@@ -338,8 +343,8 @@ public class LiferayFolder extends LiferayModel implements Folder {
 	}
 
 	@Override
-	public void setCreateDate(Date date) {
-		_dlFolder.setCreateDate(date);
+	public void setCreateDate(Date createDate) {
+		_dlFolder.setCreateDate(createDate);
 	}
 
 	@Override
@@ -348,8 +353,13 @@ public class LiferayFolder extends LiferayModel implements Folder {
 	}
 
 	@Override
-	public void setModifiedDate(Date date) {
-		_dlFolder.setModifiedDate(date);
+	public void setLastPublishDate(Date lastPublishDate) {
+		_dlFolder.setLastPublishDate(lastPublishDate);
+	}
+
+	@Override
+	public void setModifiedDate(Date modifiedDate) {
+		_dlFolder.setModifiedDate(modifiedDate);
 	}
 
 	public void setPrimaryKey(long primaryKey) {

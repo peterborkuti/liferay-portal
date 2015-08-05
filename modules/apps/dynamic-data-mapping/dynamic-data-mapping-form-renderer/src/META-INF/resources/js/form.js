@@ -2,30 +2,22 @@ AUI.add(
 	'liferay-ddm-form-renderer',
 	function(A) {
 		var AArray = A.Array;
-		var Util = Liferay.DDM.Renderer.Util;
+		var Renderer = Liferay.DDM.Renderer;
 
 		var Form = A.Component.create(
 			{
 				ATTRS: {
 					container: {
-						setter: A.one
-					},
-
-					definition: {
-						value: []
-					},
-
-					fields: {
-						valueFn: '_valueFields'
+						setter: A.one,
+						valueFn: '_valueContainer'
 					},
 
 					portletNamespace: {
 						value: ''
-					},
-
-					values: {
 					}
 				},
+
+				AUGMENTS: [Renderer.DefinitionSupport, Renderer.NestedFieldsSupport],
 
 				EXTENDS: A.Base,
 
@@ -43,66 +35,35 @@ AUI.add(
 								srcNode: container.one('.lfr-ddm-form-pages'),
 								type: 'pills'
 							}
-						).render();
-
-						AArray.invoke(instance.get('fields'), 'render');
-
-						instance.after('liferay-ddm-form-renderer-field:remove', A.bind(instance, instance._afterFieldRemove));
-					},
-
-					getFieldNodes: function() {
-						var instance = this;
-
-						return instance.get('container').all('.lfr-ddm-form-field-container').filter(
-							function(item) {
-								return item.ancestors('.field-wrapper', false).size() === 0;
-							}
 						);
 					},
 
-					_getField: function(node) {
+					getTabView: function() {
 						var instance = this;
 
-						var fieldNode = node.one('.field-wrapper');
-
-						var qualifiedName = fieldNode.getData('fieldname');
-
-						var instanceId = Util.getInstanceIdFromQualifiedName(qualifiedName);
-
-						var name = Util.getFieldNameFromQualifiedName(qualifiedName);
-
-						var fieldDefinition = Util.searchFieldData(instance.get('definition'), 'name', name);
-
-						var FieldClass = Util.getFieldClass(fieldDefinition);
-
-						var field = new FieldClass(
-							{
-								container: node,
-								definition: fieldDefinition,
-								form: instance,
-								instanceId: instanceId,
-								parent: instance,
-								portletNamespace: instance.get('portletNamespace')
-							}
-						);
-
-						field.addTarget(instance);
-
-						return field;
+						return instance.tabView;
 					},
 
-					_valueFields: function() {
+					render: function() {
 						var instance = this;
 
-						var fields = [];
+						instance.tabView.render();
 
-						instance.getFieldNodes().each(
-							function(item) {
-								fields.push(instance._getField(item));
-							}
-						);
+						return instance;
+					},
 
-						return fields;
+					toJSON: function() {
+						var instance = this;
+
+						return {
+							fields: AArray.invoke(instance.get('fields'), 'toJSON')
+						};
+					},
+
+					_valueContainer: function() {
+						var instance = this;
+
+						return A.Node.create('<div class="lfr-ddm-form-container"></div>');
 					}
 				}
 			}
@@ -112,6 +73,6 @@ AUI.add(
 	},
 	'',
 	{
-		requires: ['array-extras', 'aui-tabview', 'liferay-ddm-form-renderer-field', 'liferay-ddm-form-renderer-field-types', 'liferay-ddm-form-renderer-util']
+		requires: ['aui-component', 'aui-tabview', 'liferay-ddm-form-renderer-definition', 'liferay-ddm-form-renderer-nested-fields']
 	}
 );

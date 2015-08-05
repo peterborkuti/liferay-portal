@@ -182,6 +182,12 @@ public class FileUtil {
 			filePath.toString(), startTime);
 
 		for (SyncFile deletedSyncFile : deletedSyncFiles) {
+			if (!Files.notExists(
+					Paths.get(deletedSyncFile.getFilePathName()))) {
+
+				continue;
+			}
+
 			if (deletedSyncFile.getTypePK() == 0) {
 				SyncFileService.deleteSyncFile(deletedSyncFile, false);
 
@@ -373,7 +379,7 @@ public class FileUtil {
 	}
 
 	public static boolean isModified(SyncFile syncFile, Path filePath) {
-		if (filePath == null) {
+		if ((filePath == null) || Files.notExists(filePath)) {
 			return true;
 		}
 

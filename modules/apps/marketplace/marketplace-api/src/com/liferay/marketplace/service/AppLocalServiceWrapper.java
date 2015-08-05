@@ -284,12 +284,6 @@ public class AppLocalServiceWrapper implements AppLocalService,
 	}
 
 	@Override
-	public com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery getExportActionableDynamicQuery(
-		com.liferay.portal.kernel.lar.PortletDataContext portletDataContext) {
-		return _appLocalService.getExportActionableDynamicQuery(portletDataContext);
-	}
-
-	@Override
 	public java.util.List<com.liferay.marketplace.model.App> getInstalledApps() {
 		return _appLocalService.getInstalledApps();
 	}

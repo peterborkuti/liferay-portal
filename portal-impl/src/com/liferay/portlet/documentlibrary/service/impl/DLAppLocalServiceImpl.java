@@ -19,8 +19,11 @@ import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.repository.InvalidRepositoryIdException;
 import com.liferay.portal.kernel.repository.LocalRepository;
+import com.liferay.portal.kernel.repository.RepositoryProviderUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileShortcut;
 import com.liferay.portal.kernel.repository.model.FileVersion;
@@ -158,8 +161,7 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Adds a file entry and associated metadata based on a {@link java.io.File}
-	 * object.
+	 * Adds a file entry and associated metadata based on a {@link File} object.
 	 *
 	 * <p>
 	 * This method takes two file names, the <code>sourceFileName</code> and the
@@ -211,9 +213,6 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 		FileEntry fileEntry = localRepository.addFileEntry(
 			userId, folderId, sourceFileName, mimeType, title, description,
 			changeLog, file, serviceContext);
-
-		dlAppHelperLocalService.addFileEntry(
-			userId, fileEntry, null, serviceContext);
 
 		return fileEntry;
 	}
@@ -299,9 +298,6 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 		FileEntry fileEntry = localRepository.addFileEntry(
 			userId, folderId, sourceFileName, mimeType, title, description,
 			changeLog, is, size, serviceContext);
-
-		dlAppHelperLocalService.addFileEntry(
-			userId, fileEntry, null, serviceContext);
 
 		return fileEntry;
 	}
@@ -402,12 +398,12 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 	@Override
 	public void deleteAllRepositories(long groupId) throws PortalException {
 		LocalRepository groupLocalRepository =
-			repositoryLocalService.getLocalRepositoryImpl(groupId);
+			RepositoryProviderUtil.getLocalRepository(groupId);
 
 		deleteRepository(groupLocalRepository);
 
 		List<LocalRepository> localRepositories =
-			repositoryLocalService.getGroupLocalRepositoryImpl(groupId);
+			RepositoryProviderUtil.getLocalRepositoriesByGroupId(groupId);
 
 		for (LocalRepository localRepository : localRepositories) {
 			if (localRepository.getRepositoryId() !=
@@ -462,7 +458,7 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 	 * Deletes the file shortcut. This method is only supported by the Liferay
 	 * repository.
 	 *
-	 * @param fileShortcut the file shortcut
+	 * @param  fileShortcut the file shortcut
 	 * @throws PortalException if the file shortcut could not be found
 	 */
 	@Override
@@ -562,6 +558,9 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 			return localRepository.getFileEntry(folderId, title);
 		}
 		catch (NoSuchFileEntryException nsfee) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(nsfee, nsfee);
+			}
 		}
 
 		LocalRepository localRepository = getFolderLocalRepository(folderId);
@@ -587,6 +586,9 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 			return localRepository.getFileEntryByUuid(uuid);
 		}
 		catch (NoSuchFileEntryException nsfee) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(nsfee, nsfee);
+			}
 		}
 
 		List<com.liferay.portal.model.Repository> repositories =
@@ -600,6 +602,9 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 				return localRepository.getFileEntryByUuid(uuid);
 			}
 			catch (NoSuchFileEntryException nsfee) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(nsfee, nsfee);
+				}
 			}
 		}
 
@@ -1031,11 +1036,10 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Updates a file entry and associated metadata based on a {@link
-	 * java.io.File} object. If the file data is <code>null</code>, then only
-	 * the associated metadata (i.e., <code>title</code>,
-	 * <code>description</code>, and parameters in the
-	 * <code>serviceContext</code>) will be updated.
+	 * Updates a file entry and associated metadata based on a {@link File}
+	 * object. If the file data is <code>null</code>, then only the associated
+	 * metadata (i.e., <code>title</code>, <code>description</code>, and
+	 * parameters in the <code>serviceContext</code>) will be updated.
 	 *
 	 * <p>
 	 * This method takes two file names, the <code>sourceFileName</code> and the
@@ -1234,8 +1238,11 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 	 * Updates all file shortcuts to the existing file entry to the new file
 	 * entry. This method is only supported by the Liferay repository.
 	 *
-	 * @param oldToFileEntryId the primary key of the old file entry pointed to
-	 * @param newToFileEntryId the primary key of the new file entry to point to
+	 * @param  oldToFileEntryId the primary key of the old file entry pointed to
+	 * @param  newToFileEntryId the primary key of the new file entry to point
+	 *         to
+	 * @throws PortalException if a file entry for any one of the primary keys
+	 *         could not be found
 	 */
 	@Override
 	public void updateFileShortcuts(
@@ -1250,7 +1257,7 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 
 	/**
 	 * Deprecated as of 7.0.0, replaced by {@link #updateFileShortcuts(long,
-	 *            long)}
+	 * long)}
 	 */
 	@Deprecated
 	@Override
@@ -1344,9 +1351,6 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 			}
 		}
 
-		dlAppHelperLocalService.addFileEntry(
-			userId, destinationFileEntry, null, serviceContext);
-
 		return destinationFileEntry;
 	}
 
@@ -1392,8 +1396,8 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 		throws PortalException {
 
 		try {
-			return repositoryLocalService.getLocalRepositoryImpl(
-				0, fileEntryId, 0, 0);
+			return RepositoryProviderUtil.getFileEntryLocalRepository(
+				fileEntryId);
 		}
 		catch (InvalidRepositoryIdException irie) {
 			StringBundler sb = new StringBundler(3);
@@ -1411,8 +1415,8 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 		throws PortalException {
 
 		try {
-			return repositoryLocalService.getLocalRepositoryImpl(
-				0, 0, 0, fileShortcutId);
+			return RepositoryProviderUtil.getFileShortcutLocalRepository(
+				fileShortcutId);
 		}
 		catch (InvalidRepositoryIdException irie) {
 			StringBundler sb = new StringBundler(3);
@@ -1429,8 +1433,8 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 		throws PortalException {
 
 		try {
-			return repositoryLocalService.getLocalRepositoryImpl(
-				0, 0, fileVersionId, 0);
+			return RepositoryProviderUtil.getFileVersionLocalRepository(
+				fileVersionId);
 		}
 		catch (InvalidRepositoryIdException irie) {
 			StringBundler sb = new StringBundler(3);
@@ -1447,8 +1451,7 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 		throws PortalException {
 
 		try {
-			return repositoryLocalService.getLocalRepositoryImpl(
-				folderId, 0, 0, 0);
+			return RepositoryProviderUtil.getFolderLocalRepository(folderId);
 		}
 		catch (InvalidRepositoryIdException irie) {
 			StringBundler sb = new StringBundler(3);
@@ -1476,7 +1479,7 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 		throws PortalException {
 
 		try {
-			return repositoryLocalService.getLocalRepositoryImpl(repositoryId);
+			return RepositoryProviderUtil.getLocalRepository(repositoryId);
 		}
 		catch (InvalidRepositoryIdException irie) {
 			StringBundler sb = new StringBundler(3);
@@ -1584,5 +1587,8 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 
 		return destinationFolder;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		DLAppLocalServiceImpl.class);
 
 }

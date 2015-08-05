@@ -3,6 +3,10 @@
 (function() {
 	'use strict';
 
+	var STR_UPLOADABLE_FILE_RETURN_TYPE = 'com.liferay.item.selector.criteria.UploadableFileReturnType';
+
+	var Util = Liferay.Util;
+
 	var ButtonImage = React.createClass(
 		{
 			displayName: 'ButtonImage',
@@ -23,67 +27,107 @@
 			},
 
 			render: function() {
-				return (
+				return React.createElement(
+					'button',
+					{
+						className: 'ae-button',
+						'data-type': 'button-image',
+						onClick: this._handleClick,
+						tabIndex: this.props.tabIndex
+					},
 					React.createElement(
-						'button',
+						'span',
 						{
-							className: 'alloy-editor-button',
-							'data-type': 'button-image',
-							onClick: this._handleClick,
-							tabIndex: this.props.tabIndex
-						},
-						React.createElement(
-							'span',
-							{
-								className: 'alloy-editor-icon-image'
-							}
-						)
+							className: 'ae-icon-image'
+						}
 					)
 				);
 			},
 
-			_handleClick: function() {
-				var editor = this.props.editor.get('nativeEditor');
+			_destroyItemSelectorDialog: function() {
+				var instance = this;
 
-				var eventName = editor.name + 'selectDocument';
-
-				Liferay.Util.selectEntity(
-					{
-						dialog: {
-							constrain: true,
-							destroyOnHide: true,
-							modal: true
+				if (instance._itemSelectorDialog) {
+					setTimeout(
+						function() {
+							instance._itemSelectorDialog.destroy();
 						},
-						eventName: eventName,
-						id: eventName,
-						title: Liferay.Language.get('select-image'),
-						uri: editor.config.filebrowserImageBrowseUrl
-					},
-					this._onDocumentSelected
-				);
+						0
+					);
+				}
 			},
 
-			_onDocumentSelected: function(event) {
+			_handleClick: function() {
+				var instance = this;
+
+				var editor = this.props.editor.get('nativeEditor');
+
+				var eventName = editor.name + 'selectItem';
+
+				if (instance._itemSelectorDialog) {
+					instance._itemSelectorDialog.open();
+				}
+				else {
+					AUI().use(
+						'liferay-item-selector-dialog',
+						function(A) {
+							var itemSelectorDialog = new A.LiferayItemSelectorDialog(
+								{
+									after: {
+										selectedItemChange: A.bind('_onSelectedItemChange', instance)
+									},
+									eventName: eventName,
+									url: editor.config.filebrowserImageBrowseUrl
+								}
+							);
+
+							itemSelectorDialog.open();
+
+							instance._itemSelectorDialog = itemSelectorDialog;
+						}
+					);
+				}
+			},
+
+			_onSelectedItemChange: function(event) {
 				var instance = this;
 
 				var editor = instance.props.editor.get('nativeEditor');
 
-				var eventName = editor.name + 'selectDocument';
+				var eventName = editor.name + 'selectItem';
 
-				Liferay.Util.getWindow(eventName).onceAfter(
-					'visibleChange',
-					function() {
-						var image = CKEDITOR.dom.element.createFromHtml(
-							instance.props.imageTPL.output(
-								{
-									src: event.url
+				var selectedItem = event.newVal;
+
+				if (selectedItem) {
+					Util.getWindow(eventName).onceAfter(
+						'visibleChange',
+						function() {
+							var imageSrc = selectedItem.value;
+
+							if (selectedItem.returnType === STR_UPLOADABLE_FILE_RETURN_TYPE) {
+								try {
+									imageSrc = JSON.parse(selectedItem.value).url;
 								}
-							)
-						);
+								catch (e) {
+								}
+							}
 
-						editor.insertElement(image);
-					}
-				);
+							if (imageSrc) {
+								var el = CKEDITOR.dom.element.createFromHtml(
+									instance.props.imageTPL.output(
+										{
+											src: imageSrc
+										}
+									)
+								);
+
+								editor.insertElement(el);
+							}
+						}
+					);
+				}
+
+				instance._destroyItemSelectorDialog();
 			}
 		}
 	);

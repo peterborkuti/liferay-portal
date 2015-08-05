@@ -15,20 +15,11 @@
 package com.liferay.item.selector.web;
 
 import com.liferay.item.selector.BaseItemSelectorCriterion;
-import com.liferay.portal.kernel.repository.model.FileEntry;
-
-import java.net.URL;
-
-import java.util.Set;
 
 /**
  * @author Iván Zaera
  */
 public class MediaItemSelectorCriterion extends BaseItemSelectorCriterion {
-
-	public MediaItemSelectorCriterion() {
-		super(_AVAILABLE_RETURN_TYPES);
-	}
 
 	public String getFileExtension() {
 		return _fileExtension;
@@ -45,9 +36,6 @@ public class MediaItemSelectorCriterion extends BaseItemSelectorCriterion {
 	public void setMaxSize(long maxSize) {
 		_maxSize = maxSize;
 	}
-
-	private static final Set<Class<?>> _AVAILABLE_RETURN_TYPES =
-		getInmutableSet(FileEntry.class, URL.class);
 
 	private String _fileExtension = "*";
 	private long _maxSize = -1;

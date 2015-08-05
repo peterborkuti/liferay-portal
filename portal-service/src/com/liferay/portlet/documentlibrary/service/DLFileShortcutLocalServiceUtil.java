@@ -73,11 +73,9 @@ public class DLFileShortcutLocalServiceUtil {
 
 	public static void addFileShortcutResources(
 		com.liferay.portlet.documentlibrary.model.DLFileShortcut fileShortcut,
-		java.lang.String[] groupPermissions, java.lang.String[] guestPermissions)
+		com.liferay.portal.service.permission.ModelPermissions modelPermissions)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		getService()
-			.addFileShortcutResources(fileShortcut, groupPermissions,
-			guestPermissions);
+		getService().addFileShortcutResources(fileShortcut, modelPermissions);
 	}
 
 	public static void addFileShortcutResources(long fileShortcutId,
@@ -89,11 +87,9 @@ public class DLFileShortcutLocalServiceUtil {
 	}
 
 	public static void addFileShortcutResources(long fileShortcutId,
-		java.lang.String[] groupPermissions, java.lang.String[] guestPermissions)
+		com.liferay.portal.service.permission.ModelPermissions modelPermissions)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		getService()
-			.addFileShortcutResources(fileShortcutId, groupPermissions,
-			guestPermissions);
+		getService().addFileShortcutResources(fileShortcutId, modelPermissions);
 	}
 
 	/**
@@ -367,7 +363,7 @@ public class DLFileShortcutLocalServiceUtil {
 	}
 
 	public static com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery getExportActionableDynamicQuery(
-		com.liferay.portal.kernel.lar.PortletDataContext portletDataContext) {
+		com.liferay.portlet.exportimport.lar.PortletDataContext portletDataContext) {
 		return getService().getExportActionableDynamicQuery(portletDataContext);
 	}
 

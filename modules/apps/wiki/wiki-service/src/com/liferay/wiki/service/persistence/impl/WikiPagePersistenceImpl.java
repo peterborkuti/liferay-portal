@@ -25,7 +25,6 @@ import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.lar.ExportImportThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.sanitizer.Sanitizer;
@@ -21126,8 +21125,8 @@ public class WikiPagePersistenceImpl extends BasePersistenceImpl<WikiPage>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(WikiPage wikiPage) {
-		if (wikiPage.isNew()) {
+	protected void cacheUniqueFindersCache(WikiPage wikiPage, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					wikiPage.getUuid(), wikiPage.getGroupId()
 				};
@@ -21374,27 +21373,25 @@ public class WikiPagePersistenceImpl extends BasePersistenceImpl<WikiPage>
 			wikiPage.setUuid(uuid);
 		}
 
-		if (!ExportImportThreadLocal.isImportInProcess()) {
-			ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
+		ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
 
-			Date now = new Date();
+		Date now = new Date();
 
-			if (isNew && (wikiPage.getCreateDate() == null)) {
-				if (serviceContext == null) {
-					wikiPage.setCreateDate(now);
-				}
-				else {
-					wikiPage.setCreateDate(serviceContext.getCreateDate(now));
-				}
+		if (isNew && (wikiPage.getCreateDate() == null)) {
+			if (serviceContext == null) {
+				wikiPage.setCreateDate(now);
 			}
+			else {
+				wikiPage.setCreateDate(serviceContext.getCreateDate(now));
+			}
+		}
 
-			if (!wikiPageModelImpl.hasSetModifiedDate()) {
-				if (serviceContext == null) {
-					wikiPage.setModifiedDate(now);
-				}
-				else {
-					wikiPage.setModifiedDate(serviceContext.getModifiedDate(now));
-				}
+		if (!wikiPageModelImpl.hasSetModifiedDate()) {
+			if (serviceContext == null) {
+				wikiPage.setModifiedDate(now);
+			}
+			else {
+				wikiPage.setModifiedDate(serviceContext.getModifiedDate(now));
 			}
 		}
 
@@ -21413,8 +21410,9 @@ public class WikiPagePersistenceImpl extends BasePersistenceImpl<WikiPage>
 
 			try {
 				wikiPage.setTitle(SanitizerUtil.sanitize(companyId, groupId,
-						userId, WikiPage.class.getName(), pageId,
-						ContentTypes.TEXT_PLAIN, Sanitizer.MODE_ALL,
+						userId,
+						com.liferay.wiki.model.WikiPage.class.getName(),
+						pageId, ContentTypes.TEXT_PLAIN, Sanitizer.MODE_ALL,
 						wikiPage.getTitle(), null));
 			}
 			catch (SanitizerException se) {
@@ -22075,7 +22073,7 @@ public class WikiPagePersistenceImpl extends BasePersistenceImpl<WikiPage>
 			WikiPageImpl.class, wikiPage.getPrimaryKey(), wikiPage, false);
 
 		clearUniqueFindersCache(wikiPage);
-		cacheUniqueFindersCache(wikiPage);
+		cacheUniqueFindersCache(wikiPage, isNew);
 
 		wikiPage.resetOriginalValues();
 
@@ -22111,6 +22109,7 @@ public class WikiPagePersistenceImpl extends BasePersistenceImpl<WikiPage>
 		wikiPageImpl.setHead(wikiPage.isHead());
 		wikiPageImpl.setParentTitle(wikiPage.getParentTitle());
 		wikiPageImpl.setRedirectTitle(wikiPage.getRedirectTitle());
+		wikiPageImpl.setLastPublishDate(wikiPage.getLastPublishDate());
 		wikiPageImpl.setStatus(wikiPage.getStatus());
 		wikiPageImpl.setStatusByUserId(wikiPage.getStatusByUserId());
 		wikiPageImpl.setStatusByUserName(wikiPage.getStatusByUserName());
@@ -22473,6 +22472,11 @@ public class WikiPagePersistenceImpl extends BasePersistenceImpl<WikiPage>
 	@Override
 	protected Set<String> getBadColumnNames() {
 		return _badColumnNames;
+	}
+
+	@Override
+	protected Map<String, Integer> getTableColumnsMap() {
+		return WikiPageModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

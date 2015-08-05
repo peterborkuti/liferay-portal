@@ -15,6 +15,8 @@
 package com.liferay.document.library.google.docs.display.context;
 
 import com.liferay.document.library.google.docs.util.GoogleDocsMetadataHelper;
+import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
+import com.liferay.dynamic.data.mapping.storage.StorageEngine;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.repository.model.FileEntry;
@@ -28,8 +30,7 @@ import com.liferay.portlet.documentlibrary.model.DLFileEntryType;
 import com.liferay.portlet.documentlibrary.model.DLFileVersion;
 import com.liferay.portlet.documentlibrary.service.DLAppService;
 import com.liferay.portlet.documentlibrary.service.DLFileEntryMetadataLocalService;
-import com.liferay.portlet.dynamicdatamapping.model.DDMStructure;
-import com.liferay.portlet.dynamicdatamapping.storage.StorageEngine;
+import com.liferay.portlet.dynamicdatamapping.DDMStructure;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -70,7 +71,7 @@ public class GoogleDocsDLDisplayContextFactory
 
 		GoogleDocsMetadataHelper googleDocsMetadataHelper =
 			new GoogleDocsMetadataHelper(
-				(DLFileEntry)fileEntry.getModel(),
+				_ddmStructureLocalService, (DLFileEntry)fileEntry.getModel(),
 				_dlFileEntryMetadataLocalService, _storageEngine);
 
 		if (googleDocsMetadataHelper.isGoogleDocs()) {
@@ -104,7 +105,8 @@ public class GoogleDocsDLDisplayContextFactory
 		catch (PortalException pe) {
 			throw new SystemException(
 				"Unable to build GoogleDocsDLViewFileVersionDisplayContext " +
-					"for shortcut " + fileShortcut.getPrimaryKey(), pe);
+					"for shortcut " + fileShortcut.getPrimaryKey(),
+				pe);
 		}
 	}
 
@@ -124,8 +126,8 @@ public class GoogleDocsDLDisplayContextFactory
 
 		GoogleDocsMetadataHelper googleDocsMetadataHelper =
 			new GoogleDocsMetadataHelper(
-				(DLFileVersion)model, _dlFileEntryMetadataLocalService,
-				_storageEngine);
+				_ddmStructureLocalService, (DLFileVersion)model,
+				_dlFileEntryMetadataLocalService, _storageEngine);
 
 		if (googleDocsMetadataHelper.isGoogleDocs()) {
 			return new GoogleDocsDLViewFileVersionDisplayContext(
@@ -134,6 +136,13 @@ public class GoogleDocsDLDisplayContextFactory
 		}
 
 		return parentDLViewFileVersionDisplayContext;
+	}
+
+	@Reference
+	public void setDDMStructureLocalService(
+		DDMStructureLocalService ddmStructureLocalService) {
+
+		_ddmStructureLocalService = ddmStructureLocalService;
 	}
 
 	@Reference
@@ -153,6 +162,7 @@ public class GoogleDocsDLDisplayContextFactory
 		_storageEngine = storageEngine;
 	}
 
+	private DDMStructureLocalService _ddmStructureLocalService;
 	private DLAppService _dlAppService;
 	private DLFileEntryMetadataLocalService _dlFileEntryMetadataLocalService;
 	private StorageEngine _storageEngine;

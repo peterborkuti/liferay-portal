@@ -21,9 +21,9 @@ String redirect = ParamUtil.getString(request, "redirect");
 
 String backURL = ParamUtil.getString(request, "backURL", redirect);
 
-Organization organization = (Organization)request.getAttribute(WebKeys.ORGANIZATION);
+long organizationId = ParamUtil.getLong(request, "organizationId");
 
-long organizationId = BeanParamUtil.getLong(organization, request, "organizationId");
+Organization organization = OrganizationServiceUtil.fetchOrganization(organizationId);
 
 long parentOrganizationId = ParamUtil.getLong(request, "parentOrganizationSearchContainerPrimaryKeys", (organization != null) ? organization.getParentOrganizationId() : OrganizationConstants.DEFAULT_PARENT_ORGANIZATION_ID);
 String type = BeanParamUtil.getString(organization, request, "type");
@@ -68,12 +68,10 @@ else {
 	title="<%= headerTitle %>"
 />
 
-<portlet:actionURL var="editOrganizationActionURL">
-	<portlet:param name="struts_action" value="/users_admin/edit_organization" />
-</portlet:actionURL>
+<portlet:actionURL name="/users_admin/edit_organization" var="editOrganizationActionURL" />
 
 <portlet:renderURL var="editOrganizationRenderURL">
-	<portlet:param name="struts_action" value="/users_admin/edit_organization" />
+	<portlet:param name="mvcRenderCommandName" value="/users_admin/edit_organization" />
 	<portlet:param name="backURL" value="<%= backURL %>" />
 </portlet:renderURL>
 

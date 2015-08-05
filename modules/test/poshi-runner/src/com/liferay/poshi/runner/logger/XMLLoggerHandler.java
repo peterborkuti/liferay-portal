@@ -135,7 +135,9 @@ public final class XMLLoggerHandler {
 
 		loggerElement.setAttribute("data-status01", status);
 
-		if (status.equals("conditional-fail") || status.equals("pass")) {
+		if (status.equals("conditional-fail") || status.equals("fail") ||
+			status.equals("pass")) {
+
 			LoggerUtil.executeJavaScript(
 				"loggerInterface.fire('line-trigger', '" +
 					loggerElement.getID() + "', false)");
@@ -163,13 +165,14 @@ public final class XMLLoggerHandler {
 		List<Element> childElements = element.elements();
 
 		if ((!childElements.isEmpty() && !_isExecutingFunction(element)) ||
-			_isExecutingMacro(element)) {
+			_isExecutingMacro(element) || _isExecutingTestCase(element)) {
 
 			sb.append(_getBtnItemText("btn-collapse"));
 		}
 
 		if (!childElements.isEmpty() &&
-			(_isExecutingFunction(element) || _isExecutingMacro(element))) {
+			(_isExecutingFunction(element) || _isExecutingMacro(element) ||
+			 _isExecutingTestCase(element))) {
 
 			sb.append(_getBtnItemText("btn-var"));
 		}
@@ -272,6 +275,10 @@ public final class XMLLoggerHandler {
 							_getMacroExecuteLoggerElement(
 								childElement, "macro-mobile"));
 					}
+					else if (childElement.attributeValue("test-case") != null) {
+						loggerElement.addChildLoggerElement(
+							_getTestCaseExecuteLoggerElement(childElement));
+					}
 				}
 				else if (childElementName.equals("fail")) {
 					loggerElement.addChildLoggerElement(
@@ -323,8 +330,15 @@ public final class XMLLoggerHandler {
 	private static LoggerElement _getConditionalLoggerElement(Element element)
 		throws Exception {
 
-		LoggerElement loggerElement = _getLineGroupLoggerElement(
-			"conditional", element);
+		LoggerElement loggerElement = null;
+
+		if (_isExecutingFunction(element)) {
+			loggerElement = _getLineGroupLoggerElement(
+				"conditional-function", element);
+		}
+		else {
+			loggerElement = _getLineGroupLoggerElement("conditional", element);
+		}
 
 		List<Element> childElements = element.elements();
 
@@ -618,6 +632,52 @@ public final class XMLLoggerHandler {
 		return loggerElement;
 	}
 
+	private static LoggerElement _getTestCaseCommandLoggerElement(
+			String classCommandName)
+		throws Exception {
+
+		String className =
+			PoshiRunnerGetterUtil.getClassNameFromClassCommandName(
+				classCommandName);
+
+		if (className.equals("super")) {
+			className = PoshiRunnerGetterUtil.getExtendedTestCaseName();
+
+			classCommandName = classCommandName.replaceFirst(
+				"super", className);
+		}
+
+		Element commandElement = PoshiRunnerContext.getTestCaseCommandElement(
+			classCommandName);
+
+		Element rootElement = PoshiRunnerContext.getTestCaseRootElement(
+			className);
+
+		return _getChildContainerLoggerElement(commandElement, rootElement);
+	}
+
+	private static LoggerElement _getTestCaseExecuteLoggerElement(
+			Element executeElement)
+		throws Exception {
+
+		LoggerElement loggerElement = _getLineGroupLoggerElement(
+			"test-case", executeElement);
+
+		String classCommandName = executeElement.attributeValue("test-case");
+
+		PoshiRunnerStackTraceUtil.pushStackTrace(executeElement);
+
+		loggerElement.addChildLoggerElement(
+			_getTestCaseCommandLoggerElement(classCommandName));
+
+		PoshiRunnerStackTraceUtil.popStackTrace();
+
+		loggerElement.addChildLoggerElement(
+			_getClosingLineContainerLoggerElement(executeElement));
+
+		return loggerElement;
+	}
+
 	private static LoggerElement _getVarLoggerElement(Element element) {
 		return _getLineGroupLoggerElement("var", element);
 	}
@@ -648,6 +708,14 @@ public final class XMLLoggerHandler {
 			(element.attributeValue("macro-desktop") != null) ||
 			(element.attributeValue("macro-mobile") != null)) {
 
+			return true;
+		}
+
+		return false;
+	}
+
+	private static boolean _isExecutingTestCase(Element element) {
+		if (element.attributeValue("test-case") != null) {
 			return true;
 		}
 

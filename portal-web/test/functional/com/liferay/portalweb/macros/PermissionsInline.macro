@@ -78,18 +78,6 @@
 		</for>
 	</command>
 
-	<command name="gotoBlogsConfiguration">
-		<execute macro="Page#gotoPG">
-			<var name="pageName" value="${pageName}" />
-		</execute>
-
-		<execute function="Click" locator1="PGBlogs#OPTIONS" />
-		<execute function="AssertClick" locator1="PGBlogs#OPTIONS_MENULIST_CONFIGURATION" value1="Configuration" />
-
-		<execute function="SelectFrame" locator1="PGBlogsConfiguration#CONFIGURATION_IFRAME" />
-		<execute function="AssertClick" locator1="PGBlogsConfiguration#NAVIGATION_PERMISSIONS" value1="Permissions" />
-	</command>
-
 	<command name="gotoBlogsEntryCP">
 		<execute macro="Page#gotoContentCP">
 			<var name="pageName" value="${pageName}" />
@@ -108,9 +96,13 @@
 
 	<command name="gotoBlogsEntryPG">
 		<execute macro="Page#gotoPG">
+			<var name="defaultURL" value="${defaultURL}" />
+			<var name="nodePort" value="${nodePort}" />
 			<var name="pageName" value="${pageName}" />
 			<var name="siteName" value="${siteName}" />
 			<var name="siteURL" value="${siteURLTemp}" />
+			<var name="soDashboard" value="${soDashboard}" />
+			<var name="soPage" value="${soPage}" />
 		</execute>
 
 		<var name="key_entryTitle" value="${entryTitle}" />
@@ -122,9 +114,13 @@
 
 	<command name="gotoBlogsPG">
 		<execute macro="Page#gotoPG">
+			<var name="defaultURL" value="${defaultURL}" />
+			<var name="nodePort" value="${nodePort}" />
 			<var name="pageName" value="${pageName}" />
 			<var name="siteName" value="${siteName}" />
 			<var name="siteURL" value="${siteURLTemp}" />
+			<var name="soDashboard" value="${soDashboard}" />
+			<var name="soPage" value="${soPage}" />
 		</execute>
 
 		<execute function="AssertClick" locator1="PGBlogs#PERMISSIONS_BUTTON" value1="Permissions" />
@@ -134,6 +130,8 @@
 
 	<command name="gotoConfigurationPG">
 		<execute macro="Portlet#gotoPortletOptions">
+			<var name="portletName" value="${portletName}" />
+			<var name="portletNameBorderless" value="${portletNameBorderless}" />
 			<var name="portletOption" value="Configuration" />
 		</execute>
 
@@ -153,9 +151,13 @@
 
 	<command name="gotoDMFolderPG">
 		<execute macro="Page#gotoPG">
+			<var name="defaultURL" value="${defaultURL}" />
+			<var name="nodePort" value="${nodePort}" />
 			<var name="pageName" value="${pageName}" />
 			<var name="siteName" value="${siteName}" />
 			<var name="siteURL" value="${siteURLTemp}" />
+			<var name="soDashboard" value="${soDashboard}" />
+			<var name="soPage" value="${soPage}" />
 		</execute>
 
 		<var name="key_dmFolderName" value="${dmFolderName}" />
@@ -168,9 +170,13 @@
 
 	<command name="gotoDocumentsAndMediaPG">
 		<execute macro="Page#gotoPG">
+			<var name="defaultURL" value="${defaultURL}" />
+			<var name="nodePort" value="${nodePort}" />
 			<var name="pageName" value="${pageName}" />
 			<var name="siteName" value="${siteName}" />
 			<var name="siteURL" value="${siteURLTemp}" />
+			<var name="soDashboard" value="${soDashboard}" />
+			<var name="soPage" value="${soPage}" />
 		</execute>
 
 		<execute function="Click" locator1="PGDocumentsandmedia#FILTER_HOME_ACTIONS" />
@@ -201,9 +207,13 @@
 
 	<command name="gotoMessageBoardsPG">
 		<execute macro="Page#gotoPG">
+			<var name="defaultURL" value="${defaultURL}" />
+			<var name="nodePort" value="${nodePort}" />
 			<var name="pageName" value="${pageName}" />
 			<var name="siteName" value="${siteName}" />
 			<var name="siteURL" value="${siteURLTemp}" />
+			<var name="soDashboard" value="${soDashboard}" />
+			<var name="soPage" value="${soPage}" />
 		</execute>
 
 		<execute function="AssertClick" locator1="PGMessageboards#PERMISSIONS_BUTTON" value1="Permissions" />
@@ -213,9 +223,13 @@
 
 	<command name="gotoMessageBoardsThreadReplyPG">
 		<execute macro="Page#gotoPG">
+			<var name="defaultURL" value="${defaultURL}" />
+			<var name="nodePort" value="${nodePort}" />
 			<var name="pageName" value="${pageName}" />
 			<var name="siteName" value="${siteName}" />
 			<var name="siteURL" value="${siteURL}" />
+			<var name="soDashboard" value="${soDashboard}" />
+			<var name="soPage" value="${soPage}" />
 		</execute>
 
 		<var name="key_threadSubject" value="${threadSubject}" />
@@ -229,9 +243,13 @@
 
 	<command name="gotoPagePG">
 		<execute macro="Page#gotoPG">
+			<var name="defaultURL" value="${defaultURL}" />
+			<var name="nodePort" value="${nodePort}" />
 			<var name="pageName" value="${pageName}" />
 			<var name="siteName" value="${siteName}" />
 			<var name="siteURL" value="${siteURLTemp}" />
+			<var name="soDashboard" value="${soDashboard}" />
+			<var name="soPage" value="${soPage}" />
 		</execute>
 
 		<if>
@@ -263,7 +281,9 @@
 	</command>
 
 	<command name="gotoSitepageCP">
-		<execute macro="SitePage#addCmd" />
+		<execute macro="SitePage#addCmd">
+			<var name="sitePagePrivacy" value="${sitePagePrivacy}" />
+		</execute>
 
 		<execute macro="SitePage#expandRootCP" />
 
@@ -318,7 +338,7 @@
 		<var name="key_webContentTitle" value="${webContentTitle}" />
 
 		<execute function="MouseOver" locator1="CPWebcontent#ENTRY_DESCRIPTIVE_THUMBNAIL" />
-		<execute function="AssertClick" locator1="CPWebcontent#ENTRY_DESCRIPTIVE_MENULIST_ARROW" />
+		<execute function="Click" locator1="CPWebcontent#ENTRY_DESCRIPTIVE_MENULIST_ARROW" />
 		<execute function="AssertClick" locator1="CPWebcontent#ENTRY_MENULIST_PERMISSIONS" value1="Permissions" />
 
 		<execute function="SelectFrame" locator1="Permissions#PERMISSIONS_IFRAME" />

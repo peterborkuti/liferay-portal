@@ -15,13 +15,13 @@
 package com.liferay.wiki.service.permission;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.staging.permission.StagingPermissionUtil;
 import com.liferay.portal.kernel.workflow.permission.WorkflowPermissionUtil;
 import com.liferay.portal.security.auth.PrincipalException;
 import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.security.permission.BaseModelPermissionChecker;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.util.PropsValues;
+import com.liferay.portlet.exportimport.staging.permission.StagingPermissionUtil;
 import com.liferay.wiki.constants.WikiPortletKeys;
 import com.liferay.wiki.exception.NoSuchPageException;
 import com.liferay.wiki.model.WikiNode;
@@ -44,9 +44,13 @@ public class WikiPagePermissionChecker implements BaseModelPermissionChecker {
 			String actionId)
 		throws PortalException {
 
-		if (!contains(permissionChecker, resourcePrimKey, actionId)) {
-			throw new PrincipalException();
+		WikiPage page = WikiPageLocalServiceUtil.fetchPage(resourcePrimKey);
+
+		if (page == null) {
+			page = WikiPageLocalServiceUtil.getPageByPageId(resourcePrimKey);
 		}
+
+		check(permissionChecker, page, actionId);
 	}
 
 	public static void check(
@@ -55,7 +59,8 @@ public class WikiPagePermissionChecker implements BaseModelPermissionChecker {
 		throws PortalException {
 
 		if (!contains(permissionChecker, nodeId, title, version, actionId)) {
-			throw new PrincipalException();
+			throw new PrincipalException.MustHavePermission(
+				permissionChecker, WikiNode.class.getName(), nodeId, actionId);
 		}
 	}
 
@@ -65,7 +70,8 @@ public class WikiPagePermissionChecker implements BaseModelPermissionChecker {
 		throws PortalException {
 
 		if (!contains(permissionChecker, nodeId, title, actionId)) {
-			throw new PrincipalException();
+			throw new PrincipalException.MustHavePermission(
+				permissionChecker, WikiNode.class.getName(), nodeId, actionId);
 		}
 	}
 
@@ -74,7 +80,9 @@ public class WikiPagePermissionChecker implements BaseModelPermissionChecker {
 		throws PortalException {
 
 		if (!contains(permissionChecker, page, actionId)) {
-			throw new PrincipalException();
+			throw new PrincipalException.MustHavePermission(
+				permissionChecker, WikiPage.class.getName(), page.getPageId(),
+				actionId);
 		}
 	}
 

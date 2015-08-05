@@ -49,8 +49,15 @@ import java.util.Map;
  * @see ${entity.name}
  * @see ${packagePath}.model.impl.${entity.name}Impl
  * @see ${packagePath}.model.impl.${entity.name}ModelImpl
+<#if classDeprecated>
+ * @deprecated ${classDeprecatedComment}
+</#if>
  * @generated
  */
+
+<#if classDeprecated>
+	@Deprecated
+</#if>
 
 @ProviderType
 public interface ${entity.name}Model extends
@@ -99,19 +106,19 @@ public interface ${entity.name}Model extends
 	<#if entity.isStagedGroupedModel()>
 		, StagedGroupedModel
 
-		<#assign overrideColumnNames = overrideColumnNames + ["companyId", "createDate", "groupId", "modifiedDate", "stagedModelType", "userId", "userName", "userUuid", "uuid"]>
+		<#assign overrideColumnNames = overrideColumnNames + ["companyId", "createDate", "groupId", "lastPublishDate", "modifiedDate", "stagedModelType", "userId", "userName", "userUuid", "uuid"]>
 	</#if>
 
 	<#if entity.isStagedAuditedModel() && !entity.isStagedGroupedModel()>
 		, StagedAuditedModel
 
-		<#assign overrideColumnNames = overrideColumnNames + ["companyId", "createDate", "modifiedDate", "stagedModelType", "userId", "userName", "userUuid", "uuid"]>
+		<#assign overrideColumnNames = overrideColumnNames + ["companyId", "createDate", "lastPublishDate", "modifiedDate", "stagedModelType", "userId", "userName", "userUuid", "uuid"]>
 	</#if>
 
 	<#if !entity.isStagedAuditedModel() && !entity.isStagedGroupedModel() && entity.isStagedModel()>
 		, StagedModel
 
-		<#assign overrideColumnNames = overrideColumnNames + ["companyId", "createDate", "modifiedDate", "stagedModelType", "uuid"]>
+		<#assign overrideColumnNames = overrideColumnNames + ["companyId", "createDate", "lastPublishDate", "modifiedDate", "stagedModelType", "uuid"]>
 	</#if>
 
 	<#if entity.isTrashEnabled()>

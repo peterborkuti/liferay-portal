@@ -9,13 +9,23 @@
 </thead>
 <tbody>
 <tr>
+	<td>ADVANCED</td>
+	<td>//input[contains(@id,'advanced') and @type='radio']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>BASIC</td>
+	<td>//input[contains(@id,'basic') and @type='radio']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>CONTENT_ALL_CONTENT</td>
-	<td>//input[@id='_156_allContent']</td>
+	<td>//input[contains(@id,'allContent')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CONTENT_CHOOSE_CONTENT</td>
-	<td>//input[@id='_156_chooseContent']</td>
+	<td>//input[contains(@id,'chooseContent')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -26,6 +36,11 @@
 <tr>
 	<td>NONE</td>
 	<td>//label[contains(.,'None')]/input[@type='radio']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PRIMARY</td>
+	<td>//label[contains(.,'Primary')]/input[@type='radio']</td>
 	<td></td>
 </tr>
 <tr>

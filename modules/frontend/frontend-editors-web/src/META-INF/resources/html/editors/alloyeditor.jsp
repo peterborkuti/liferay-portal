@@ -26,17 +26,13 @@ if (Validator.isNull(doAsUserId)) {
 }
 
 boolean autoCreate = GetterUtil.getBoolean((String)request.getAttribute("liferay-ui:input-editor:autoCreate"));
-
 String contents = (String)request.getAttribute("liferay-ui:input-editor:contents");
 String contentsLanguageId = (String)request.getAttribute("liferay-ui:input-editor:contentsLanguageId");
 String cssClass = GetterUtil.getString((String)request.getAttribute("liferay-ui:input-editor:cssClass"));
 Map<String, Object> data = (Map<String, Object>)request.getAttribute("liferay-ui:input-editor:data");
-JSONObject editorConfigJSONObject = (data != null) ? (JSONObject)data.get("editorConfig") : null;
-JSONObject editorOptionsJSONObject = (data != null) ? (JSONObject)data.get("editorOptions") : null;
-
 String editorName = (String)request.getAttribute("liferay-ui:input-editor:editorName");
-String name = namespace + GetterUtil.getString((String)request.getAttribute("liferay-ui:input-editor:name"));
 String initMethod = (String)request.getAttribute("liferay-ui:input-editor:initMethod");
+String name = namespace + GetterUtil.getString((String)request.getAttribute("liferay-ui:input-editor:name"));
 
 String onBlurMethod = (String)request.getAttribute("liferay-ui:input-editor:onBlurMethod");
 
@@ -63,15 +59,25 @@ if (Validator.isNotNull(onInitMethod)) {
 }
 
 String placeholder = GetterUtil.getString((String)request.getAttribute("liferay-ui:input-editor:placeholder"));
-
 boolean showSource = GetterUtil.getBoolean((String)request.getAttribute("liferay-ui:input-editor:showSource"));
-
 boolean skipEditorLoading = GetterUtil.getBoolean((String)request.getAttribute("liferay-ui:input-editor:skipEditorLoading"));
+
+JSONObject editorConfigJSONObject = null;
+
+if (data != null) {
+	editorConfigJSONObject = (JSONObject)data.get("editorConfig");
+}
+
+EditorOptions editorOptions = null;
+
+if (data != null) {
+	editorOptions = (EditorOptions)data.get("editorOptions");
+}
 %>
 
 <c:if test="<%= !skipEditorLoading %>">
 	<liferay-util:html-top outputKey="js_editor_alloyeditor_skip_editor_loading">
-		<link href="<%= PortalUtil.getStaticResourceURL(request, themeDisplay.getCDNHost() + themeDisplay.getPathEditors() + "/editors/alloyeditor/assets/alloy-editor-ocean.css") %>" rel="stylesheet" type="text/css" />
+		<link href="<%= PortalUtil.getStaticResourceURL(request, themeDisplay.getCDNHost() + themeDisplay.getPathEditors() + "/editors/alloyeditor/assets/alloy-editor-atlas.css") %>" rel="stylesheet" type="text/css" />
 
 		<%
 		long javaScriptLastModified = PortalWebResourcesUtil.getLastModified(PortalWebResourceConstants.RESOURCE_TYPE_EDITORS);
@@ -82,6 +88,8 @@ boolean skipEditorLoading = GetterUtil.getBoolean((String)request.getAttribute("
 		<script src="<%= HtmlUtil.escape(PortalUtil.getStaticResourceURL(request, themeDisplay.getCDNHost() + themeDisplay.getPathEditors() + "/editors/alloyeditor/liferay-alloy-editor-no-ckeditor-min.js", javaScriptLastModified)) %>" type="text/javascript"></script>
 
 		<script type="text/javascript">
+			AlloyEditor.regexBasePath = /(^|.*[\\\/])(?:liferay-alloy-editor[^/]+|liferay-alloy-editor)\.js(?:\?.*|;.*)?$/i;
+
 			Liferay.namespace('EDITORS')['<%= editorName %>'] = true;
 		</script>
 	</liferay-util:html-top>
@@ -133,10 +141,14 @@ boolean skipEditorLoading = GetterUtil.getBoolean((String)request.getAttribute("
 <%
 String modules = "liferay-alloy-editor";
 
-String uploadURL = editorOptionsJSONObject.getString("uploadURL");
+String uploadURL = StringPool.BLANK;
 
-if (Validator.isNotNull(data) && Validator.isNotNull(uploadURL)) {
-	modules += ",liferay-editor-image-uploader";
+if (editorOptions != null) {
+	uploadURL = editorOptions.getUploadURL();
+
+	if (Validator.isNotNull(data) && Validator.isNotNull(uploadURL)) {
+		modules += ",liferay-editor-image-uploader";
+	}
 }
 
 if (showSource) {
@@ -192,15 +204,17 @@ if (showSource) {
 		alloyEditor = new A.LiferayAlloyEditor(
 			{
 				editorConfig: editorConfig,
-				editorOptions: <%= editorOptionsJSONObject %>,
 				namespace: '<%= name %>',
 				onBlurMethod: window['<%= HtmlUtil.escapeJS(onBlurMethod) %>'],
 				onChangeMethod: window['<%= HtmlUtil.escapeJS(onChangeMethod) %>'],
 				onFocusMethod: window['<%= HtmlUtil.escapeJS(onFocusMethod) %>'],
 				onInitMethod: window['<%= HtmlUtil.escapeJS(onInitMethod) %>'],
-				plugins: plugins
+				plugins: plugins,
+				textMode: <%= (editorOptions != null) ? editorOptions.isTextMode() : Boolean.FALSE.toString() %>
 			}
 		).render();
+
+		<liferay-util:dynamic-include key='<%= "com.liferay.frontend.editors.web#" + editorName + "#onEditorCreate" %>' />
 	};
 
 	window['<%= name %>'] = {
@@ -293,22 +307,3 @@ if (showSource) {
 
 	Liferay.on('destroyPortlet', destroyInstance);
 </aui:script>
-
-<%!
-public String marshallParams(Map<String, String> params) {
-	if (params == null) {
-		return StringPool.BLANK;
-	}
-
-	StringBundler sb = new StringBundler(4 * params.size());
-
-	for (Map.Entry<String, String> configParam : params.entrySet()) {
-		sb.append(StringPool.AMPERSAND);
-		sb.append(configParam.getKey());
-		sb.append(StringPool.EQUAL);
-		sb.append(HttpUtil.encodeURL(configParam.getValue()));
-	}
-
-	return sb.toString();
-}
-%>

@@ -18,8 +18,10 @@ import com.liferay.portal.kernel.search.TermQuery;
 import com.liferay.portal.kernel.search.TermQueryFactory;
 
 /**
- * @author Michael C. Han
+ * @author     Michael C. Han
+ * @deprecated As of 7.0.0
  */
+@Deprecated
 public class TermQueryFactoryImpl implements TermQueryFactory {
 
 	@Override

@@ -144,10 +144,9 @@ public class BlogsEntryLocalServiceWrapper implements BlogsEntryLocalService,
 	@Override
 	public void addEntryResources(
 		com.liferay.portlet.blogs.model.BlogsEntry entry,
-		java.lang.String[] groupPermissions, java.lang.String[] guestPermissions)
+		com.liferay.portal.service.permission.ModelPermissions modelPermissions)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		_blogsEntryLocalService.addEntryResources(entry, groupPermissions,
-			guestPermissions);
+		_blogsEntryLocalService.addEntryResources(entry, modelPermissions);
 	}
 
 	@Override
@@ -160,10 +159,9 @@ public class BlogsEntryLocalServiceWrapper implements BlogsEntryLocalService,
 
 	@Override
 	public void addEntryResources(long entryId,
-		java.lang.String[] groupPermissions, java.lang.String[] guestPermissions)
+		com.liferay.portal.service.permission.ModelPermissions modelPermissions)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		_blogsEntryLocalService.addEntryResources(entryId, groupPermissions,
-			guestPermissions);
+		_blogsEntryLocalService.addEntryResources(entryId, modelPermissions);
 	}
 
 	@Override
@@ -322,6 +320,12 @@ public class BlogsEntryLocalServiceWrapper implements BlogsEntryLocalService,
 		com.liferay.portal.kernel.dao.orm.Projection projection) {
 		return _blogsEntryLocalService.dynamicQueryCount(dynamicQuery,
 			projection);
+	}
+
+	@Override
+	public com.liferay.portal.kernel.repository.model.Folder fetchAttachmentsFolder(
+		long userId, long groupId) {
+		return _blogsEntryLocalService.fetchAttachmentsFolder(userId, groupId);
 	}
 
 	@Override
@@ -525,7 +529,7 @@ public class BlogsEntryLocalServiceWrapper implements BlogsEntryLocalService,
 
 	@Override
 	public com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery getExportActionableDynamicQuery(
-		com.liferay.portal.kernel.lar.PortletDataContext portletDataContext) {
+		com.liferay.portlet.exportimport.lar.PortletDataContext portletDataContext) {
 		return _blogsEntryLocalService.getExportActionableDynamicQuery(portletDataContext);
 	}
 
@@ -955,6 +959,14 @@ public class BlogsEntryLocalServiceWrapper implements BlogsEntryLocalService,
 		throws com.liferay.portal.kernel.exception.PortalException {
 		_blogsEntryLocalService.updateEntryResources(entry, groupPermissions,
 			guestPermissions);
+	}
+
+	@Override
+	public void updateEntryResources(
+		com.liferay.portlet.blogs.model.BlogsEntry entry,
+		com.liferay.portal.service.permission.ModelPermissions modelPermissions)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		_blogsEntryLocalService.updateEntryResources(entry, modelPermissions);
 	}
 
 	/**

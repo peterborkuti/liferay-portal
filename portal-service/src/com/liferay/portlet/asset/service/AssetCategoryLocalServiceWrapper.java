@@ -106,10 +106,10 @@ public class AssetCategoryLocalServiceWrapper
 	@Override
 	public void addCategoryResources(
 		com.liferay.portlet.asset.model.AssetCategory category,
-		java.lang.String[] groupPermissions, java.lang.String[] guestPermissions)
+		com.liferay.portal.service.permission.ModelPermissions modelPermissions)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		_assetCategoryLocalService.addCategoryResources(category,
-			groupPermissions, guestPermissions);
+			modelPermissions);
 	}
 
 	@Override
@@ -571,7 +571,7 @@ public class AssetCategoryLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery getExportActionableDynamicQuery(
-		com.liferay.portal.kernel.lar.PortletDataContext portletDataContext) {
+		com.liferay.portlet.exportimport.lar.PortletDataContext portletDataContext) {
 		return _assetCategoryLocalService.getExportActionableDynamicQuery(portletDataContext);
 	}
 

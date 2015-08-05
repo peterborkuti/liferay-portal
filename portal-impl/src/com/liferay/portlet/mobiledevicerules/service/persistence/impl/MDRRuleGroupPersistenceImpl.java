@@ -24,7 +24,6 @@ import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
-import com.liferay.portal.kernel.lar.ExportImportThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -2778,8 +2777,9 @@ public class MDRRuleGroupPersistenceImpl extends BasePersistenceImpl<MDRRuleGrou
 		}
 	}
 
-	protected void cacheUniqueFindersCache(MDRRuleGroup mdrRuleGroup) {
-		if (mdrRuleGroup.isNew()) {
+	protected void cacheUniqueFindersCache(MDRRuleGroup mdrRuleGroup,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					mdrRuleGroup.getUuid(), mdrRuleGroup.getGroupId()
 				};
@@ -2947,28 +2947,25 @@ public class MDRRuleGroupPersistenceImpl extends BasePersistenceImpl<MDRRuleGrou
 			mdrRuleGroup.setUuid(uuid);
 		}
 
-		if (!ExportImportThreadLocal.isImportInProcess()) {
-			ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
+		ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
 
-			Date now = new Date();
+		Date now = new Date();
 
-			if (isNew && (mdrRuleGroup.getCreateDate() == null)) {
-				if (serviceContext == null) {
-					mdrRuleGroup.setCreateDate(now);
-				}
-				else {
-					mdrRuleGroup.setCreateDate(serviceContext.getCreateDate(now));
-				}
+		if (isNew && (mdrRuleGroup.getCreateDate() == null)) {
+			if (serviceContext == null) {
+				mdrRuleGroup.setCreateDate(now);
 			}
+			else {
+				mdrRuleGroup.setCreateDate(serviceContext.getCreateDate(now));
+			}
+		}
 
-			if (!mdrRuleGroupModelImpl.hasSetModifiedDate()) {
-				if (serviceContext == null) {
-					mdrRuleGroup.setModifiedDate(now);
-				}
-				else {
-					mdrRuleGroup.setModifiedDate(serviceContext.getModifiedDate(
-							now));
-				}
+		if (!mdrRuleGroupModelImpl.hasSetModifiedDate()) {
+			if (serviceContext == null) {
+				mdrRuleGroup.setModifiedDate(now);
+			}
+			else {
+				mdrRuleGroup.setModifiedDate(serviceContext.getModifiedDate(now));
 			}
 		}
 
@@ -3061,7 +3058,7 @@ public class MDRRuleGroupPersistenceImpl extends BasePersistenceImpl<MDRRuleGrou
 			false);
 
 		clearUniqueFindersCache(mdrRuleGroup);
-		cacheUniqueFindersCache(mdrRuleGroup);
+		cacheUniqueFindersCache(mdrRuleGroup, isNew);
 
 		mdrRuleGroup.resetOriginalValues();
 
@@ -3088,6 +3085,7 @@ public class MDRRuleGroupPersistenceImpl extends BasePersistenceImpl<MDRRuleGrou
 		mdrRuleGroupImpl.setModifiedDate(mdrRuleGroup.getModifiedDate());
 		mdrRuleGroupImpl.setName(mdrRuleGroup.getName());
 		mdrRuleGroupImpl.setDescription(mdrRuleGroup.getDescription());
+		mdrRuleGroupImpl.setLastPublishDate(mdrRuleGroup.getLastPublishDate());
 
 		return mdrRuleGroupImpl;
 	}
@@ -3448,6 +3446,11 @@ public class MDRRuleGroupPersistenceImpl extends BasePersistenceImpl<MDRRuleGrou
 	@Override
 	protected Set<String> getBadColumnNames() {
 		return _badColumnNames;
+	}
+
+	@Override
+	protected Map<String, Integer> getTableColumnsMap() {
+		return MDRRuleGroupModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

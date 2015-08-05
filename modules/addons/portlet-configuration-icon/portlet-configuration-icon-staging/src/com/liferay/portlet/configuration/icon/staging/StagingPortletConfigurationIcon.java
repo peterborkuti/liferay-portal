@@ -16,19 +16,21 @@ package com.liferay.portlet.configuration.icon.staging;
 
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.configuration.BasePortletConfigurationIcon;
-import com.liferay.portal.kernel.portlet.configuration.PortletConfigurationIcon;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.theme.PortletDisplay;
 
-import org.osgi.service.component.annotations.Component;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Eudaldo Alonso
  */
-@Component(immediate = true, service = PortletConfigurationIcon.class)
 public class StagingPortletConfigurationIcon
 	extends BasePortletConfigurationIcon {
+
+	public StagingPortletConfigurationIcon(HttpServletRequest request) {
+		super(request);
+	}
 
 	@Override
 	public String getCssClass() {
@@ -52,40 +54,35 @@ public class StagingPortletConfigurationIcon
 
 	@Override
 	public String getOnClick() {
-		PortletDisplay portletDisplay = _themeDisplay.getPortletDisplay();
+		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
 
 		StringBundler sb = new StringBundler(11);
 
-		sb.append("Liferay.Portlet.openWindow('#p_p_id_");
-		sb.append(portletDisplay.getId());
-		sb.append("_', '");
-		sb.append(portletDisplay.getId());
-		sb.append("', '");
-		sb.append(HtmlUtil.escapeJS(portletDisplay.getURLStaging()));
-		sb.append("', '");
+		sb.append("Liferay.Portlet.openWindow({namespace: '");
 		sb.append(portletDisplay.getNamespace());
-		sb.append("', '");
-		sb.append(LanguageUtil.get(_themeDisplay.getLocale(), "staging"));
-		sb.append("'); return false;");
+		sb.append("', portlet: '#p_p_id_");
+		sb.append(portletDisplay.getId());
+		sb.append("_', portletId: '");
+		sb.append(portletDisplay.getId());
+		sb.append("', title: '");
+		sb.append(LanguageUtil.get(themeDisplay.getLocale(), "staging"));
+		sb.append("', uri: '");
+		sb.append(HtmlUtil.escapeJS(portletDisplay.getURLStaging()));
+		sb.append("'}); return false;");
 
 		return sb.toString();
 	}
 
 	@Override
 	public String getURL() {
-		PortletDisplay portletDisplay = _themeDisplay.getPortletDisplay();
+		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
 
 		return portletDisplay.getURLStaging();
 	}
 
 	@Override
-	public double getWeight() {
-		return 10.0;
-	}
-
-	@Override
 	public boolean isShow() {
-		PortletDisplay portletDisplay = _themeDisplay.getPortletDisplay();
+		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
 
 		return portletDisplay.isShowStagingIcon();
 	}

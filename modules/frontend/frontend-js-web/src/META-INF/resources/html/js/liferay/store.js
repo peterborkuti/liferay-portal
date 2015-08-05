@@ -2,6 +2,7 @@ AUI.add(
 	'liferay-store',
 	function(A) {
 		var Lang = A.Lang;
+
 		var isObject = Lang.isObject;
 
 		var TOKEN_SERIALIZE = 'serialize://';
@@ -12,7 +13,7 @@ AUI.add(
 			if (Lang.isFunction(value)) {
 				method = 'get';
 
-				if (Lang.isArray(key)) {
+				if (Array.isArray(key)) {
 					method = 'getAll';
 				}
 			}
@@ -53,7 +54,7 @@ AUI.add(
 					var obj = {};
 
 					if (isObject(value)) {
-						value = TOKEN_SERIALIZE + A.JSON.stringify(value);
+						value = TOKEN_SERIALIZE + JSON.stringify(value);
 					}
 
 					obj[key] = value;
@@ -77,7 +78,7 @@ AUI.add(
 
 								if (Lang.isString(responseData) && responseData.indexOf(TOKEN_SERIALIZE) === 0) {
 									try {
-										responseData = A.JSON.parse(responseData.substring(TOKEN_SERIALIZE.length));
+										responseData = JSON.parse(responseData.substring(TOKEN_SERIALIZE.length));
 									}
 									catch (e) {
 									}
@@ -104,6 +105,12 @@ AUI.add(
 					var instance = this;
 
 					config.data.p_auth = Liferay.authToken;
+
+					var doAsUserIdEncoded = themeDisplay.getDoAsUserIdEncoded();
+
+					if (doAsUserIdEncoded) {
+						config.data.doAsUserId = doAsUserIdEncoded;
+					}
 
 					A.io.request(
 						themeDisplay.getPathMain() + '/portal/session_click',

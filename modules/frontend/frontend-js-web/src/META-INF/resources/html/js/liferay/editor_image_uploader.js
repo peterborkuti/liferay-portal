@@ -11,8 +11,6 @@ AUI.add(
 
 		var STR_HOST = 'host';
 
-		var STR_UNDERSCORE = '_';
-
 		var TPL_IMAGE_CONTAINER = '<div class="uploading-image-container"></div>';
 
 		var TPL_PROGRESS_BAR = '<div class="progressbar"></div>';
@@ -52,7 +50,7 @@ AUI.add(
 
 						var editor = host.getNativeEditor();
 
-						editor.on('imagedrop', instance._uploadImage, instance);
+						editor.on('imagedrop', instance._onImageDrop, instance);
 
 						instance._editor = editor;
 
@@ -137,6 +135,38 @@ AUI.add(
 						return uploader;
 					},
 
+					_onImageDrop: function(event) {
+						var instance = this;
+
+						var eventData = event.data;
+
+						var file = eventData.file;
+						var image = eventData.el.$;
+
+						image = A.one(image);
+
+						var randomId = eventData.randomId || A.guid();
+
+						image.attr('data-random-id', randomId);
+
+						image.addClass(CSS_UPLOADING_IMAGE);
+
+						var uploader = eventData.uploader;
+
+						if (uploader) {
+							uploader.on('uploadcomplete', instance._onUploadComplete, instance);
+							uploader.on('uploaderror', instance._onUploadError, instance);
+							uploader.on('uploadprogress', instance._onUploadProgress, instance);
+						}
+						else {
+							file = new A.FileHTML5(file);
+
+							instance._uploadImage(file, randomId);
+						}
+
+						file.progressbar = instance._createProgressBar(image);
+					},
+
 					_onUploadComplete: function(event) {
 						var instance = this;
 
@@ -148,17 +178,17 @@ AUI.add(
 							progressbar.destroy();
 						}
 
-						var data = A.JSON.parse(event.data);
+						var data = JSON.parse(event.data);
 
 						if (data.success) {
-							var image = A.one(instance._editor.element.$).one('[data-random-id="' + data.image.randomId + '"]');
+							var image = A.one(instance._editor.element.$).one('[data-random-id="' + data.file.randomId + '"]');
 
 							if (image) {
 								image.removeAttribute('data-random-id');
 								image.removeClass(CSS_UPLOADING_IMAGE);
 
-								image.attr(data.image.attributeDataImageId, data.image.fileEntryId);
-								image.attr('src', data.image.url);
+								image.attr(data.file.attributeDataImageId, data.file.fileEntryId);
+								image.attr('src', data.file.url);
 
 								var imageContainer = image.ancestor();
 
@@ -168,7 +198,7 @@ AUI.add(
 							}
 						}
 						else {
-							instance._removeTempImage(data.image);
+							instance._removeTempImage(data.file);
 						}
 					},
 
@@ -214,23 +244,8 @@ AUI.add(
 						alert.set('bodyContent', strings.uploadingFileError).show();
 					},
 
-					_uploadImage: function(event) {
+					_uploadImage: function(file, randomId) {
 						var instance = this;
-
-						var file = event.data.file;
-						var image = event.data.el.$;
-
-						image = A.one(image);
-
-						var randomId = Lang.now() + STR_UNDERSCORE + Liferay.Util.randomInt();
-
-						image.attr('data-random-id', randomId);
-
-						image.addClass(CSS_UPLOADING_IMAGE);
-
-						file = new A.FileHTML5(file);
-
-						file.progressbar = instance._createProgressBar(image);
 
 						var uploader = instance._getUploader();
 

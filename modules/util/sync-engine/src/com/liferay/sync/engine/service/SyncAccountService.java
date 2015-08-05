@@ -124,7 +124,7 @@ public class SyncAccountService {
 		SyncFileService.addSyncFile(
 			null, null, null, filePathName, null,
 			String.valueOf(filePath.getFileName()), 0, 0, SyncFile.STATE_SYNCED,
-			syncAccount.getSyncAccountId(), SyncFile.TYPE_SYSTEM);
+			syncAccount.getSyncAccountId(), SyncFile.TYPE_SYSTEM, false);
 
 		// Sync sites
 
@@ -304,7 +304,10 @@ public class SyncAccountService {
 
 		// Sync files
 
-		SyncFileService.renameSyncFiles(sourceFilePathName, targetFilePathName);
+		if (syncFile.isFolder()) {
+			SyncFileService.renameSyncFiles(
+				sourceFilePathName, targetFilePathName);
+		}
 
 		// Sync sites
 

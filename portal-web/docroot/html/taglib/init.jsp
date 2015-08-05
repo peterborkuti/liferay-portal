@@ -16,7 +16,9 @@
 
 <%@ include file="/html/common/init.jsp" %>
 
-<%@ page import="com.liferay.portal.kernel.util.DateFormatFactoryUtil" %><%@
+<%@ page import="com.liferay.portal.kernel.comment.Comment" %><%@
+page import="com.liferay.portal.kernel.search.RelatedSearchResult" %><%@
+page import="com.liferay.portal.kernel.util.DateFormatFactoryUtil" %><%@
 page import="com.liferay.taglib.aui.AUIUtil" %><%@
 page import="com.liferay.taglib.util.InlineUtil" %>
 
@@ -26,6 +28,10 @@ PortletRequest portletRequest = (PortletRequest)request.getAttribute(JavaConstan
 PortletResponse portletResponse = (PortletResponse)request.getAttribute(JavaConstants.JAVAX_PORTLET_RESPONSE);
 
 String namespace = AUIUtil.getNamespace(portletRequest, portletResponse);
+
+if (Validator.isNull(namespace)) {
+	namespace = AUIUtil.getNamespace(request);
+}
 
 String currentURL = null;
 

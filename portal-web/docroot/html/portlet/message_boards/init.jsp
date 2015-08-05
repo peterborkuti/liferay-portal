@@ -19,7 +19,6 @@
 <%@ page import="com.liferay.portal.kernel.util.MimeTypesUtil" %><%@
 page import="com.liferay.portlet.messageboards.BannedUserException" %><%@
 page import="com.liferay.portlet.messageboards.CategoryNameException" %><%@
-page import="com.liferay.portlet.messageboards.DiscussionMaxCommentsException" %><%@
 page import="com.liferay.portlet.messageboards.LockedThreadException" %><%@
 page import="com.liferay.portlet.messageboards.MBGroupServiceSettings" %><%@
 page import="com.liferay.portlet.messageboards.MailingListEmailAddressException" %><%@
@@ -34,6 +33,7 @@ page import="com.liferay.portlet.messageboards.NoSuchCategoryException" %><%@
 page import="com.liferay.portlet.messageboards.NoSuchMessageException" %><%@
 page import="com.liferay.portlet.messageboards.RequiredMessageException" %><%@
 page import="com.liferay.portlet.messageboards.SplitThreadException" %><%@
+page import="com.liferay.portlet.messageboards.constants.MBConstants" %><%@
 page import="com.liferay.portlet.messageboards.model.MBBan" %><%@
 page import="com.liferay.portlet.messageboards.model.MBCategory" %><%@
 page import="com.liferay.portlet.messageboards.model.MBCategoryConstants" %><%@
@@ -60,7 +60,6 @@ page import="com.liferay.portlet.messageboards.service.MBThreadServiceUtil" %><%
 page import="com.liferay.portlet.messageboards.service.permission.MBCategoryPermission" %><%@
 page import="com.liferay.portlet.messageboards.service.permission.MBMessagePermission" %><%@
 page import="com.liferay.portlet.messageboards.service.permission.MBPermission" %><%@
-page import="com.liferay.portlet.messageboards.util.MBConstants" %><%@
 page import="com.liferay.portlet.messageboards.util.MBMessageAttachmentsUtil" %><%@
 page import="com.liferay.portlet.messageboards.util.comparator.MessageCreateDateComparator" %><%@
 page import="com.liferay.portlet.ratings.model.RatingsStats" %><%@
@@ -89,12 +88,6 @@ boolean enableRSS = mbGroupServiceSettings.isEnableRSS();
 int rssDelta = mbGroupServiceSettings.getRSSDelta();
 String rssDisplayStyle = mbGroupServiceSettings.getRSSDisplayStyle();
 String rssFeedType = mbGroupServiceSettings.getRSSFeedType();
-
-ResourceURL rssURL = liferayPortletResponse.createResourceURL();
-
-rssURL.setParameter("struts_action", "/message_boards/rss");
-rssURL.setParameter("p_l_id", String.valueOf(plid));
-rssURL.setParameter("mbCategoryId", String.valueOf(scopeGroupId));
 
 boolean categoriesPanelCollapsible = true;
 boolean categoriesPanelExtended = true;

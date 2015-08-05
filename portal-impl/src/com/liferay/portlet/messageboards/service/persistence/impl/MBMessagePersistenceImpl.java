@@ -25,7 +25,6 @@ import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.lar.ExportImportThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.sanitizer.Sanitizer;
@@ -18200,8 +18199,8 @@ public class MBMessagePersistenceImpl extends BasePersistenceImpl<MBMessage>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(MBMessage mbMessage) {
-		if (mbMessage.isNew()) {
+	protected void cacheUniqueFindersCache(MBMessage mbMessage, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					mbMessage.getUuid(), mbMessage.getGroupId()
 				};
@@ -18366,28 +18365,25 @@ public class MBMessagePersistenceImpl extends BasePersistenceImpl<MBMessage>
 			mbMessage.setUuid(uuid);
 		}
 
-		if (!ExportImportThreadLocal.isImportInProcess()) {
-			ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
+		ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
 
-			Date now = new Date();
+		Date now = new Date();
 
-			if (isNew && (mbMessage.getCreateDate() == null)) {
-				if (serviceContext == null) {
-					mbMessage.setCreateDate(now);
-				}
-				else {
-					mbMessage.setCreateDate(serviceContext.getCreateDate(now));
-				}
+		if (isNew && (mbMessage.getCreateDate() == null)) {
+			if (serviceContext == null) {
+				mbMessage.setCreateDate(now);
 			}
+			else {
+				mbMessage.setCreateDate(serviceContext.getCreateDate(now));
+			}
+		}
 
-			if (!mbMessageModelImpl.hasSetModifiedDate()) {
-				if (serviceContext == null) {
-					mbMessage.setModifiedDate(now);
-				}
-				else {
-					mbMessage.setModifiedDate(serviceContext.getModifiedDate(
-							now));
-				}
+		if (!mbMessageModelImpl.hasSetModifiedDate()) {
+			if (serviceContext == null) {
+				mbMessage.setModifiedDate(now);
+			}
+			else {
+				mbMessage.setModifiedDate(serviceContext.getModifiedDate(now));
 			}
 		}
 
@@ -18406,8 +18402,9 @@ public class MBMessagePersistenceImpl extends BasePersistenceImpl<MBMessage>
 
 			try {
 				mbMessage.setSubject(SanitizerUtil.sanitize(companyId, groupId,
-						userId, MBMessage.class.getName(), messageId,
-						ContentTypes.TEXT_PLAIN, Sanitizer.MODE_ALL,
+						userId,
+						com.liferay.portlet.messageboards.model.MBMessage.class.getName(),
+						messageId, ContentTypes.TEXT_PLAIN, Sanitizer.MODE_ALL,
 						mbMessage.getSubject(), null));
 			}
 			catch (SanitizerException se) {
@@ -18998,7 +18995,7 @@ public class MBMessagePersistenceImpl extends BasePersistenceImpl<MBMessage>
 			MBMessageImpl.class, mbMessage.getPrimaryKey(), mbMessage, false);
 
 		clearUniqueFindersCache(mbMessage);
-		cacheUniqueFindersCache(mbMessage);
+		cacheUniqueFindersCache(mbMessage, isNew);
 
 		mbMessage.resetOriginalValues();
 
@@ -19036,6 +19033,7 @@ public class MBMessagePersistenceImpl extends BasePersistenceImpl<MBMessage>
 		mbMessageImpl.setPriority(mbMessage.getPriority());
 		mbMessageImpl.setAllowPingbacks(mbMessage.isAllowPingbacks());
 		mbMessageImpl.setAnswer(mbMessage.isAnswer());
+		mbMessageImpl.setLastPublishDate(mbMessage.getLastPublishDate());
 		mbMessageImpl.setStatus(mbMessage.getStatus());
 		mbMessageImpl.setStatusByUserId(mbMessage.getStatusByUserId());
 		mbMessageImpl.setStatusByUserName(mbMessage.getStatusByUserName());
@@ -19400,6 +19398,11 @@ public class MBMessagePersistenceImpl extends BasePersistenceImpl<MBMessage>
 	@Override
 	protected Set<String> getBadColumnNames() {
 		return _badColumnNames;
+	}
+
+	@Override
+	protected Map<String, Integer> getTableColumnsMap() {
+		return MBMessageModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

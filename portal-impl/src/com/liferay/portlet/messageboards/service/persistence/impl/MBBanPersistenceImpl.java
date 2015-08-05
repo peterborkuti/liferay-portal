@@ -23,7 +23,6 @@ import com.liferay.portal.kernel.dao.orm.Query;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
-import com.liferay.portal.kernel.lar.ExportImportThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -3144,8 +3143,8 @@ public class MBBanPersistenceImpl extends BasePersistenceImpl<MBBan>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(MBBan mbBan) {
-		if (mbBan.isNew()) {
+	protected void cacheUniqueFindersCache(MBBan mbBan, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] { mbBan.getUuid(), mbBan.getGroupId() };
 
 			FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_UUID_G, args,
@@ -3336,27 +3335,25 @@ public class MBBanPersistenceImpl extends BasePersistenceImpl<MBBan>
 			mbBan.setUuid(uuid);
 		}
 
-		if (!ExportImportThreadLocal.isImportInProcess()) {
-			ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
+		ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
 
-			Date now = new Date();
+		Date now = new Date();
 
-			if (isNew && (mbBan.getCreateDate() == null)) {
-				if (serviceContext == null) {
-					mbBan.setCreateDate(now);
-				}
-				else {
-					mbBan.setCreateDate(serviceContext.getCreateDate(now));
-				}
+		if (isNew && (mbBan.getCreateDate() == null)) {
+			if (serviceContext == null) {
+				mbBan.setCreateDate(now);
 			}
+			else {
+				mbBan.setCreateDate(serviceContext.getCreateDate(now));
+			}
+		}
 
-			if (!mbBanModelImpl.hasSetModifiedDate()) {
-				if (serviceContext == null) {
-					mbBan.setModifiedDate(now);
-				}
-				else {
-					mbBan.setModifiedDate(serviceContext.getModifiedDate(now));
-				}
+		if (!mbBanModelImpl.hasSetModifiedDate()) {
+			if (serviceContext == null) {
+				mbBan.setModifiedDate(now);
+			}
+			else {
+				mbBan.setModifiedDate(serviceContext.getModifiedDate(now));
 			}
 		}
 
@@ -3477,7 +3474,7 @@ public class MBBanPersistenceImpl extends BasePersistenceImpl<MBBan>
 			MBBanImpl.class, mbBan.getPrimaryKey(), mbBan, false);
 
 		clearUniqueFindersCache(mbBan);
-		cacheUniqueFindersCache(mbBan);
+		cacheUniqueFindersCache(mbBan, isNew);
 
 		mbBan.resetOriginalValues();
 
@@ -3503,6 +3500,7 @@ public class MBBanPersistenceImpl extends BasePersistenceImpl<MBBan>
 		mbBanImpl.setCreateDate(mbBan.getCreateDate());
 		mbBanImpl.setModifiedDate(mbBan.getModifiedDate());
 		mbBanImpl.setBanUserId(mbBan.getBanUserId());
+		mbBanImpl.setLastPublishDate(mbBan.getLastPublishDate());
 
 		return mbBanImpl;
 	}
@@ -3861,6 +3859,11 @@ public class MBBanPersistenceImpl extends BasePersistenceImpl<MBBan>
 	@Override
 	protected Set<String> getBadColumnNames() {
 		return _badColumnNames;
+	}
+
+	@Override
+	protected Map<String, Integer> getTableColumnsMap() {
+		return MBBanModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

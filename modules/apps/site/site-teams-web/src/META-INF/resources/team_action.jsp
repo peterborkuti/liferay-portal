@@ -26,7 +26,6 @@ Team team = (Team)row.getObject();
 	<c:if test="<%= TeamPermissionUtil.contains(permissionChecker, team, ActionKeys.UPDATE) %>">
 		<portlet:renderURL var="editURL">
 			<portlet:param name="mvcPath" value="/edit_team.jsp" />
-			<portlet:param name="redirect" value="<%= currentURL %>" />
 			<portlet:param name="teamId" value="<%= String.valueOf(team.getTeamId()) %>" />
 		</portlet:renderURL>
 
@@ -52,9 +51,9 @@ Team team = (Team)row.getObject();
 		%>
 
 		<liferay-security:permissionsURL
-			modelResource="<%= Role.class.getName() %>"
+			modelResource="<%= Team.class.getName() %>"
 			modelResourceDescription="<%= team.getName() %>"
-			resourcePrimKey="<%= String.valueOf(role.getRoleId()) %>"
+			resourcePrimKey="<%= String.valueOf(team.getTeamId()) %>"
 			roleTypes="<%= roleTypes %>"
 			var="permissionsURL"
 			windowState="<%= LiferayWindowState.POP_UP.toString() %>"
@@ -72,7 +71,6 @@ Team team = (Team)row.getObject();
 	<c:if test="<%= TeamPermissionUtil.contains(permissionChecker, team, ActionKeys.ASSIGN_MEMBERS) %>">
 		<portlet:renderURL var="assignMembersURL">
 			<portlet:param name="mvcPath" value="/edit_team_assignments.jsp" />
-			<portlet:param name="redirect" value="<%= currentURL %>" />
 			<portlet:param name="teamId" value="<%= String.valueOf(team.getTeamId()) %>" />
 		</portlet:renderURL>
 

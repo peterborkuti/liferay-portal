@@ -24,7 +24,6 @@ import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.lar.ExportImportThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.sanitizer.Sanitizer;
@@ -73,8 +72,10 @@ import java.util.Set;
  * @author Brian Wing Shun Chan
  * @see CalEventPersistence
  * @see com.liferay.portlet.calendar.service.persistence.CalEventUtil
+ * @deprecated As of 7.0.0, with no direct replacement
  * @generated
  */
+@Deprecated
 @ProviderType
 public class CalEventPersistenceImpl extends BasePersistenceImpl<CalEvent>
 	implements CalEventPersistence {
@@ -5219,8 +5220,8 @@ public class CalEventPersistenceImpl extends BasePersistenceImpl<CalEvent>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(CalEvent calEvent) {
-		if (calEvent.isNew()) {
+	protected void cacheUniqueFindersCache(CalEvent calEvent, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					calEvent.getUuid(), calEvent.getGroupId()
 				};
@@ -5384,27 +5385,25 @@ public class CalEventPersistenceImpl extends BasePersistenceImpl<CalEvent>
 			calEvent.setUuid(uuid);
 		}
 
-		if (!ExportImportThreadLocal.isImportInProcess()) {
-			ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
+		ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
 
-			Date now = new Date();
+		Date now = new Date();
 
-			if (isNew && (calEvent.getCreateDate() == null)) {
-				if (serviceContext == null) {
-					calEvent.setCreateDate(now);
-				}
-				else {
-					calEvent.setCreateDate(serviceContext.getCreateDate(now));
-				}
+		if (isNew && (calEvent.getCreateDate() == null)) {
+			if (serviceContext == null) {
+				calEvent.setCreateDate(now);
 			}
+			else {
+				calEvent.setCreateDate(serviceContext.getCreateDate(now));
+			}
+		}
 
-			if (!calEventModelImpl.hasSetModifiedDate()) {
-				if (serviceContext == null) {
-					calEvent.setModifiedDate(now);
-				}
-				else {
-					calEvent.setModifiedDate(serviceContext.getModifiedDate(now));
-				}
+		if (!calEventModelImpl.hasSetModifiedDate()) {
+			if (serviceContext == null) {
+				calEvent.setModifiedDate(now);
+			}
+			else {
+				calEvent.setModifiedDate(serviceContext.getModifiedDate(now));
 			}
 		}
 
@@ -5423,13 +5422,15 @@ public class CalEventPersistenceImpl extends BasePersistenceImpl<CalEvent>
 
 			try {
 				calEvent.setTitle(SanitizerUtil.sanitize(companyId, groupId,
-						userId, CalEvent.class.getName(), eventId,
-						ContentTypes.TEXT_PLAIN, Sanitizer.MODE_ALL,
+						userId,
+						com.liferay.portlet.calendar.model.CalEvent.class.getName(),
+						eventId, ContentTypes.TEXT_PLAIN, Sanitizer.MODE_ALL,
 						calEvent.getTitle(), null));
 
 				calEvent.setDescription(SanitizerUtil.sanitize(companyId,
-						groupId, userId, CalEvent.class.getName(), eventId,
-						ContentTypes.TEXT_HTML, Sanitizer.MODE_ALL,
+						groupId, userId,
+						com.liferay.portlet.calendar.model.CalEvent.class.getName(),
+						eventId, ContentTypes.TEXT_HTML, Sanitizer.MODE_ALL,
 						calEvent.getDescription(), null));
 			}
 			catch (SanitizerException se) {
@@ -5607,7 +5608,7 @@ public class CalEventPersistenceImpl extends BasePersistenceImpl<CalEvent>
 			CalEventImpl.class, calEvent.getPrimaryKey(), calEvent, false);
 
 		clearUniqueFindersCache(calEvent);
-		cacheUniqueFindersCache(calEvent);
+		cacheUniqueFindersCache(calEvent, isNew);
 
 		calEvent.resetOriginalValues();
 
@@ -6005,6 +6006,11 @@ public class CalEventPersistenceImpl extends BasePersistenceImpl<CalEvent>
 	@Override
 	protected Set<String> getBadColumnNames() {
 		return _badColumnNames;
+	}
+
+	@Override
+	protected Map<String, Integer> getTableColumnsMap() {
+		return CalEventModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

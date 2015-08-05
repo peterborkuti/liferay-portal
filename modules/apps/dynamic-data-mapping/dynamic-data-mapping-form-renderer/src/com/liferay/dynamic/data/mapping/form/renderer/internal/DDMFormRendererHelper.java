@@ -17,6 +17,10 @@ package com.liferay.dynamic.data.mapping.form.renderer.internal;
 import com.liferay.dynamic.data.mapping.form.renderer.DDMFormRendererConstants;
 import com.liferay.dynamic.data.mapping.form.renderer.DDMFormRenderingContext;
 import com.liferay.dynamic.data.mapping.form.renderer.DDMFormRenderingException;
+import com.liferay.dynamic.data.mapping.registry.DDMFormFieldRenderer;
+import com.liferay.dynamic.data.mapping.registry.DDMFormFieldType;
+import com.liferay.dynamic.data.mapping.registry.DDMFormFieldTypeRegistryUtil;
+import com.liferay.dynamic.data.mapping.render.DDMFormFieldRenderingContext;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringBundler;
@@ -27,10 +31,6 @@ import com.liferay.portlet.dynamicdatamapping.model.DDMForm;
 import com.liferay.portlet.dynamicdatamapping.model.DDMFormField;
 import com.liferay.portlet.dynamicdatamapping.model.LocalizedValue;
 import com.liferay.portlet.dynamicdatamapping.model.Value;
-import com.liferay.portlet.dynamicdatamapping.registry.DDMFormFieldRenderer;
-import com.liferay.portlet.dynamicdatamapping.registry.DDMFormFieldType;
-import com.liferay.portlet.dynamicdatamapping.registry.DDMFormFieldTypeRegistryUtil;
-import com.liferay.portlet.dynamicdatamapping.render.DDMFormFieldRenderingContext;
 import com.liferay.portlet.dynamicdatamapping.storage.DDMFormFieldValue;
 import com.liferay.portlet.dynamicdatamapping.storage.DDMFormValues;
 
@@ -62,6 +62,12 @@ public class DDMFormRendererHelper {
 		else {
 			return getRenderedDDMFormFields();
 		}
+	}
+
+	public void setExpressionEvaluator(
+		ExpressionEvaluator expressionEvaluator) {
+
+		_expressionEvaluator = expressionEvaluator;
 	}
 
 	protected DDMFormFieldRenderingContext
@@ -212,6 +218,9 @@ public class DDMFormRendererHelper {
 			ddmFormField.getLabel(), ddmFormFieldRenderingContext);
 		setDDMFormFieldRenderingContextName(
 			ddmFormFieldParameterName, ddmFormFieldRenderingContext);
+		setDDMFormFieldRenderingContextVisible(
+			ddmFormField.getVisibilityExpression(),
+			ddmFormFieldRenderingContext);
 
 		return renderDDMFormField(ddmFormField, ddmFormFieldRenderingContext);
 	}
@@ -228,6 +237,9 @@ public class DDMFormRendererHelper {
 			ddmFormField.getLabel(), ddmFormFieldRenderingContext);
 		setDDMFormFieldRenderingContextValue(
 			ddmFormFieldValue.getValue(), ddmFormFieldRenderingContext);
+		setDDMFormFieldRenderingContextVisible(
+			ddmFormField.getVisibilityExpression(),
+			ddmFormFieldRenderingContext);
 
 		return renderDDMFormField(ddmFormField, ddmFormFieldRenderingContext);
 	}
@@ -329,10 +341,25 @@ public class DDMFormRendererHelper {
 			value.getString(ddmFormFieldRenderingContext.getLocale()));
 	}
 
-	protected String wrapDDMFormFieldHTML(String ddmFormFieldHTML) {
-		StringBundler sb = new StringBundler(3);
+	protected void setDDMFormFieldRenderingContextVisible(
+		String visibilityExpression,
+		DDMFormFieldRenderingContext ddmFormFieldRenderingContext) {
 
-		sb.append("<div class=\"lfr-ddm-form-field-container\">");
+		boolean visible = true;
+
+		if (Validator.isNotNull(visibilityExpression)) {
+			visible = _expressionEvaluator.evaluateBooleanExpression(
+				visibilityExpression);
+		}
+
+		ddmFormFieldRenderingContext.setVisible(visible);
+	}
+
+	protected String wrapDDMFormFieldHTML(String ddmFormFieldHTML) {
+		StringBundler sb = new StringBundler(4);
+
+		sb.append("<div class=\"lfr-ddm-form-field-container");
+		sb.append("\">");
 		sb.append(ddmFormFieldHTML);
 		sb.append("</div>");
 
@@ -343,5 +370,6 @@ public class DDMFormRendererHelper {
 	private final Map<String, DDMFormField> _ddmFormFieldsMap;
 	private final DDMFormRenderingContext _ddmFormRenderingContext;
 	private final DDMFormValues _ddmFormValues;
+	private ExpressionEvaluator _expressionEvaluator;
 
 }

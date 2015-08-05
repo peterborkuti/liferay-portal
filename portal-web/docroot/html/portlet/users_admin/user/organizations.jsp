@@ -21,6 +21,8 @@ User selUser = (User)request.getAttribute("user.selUser");
 
 List<Organization> organizations = (List<Organization>)request.getAttribute("user.organizations");
 
+String organizationIdsString = ParamUtil.getString(request, "organizationsSearchContainerPrimaryKeys");
+
 currentURLObj.setParameter("historyKey", renderResponse.getNamespace() + "organizations");
 %>
 
@@ -36,14 +38,13 @@ currentURLObj.setParameter("historyKey", renderResponse.getNamespace() + "organi
 	/>
 </liferay-util:buffer>
 
-<aui:input name="addOrganizationIds" type="hidden" />
+<aui:input name="addOrganizationIds" type="hidden" value="<%= organizationIdsString %>" />
 <aui:input name="deleteOrganizationIds" type="hidden" />
 
 <h3><liferay-ui:message key="organizations" /></h3>
 
 <liferay-ui:search-container
 	curParam="organizationsCur"
-	emptyResultsMessage="no-organizations-were-found"
 	headerNames="name,type,roles,null"
 	iteratorURL="<%= currentURLObj %>"
 	total="<%= organizations.size() %>"
@@ -110,6 +111,13 @@ currentURLObj.setParameter("historyKey", renderResponse.getNamespace() + "organi
 		var Util = Liferay.Util;
 
 		var addOrganizationIds = [];
+
+		var organizationValues = document.<portlet:namespace />fm.<portlet:namespace />addOrganizationIds.value;
+
+		if (organizationValues) {
+			addOrganizationIds.push(organizationValues);
+		}
+
 		var deleteOrganizationIds = [];
 
 		var searchContainer = Liferay.SearchContainer.get('<portlet:namespace />organizationsSearchContainer');
@@ -152,7 +160,7 @@ currentURLObj.setParameter("historyKey", renderResponse.getNamespace() + "organi
 					function(item, index, collection) {
 						var organizationId = item.attr('data-organizationid');
 
-						if (AArray.indexOf(deleteOrganizationIds, organizationId) != -1) {
+						if (deleteOrganizationIds.indexOf(organizationId) != -1) {
 							Util.toggleDisabled(item, false);
 						}
 					}
@@ -174,7 +182,7 @@ currentURLObj.setParameter("historyKey", renderResponse.getNamespace() + "organi
 							},
 							id: '<portlet:namespace />selectOrganization',
 							title: '<liferay-ui:message arguments="organization" key="select-x" />',
-							uri: '<portlet:renderURL windowState="<%= LiferayWindowState.POP_UP.toString() %>"><portlet:param name="struts_action" value="/users_admin/select_organization" /><portlet:param name="p_u_i_d" value='<%= selUser == null ? "0" : String.valueOf(selUser.getUserId()) %>' /></portlet:renderURL>'
+							uri: '<portlet:renderURL windowState="<%= LiferayWindowState.POP_UP.toString() %>"><portlet:param name="mvcPath" value="/html/portlet/users_admin/select_organization.jsp" /><portlet:param name="p_u_i_d" value='<%= selUser == null ? "0" : String.valueOf(selUser.getUserId()) %>' /></portlet:renderURL>'
 						},
 						function(event) {
 							var rowColumns = [];

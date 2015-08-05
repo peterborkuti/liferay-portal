@@ -21,10 +21,10 @@ import com.liferay.portal.NoSuchUserGroupException;
 import com.liferay.portal.kernel.bean.BeanPropertiesUtil;
 import com.liferay.portal.kernel.cache.PortalCache;
 import com.liferay.portal.kernel.cache.SingleVMPool;
-import com.liferay.portal.kernel.dao.shard.ShardUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.ldap.LDAPUtil;
+import com.liferay.portal.kernel.lock.LockManager;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -59,7 +59,6 @@ import com.liferay.portal.security.ldap.LDAPUserImporter;
 import com.liferay.portal.security.ldap.PortalLDAPUtil;
 import com.liferay.portal.service.CompanyLocalServiceUtil;
 import com.liferay.portal.service.GroupLocalServiceUtil;
-import com.liferay.portal.service.LockLocalServiceUtil;
 import com.liferay.portal.service.RoleLocalServiceUtil;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.UserGroupLocalServiceUtil;
@@ -354,12 +353,10 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 		}
 
 		try {
-			ShardUtil.pushCompanyService(companyId);
-
 			long defaultUserId = UserLocalServiceUtil.getDefaultUserId(
 				companyId);
 
-			if (LockLocalServiceUtil.hasLock(
+			if (_lockManager.hasLock(
 					defaultUserId, UserImporterUtil.class.getName(),
 					companyId)) {
 
@@ -372,7 +369,7 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 				return;
 			}
 
-			LockLocalServiceUtil.lock(
+			_lockManager.lock(
 				defaultUserId, UserImporterUtil.class.getName(), companyId,
 				LDAPUserImporterImpl.class.getName(), false,
 				_ldapConfiguration.importLockExpirationTime());
@@ -399,10 +396,7 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 			}
 		}
 		finally {
-			LockLocalServiceUtil.unlock(
-				UserImporterUtil.class.getName(), companyId);
-
-			ShardUtil.popCompanyService();
+			_lockManager.unlock(UserImporterUtil.class.getName(), companyId);
 		}
 	}
 
@@ -480,7 +474,7 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 
 	@Reference
 	public void setSingleVMPool(SingleVMPool singleVMPool) {
-		_portalCache = (PortalCache<String, Long>)singleVMPool.getCache(
+		_portalCache = (PortalCache<String, Long>)singleVMPool.getPortalCache(
 			UserImporter.class.getName(), false);
 	}
 
@@ -1185,6 +1179,11 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 		}
 	}
 
+	@Reference(unbind = "-")
+	protected void setLockManager(LockManager lockManager) {
+		_lockManager = lockManager;
+	}
+
 	protected void setProperty(
 		Object bean1, Object bean2, String propertyName) {
 
@@ -1393,6 +1392,7 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 	private volatile LDAPConfiguration _ldapConfiguration;
 	private LDAPToPortalConverter _ldapToPortalConverter;
 	private Set<String> _ldapUserIgnoreAttributes;
+	private LockManager _lockManager;
 	private PortalCache<String, Long> _portalCache;
 
 }

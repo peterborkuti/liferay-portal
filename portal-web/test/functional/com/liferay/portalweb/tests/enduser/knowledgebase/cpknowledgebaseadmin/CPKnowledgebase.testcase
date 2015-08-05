@@ -1,13 +1,14 @@
 <definition component-name="portal-knowledge-base">
 	<property name="portlet.plugins.includes" value="knowledge-base-portlet" />
 	<property name="testray.main.component.name" value="Knowledge Base" />
-	<property name="web.plugins.includes" value="kaleo-web" />
 
 	<set-up>
 		<execute macro="User#firstLoginPG" />
 	</set-up>
 
 	<tear-down>
+		<execute macro="Workflow#tearDownSiteWorkflow" />
+
 		<execute macro="BlogsEntry#tearDownCP" />
 
 		<execute macro="Vocabulary#tearDownCP" />
@@ -21,7 +22,7 @@
 		<execute macro="Page#tearDownPG" />
 	</tear-down>
 
-	<command name="AddChildArticleToKBArticleViaKBAdmin" priority="5">
+	<command name="AddChildArticleToKBArticleViaKBAdmin" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -55,7 +56,7 @@
 		</execute>
 	</command>
 
-	<command name="AddKBArticlesViaKBAdmin" priority="5">
+	<command name="AddKBArticlesViaKBAdmin" priority="4">
 		<var name="kbArticleCounterList" value="1,2,3" />
 
 		<execute macro="Page#gotoContentCP">
@@ -81,7 +82,7 @@
 		</for>
 	</command>
 
-	<command name="AddKBArticleViaKBAdmin" priority="5">
+	<command name="AddKBArticleViaKBAdmin" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -101,7 +102,7 @@
 		</execute>
 	</command>
 
-	<command name="AddKBArticleViaTemplateCP" priority="5">
+	<command name="AddKBArticleViaTemplateCP" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -131,7 +132,7 @@
 		</execute>
 	</command>
 
-	<command name="AddKBArticleWithAttachmentViaKBAdmin" priority="5">
+	<command name="AddKBArticleWithAttachmentViaKBAdmin" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -153,7 +154,7 @@
 		</execute>
 	</command>
 
-	<command name="AddKBArticleWithBlogsEntryRelatedAssetViaKBAdmin" priority="5">
+	<command name="AddKBArticleWithBlogsEntryRelatedAssetViaKBAdmin" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Blogs" />
 		</execute>
@@ -202,7 +203,7 @@
 		</execute>
 	</command>
 
-	<command name="AddKBArticleWithCategory" priority="5">
+	<command name="AddKBArticleWithCategory" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Categories" />
 		</execute>
@@ -243,7 +244,22 @@
 		</execute>
 	</command>
 
-	<command name="AddKBArticleWithoutRequiredCategory" priority="5">
+	<command known-issues="LPS-54125" name="AddKBArticleWithInvalidAttachmentSize" priority="4">
+		<property name="custom.properties" value="com.liferay.portal.upload.UploadServletRequestImpl.max.size=1024" />
+
+		<execute macro="Page#gotoContentCP">
+			<var name="portletName" value="Knowledge Base" />
+		</execute>
+
+		<execute macro="KBArticle#addCP">
+			<var name="kbArticleAttachment" value="Document_1.mp3" />
+			<var name="kbArticleContent" value="Knowledge Base Article Content" />
+			<var name="kbArticleInvalidAttachmentSize" value="true" />
+			<var name="kbArticleTitle" value="Knowledge Base Article Title" />
+		</execute>
+	</command>
+
+	<command name="AddKBArticleWithoutRequiredCategory" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Categories" />
 		</execute>
@@ -275,7 +291,7 @@
 		</execute>
 	</command>
 
-	<command name="AddKBArticleWithSourceViaKBAdmin" priority="5">
+	<command name="AddKBArticleWithSourceViaKBAdmin" priority="4">
 		<var name="kbArticleContentSource">
 			<![CDATA[<b>Knowledge Base&rsquo;s Article Content</b>]]>
 		</var>
@@ -306,7 +322,7 @@
 		<execute function="AssertTextNotEquals" locator1="CPKnowledgebaseadminArticle#CONTENT" value1="${kbArticleContentSource}" />
 	</command>
 
-	<command name="AddKBFolder" priority="5">
+	<command name="AddKBFolder" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -342,7 +358,7 @@
 		<execute macro="KBArticle#viewDefaultCP" />
 	</command>
 
-	<command name="AddTemplateCP" priority="5">
+	<command name="AddTemplateCP" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -406,7 +422,7 @@
 		<execute macro="KBArticle#viewDefaultCP" />
 	</command>
 
-	<command name="DeleteKBFolder" priority ="5">
+	<command name="DeleteKBFolder" priority ="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -435,7 +451,7 @@
 		</execute>
 	</command>
 
-	<command name="EditKBArticleAndAddAttachmentViaKBAdmin" priority="5">
+	<command name="EditKBArticleAndAddAttachmentViaKBAdmin" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -501,7 +517,7 @@
 		</execute>
 	</command>
 
-	<command name="EditKBArticleViaKBAdmin" priority="5">
+	<command name="EditKBArticleViaKBAdmin" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -531,7 +547,7 @@
 		</execute>
 	</command>
 
-	<command name="EditKBFolder" priority="5">
+	<command name="EditKBFolder" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -566,7 +582,7 @@
 		</execute>
 	</command>
 
-	<command name="RemoveParentArticleViaKBAdmin" priority="5">
+	<command name="RemoveParentArticleViaKBAdmin" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -603,7 +619,7 @@
 		<execute macro="KBArticle#removeParentArticleCP" />
 	</command>
 
-	<command name="SelectParentArticleViaKBAdmin" priority="5">
+	<command name="SelectParentArticleViaKBAdmin" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -641,7 +657,7 @@
 		</execute>
 	</command>
 
-	<command name="ViewChildArticleInKBArticleViaKBAdmin" priority="5">
+	<command name="ViewChildArticleInKBArticleViaKBAdmin" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -669,7 +685,7 @@
 		</execute>
 	</command>
 
-	<command name="ViewDuplicateFriendlyURLIsNotAllowed" priority="5">
+	<command name="ViewDuplicateFriendlyURLIsNotAllowed" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -690,7 +706,7 @@
 		</execute>
 	</command>
 
-	<command name="ViewImportedKBArticlesPrioritization" priority="5">
+	<command name="ViewImportedKBArticlesPrioritization" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -862,7 +878,7 @@
 		</execute>
 	</command>
 
-	<command name="ViewKBArticlePriority" priority="5">
+	<command name="ViewKBArticlePriority" priority="4">
 		<var name="kbArticleCounterList" value="1,2" />
 
 		<execute macro="Page#gotoContentCP">
@@ -887,7 +903,7 @@
 		</execute>
 	</command>
 
-	<command name="ViewKBTemplateViaAddKBArticleCP" priority="5">
+	<command name="ViewKBTemplateViaAddKBArticleCP" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>

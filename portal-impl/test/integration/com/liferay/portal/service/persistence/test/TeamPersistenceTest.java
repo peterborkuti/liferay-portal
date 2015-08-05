@@ -118,6 +118,8 @@ public class TeamPersistenceTest {
 
 		newTeam.setMvccVersion(RandomTestUtil.nextLong());
 
+		newTeam.setUuid(RandomTestUtil.randomString());
+
 		newTeam.setCompanyId(RandomTestUtil.nextLong());
 
 		newTeam.setUserId(RandomTestUtil.nextLong());
@@ -134,12 +136,15 @@ public class TeamPersistenceTest {
 
 		newTeam.setDescription(RandomTestUtil.randomString());
 
+		newTeam.setLastPublishDate(RandomTestUtil.nextDate());
+
 		_teams.add(_persistence.update(newTeam));
 
 		Team existingTeam = _persistence.findByPrimaryKey(newTeam.getPrimaryKey());
 
 		Assert.assertEquals(existingTeam.getMvccVersion(),
 			newTeam.getMvccVersion());
+		Assert.assertEquals(existingTeam.getUuid(), newTeam.getUuid());
 		Assert.assertEquals(existingTeam.getTeamId(), newTeam.getTeamId());
 		Assert.assertEquals(existingTeam.getCompanyId(), newTeam.getCompanyId());
 		Assert.assertEquals(existingTeam.getUserId(), newTeam.getUserId());
@@ -153,6 +158,36 @@ public class TeamPersistenceTest {
 		Assert.assertEquals(existingTeam.getName(), newTeam.getName());
 		Assert.assertEquals(existingTeam.getDescription(),
 			newTeam.getDescription());
+		Assert.assertEquals(Time.getShortTimestamp(
+				existingTeam.getLastPublishDate()),
+			Time.getShortTimestamp(newTeam.getLastPublishDate()));
+	}
+
+	@Test
+	public void testCountByUuid() throws Exception {
+		_persistence.countByUuid(StringPool.BLANK);
+
+		_persistence.countByUuid(StringPool.NULL);
+
+		_persistence.countByUuid((String)null);
+	}
+
+	@Test
+	public void testCountByUUID_G() throws Exception {
+		_persistence.countByUUID_G(StringPool.BLANK, RandomTestUtil.nextLong());
+
+		_persistence.countByUUID_G(StringPool.NULL, 0L);
+
+		_persistence.countByUUID_G((String)null, 0L);
+	}
+
+	@Test
+	public void testCountByUuid_C() throws Exception {
+		_persistence.countByUuid_C(StringPool.BLANK, RandomTestUtil.nextLong());
+
+		_persistence.countByUuid_C(StringPool.NULL, 0L);
+
+		_persistence.countByUuid_C((String)null, 0L);
 	}
 
 	@Test
@@ -201,9 +236,10 @@ public class TeamPersistenceTest {
 
 	protected OrderByComparator<Team> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create("Team", "mvccVersion", true,
-			"teamId", true, "companyId", true, "userId", true, "userName",
-			true, "createDate", true, "modifiedDate", true, "groupId", true,
-			"name", true, "description", true);
+			"uuid", true, "teamId", true, "companyId", true, "userId", true,
+			"userName", true, "createDate", true, "modifiedDate", true,
+			"groupId", true, "name", true, "description", true,
+			"lastPublishDate", true);
 	}
 
 	@Test
@@ -404,6 +440,13 @@ public class TeamPersistenceTest {
 
 		Team existingTeam = _persistence.findByPrimaryKey(newTeam.getPrimaryKey());
 
+		Assert.assertTrue(Validator.equals(existingTeam.getUuid(),
+				ReflectionTestUtil.invoke(existingTeam, "getOriginalUuid",
+					new Class<?>[0])));
+		Assert.assertEquals(existingTeam.getGroupId(),
+			ReflectionTestUtil.invoke(existingTeam, "getOriginalGroupId",
+				new Class<?>[0]));
+
 		Assert.assertEquals(existingTeam.getGroupId(),
 			ReflectionTestUtil.invoke(existingTeam, "getOriginalGroupId",
 				new Class<?>[0]));
@@ -418,6 +461,8 @@ public class TeamPersistenceTest {
 		Team team = _persistence.create(pk);
 
 		team.setMvccVersion(RandomTestUtil.nextLong());
+
+		team.setUuid(RandomTestUtil.randomString());
 
 		team.setCompanyId(RandomTestUtil.nextLong());
 
@@ -434,6 +479,8 @@ public class TeamPersistenceTest {
 		team.setName(RandomTestUtil.randomString());
 
 		team.setDescription(RandomTestUtil.randomString());
+
+		team.setLastPublishDate(RandomTestUtil.nextDate());
 
 		_teams.add(_persistence.update(team));
 

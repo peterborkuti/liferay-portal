@@ -18,21 +18,22 @@
 
 <liferay-ui:icon-menu
 	cssClass="portlet-options"
-	direction="down"
+	direction="<%= direction %>"
 	extended="<%= false %>"
 	icon="../aui/cog"
 	message="options"
-	showArrow="<%= true %>"
+	showArrow="<%= showArrow %>"
 	showWhenSingleIcon="<%= true %>"
+	view="<%= view %>"
 >
 
 	<%
-	List<PortletConfigurationIcon> portletConfigurationIcons = ListUtil.copy(PortletConfigurationIconTracker.getPortletConfigurationIcons());
+	List<PortletConfigurationIconFactory> portletConfigurationIconFactories = ListUtil.copy(PortletConfigurationIconTracker.getPortletConfigurationIcons());
 
-	portletConfigurationIcons = ListUtil.sort(portletConfigurationIcons, new PropertyComparator("weight", false, false));
+	portletConfigurationIconFactories = ListUtil.sort(portletConfigurationIconFactories, new PropertyComparator("weight", false, false));
 
-	for (PortletConfigurationIcon portletConfigurationIcon : portletConfigurationIcons) {
-		portletConfigurationIcon.setRequest(request);
+	for (PortletConfigurationIconFactory portletConfigurationIconFactory : portletConfigurationIconFactories) {
+		PortletConfigurationIcon portletConfigurationIcon = portletConfigurationIconFactory.create(request);
 	%>
 
 		<c:if test="<%= portletConfigurationIcon.isShow() %>">

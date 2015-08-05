@@ -16,8 +16,9 @@ package com.liferay.portal.model;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.util.Validator;
+
+import com.liferay.portlet.exportimport.lar.StagedModelType;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -67,6 +68,7 @@ public class RoleWrapper implements Role, ModelWrapper<Role> {
 		attributes.put("description", getDescription());
 		attributes.put("type", getType());
 		attributes.put("subtype", getSubtype());
+		attributes.put("lastPublishDate", getLastPublishDate());
 
 		return attributes;
 	}
@@ -161,6 +163,12 @@ public class RoleWrapper implements Role, ModelWrapper<Role> {
 
 		if (subtype != null) {
 			setSubtype(subtype);
+		}
+
+		Date lastPublishDate = (Date)attributes.get("lastPublishDate");
+
+		if (lastPublishDate != null) {
+			setLastPublishDate(lastPublishDate);
 		}
 	}
 
@@ -321,6 +329,16 @@ public class RoleWrapper implements Role, ModelWrapper<Role> {
 	@Override
 	public com.liferay.portlet.expando.model.ExpandoBridge getExpandoBridge() {
 		return _role.getExpandoBridge();
+	}
+
+	/**
+	* Returns the last publish date of this role.
+	*
+	* @return the last publish date of this role
+	*/
+	@Override
+	public Date getLastPublishDate() {
+		return _role.getLastPublishDate();
 	}
 
 	/**
@@ -697,6 +715,16 @@ public class RoleWrapper implements Role, ModelWrapper<Role> {
 	public void setExpandoBridgeAttributes(
 		com.liferay.portal.service.ServiceContext serviceContext) {
 		_role.setExpandoBridgeAttributes(serviceContext);
+	}
+
+	/**
+	* Sets the last publish date of this role.
+	*
+	* @param lastPublishDate the last publish date of this role
+	*/
+	@Override
+	public void setLastPublishDate(Date lastPublishDate) {
+		_role.setLastPublishDate(lastPublishDate);
 	}
 
 	/**

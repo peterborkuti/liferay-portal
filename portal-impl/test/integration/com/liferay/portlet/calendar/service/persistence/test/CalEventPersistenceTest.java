@@ -56,8 +56,10 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * @deprecated As of 7.0.0, with no direct replacement
  * @generated
  */
+@Deprecated
 public class CalEventPersistenceTest {
 	@Rule
 	public final AggregateTestRule aggregateTestRule = new AggregateTestRule(new LiferayIntegrationTestRule(),
@@ -335,11 +337,10 @@ public class CalEventPersistenceTest {
 		return OrderByComparatorFactoryUtil.create("CalEvent", "uuid", true,
 			"eventId", true, "groupId", true, "companyId", true, "userId",
 			true, "userName", true, "createDate", true, "modifiedDate", true,
-			"title", true, "description", true, "location", true, "startDate",
-			true, "endDate", true, "durationHour", true, "durationMinute",
-			true, "allDay", true, "timeZoneSensitive", true, "type", true,
-			"repeating", true, "recurrence", true, "remindBy", true,
-			"firstReminder", true, "secondReminder", true);
+			"title", true, "location", true, "startDate", true, "endDate",
+			true, "durationHour", true, "durationMinute", true, "allDay", true,
+			"timeZoneSensitive", true, "type", true, "repeating", true,
+			"remindBy", true, "firstReminder", true, "secondReminder", true);
 	}
 
 	@Test

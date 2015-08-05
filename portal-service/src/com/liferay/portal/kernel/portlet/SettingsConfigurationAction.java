@@ -52,18 +52,17 @@ import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletConfig;
 import javax.portlet.PortletRequest;
-import javax.portlet.RenderRequest;
-import javax.portlet.RenderResponse;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.ValidatorException;
 
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Iván Zaera
  */
-public class SettingsConfigurationAction
+public abstract class SettingsConfigurationAction
 	extends LiferayPortlet
 	implements ConfigurationAction, ResourceServingConfigurationAction {
 
@@ -191,30 +190,6 @@ public class SettingsConfigurationAction
 	}
 
 	@Override
-	public String render(
-			PortletConfig portletConfig, RenderRequest renderRequest,
-			RenderResponse renderResponse)
-		throws Exception {
-
-		PortletConfig selPortletConfig = getSelPortletConfig(renderRequest);
-
-		String configTemplate = selPortletConfig.getInitParameter(
-			"config-template");
-
-		if (Validator.isNotNull(configTemplate)) {
-			return configTemplate;
-		}
-
-		String configJSP = selPortletConfig.getInitParameter("config-jsp");
-
-		if (Validator.isNotNull(configJSP)) {
-			return configJSP;
-		}
-
-		return "/configuration.jsp";
-	}
-
-	@Override
 	public void serveResource(
 			PortletConfig portletConfig, ResourceRequest resourceRequest,
 			ResourceResponse resourceResponse)
@@ -244,18 +219,18 @@ public class SettingsConfigurationAction
 		portletPreferencesMap.put(name, values);
 	}
 
-	protected PortletConfig getSelPortletConfig(PortletRequest portletRequest) {
-		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
+	protected PortletConfig getSelPortletConfig(HttpServletRequest request) {
+		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
 		String portletResource = ParamUtil.getString(
-			portletRequest, "portletResource");
+			request, "portletResource");
 
 		Portlet selPortlet = PortletLocalServiceUtil.getPortletById(
 			themeDisplay.getCompanyId(), portletResource);
 
-		ServletContext servletContext =
-			(ServletContext)portletRequest.getAttribute(WebKeys.CTX);
+		ServletContext servletContext = (ServletContext)request.getAttribute(
+			WebKeys.CTX);
 
 		PortletConfig selPortletConfig = PortletConfigFactoryUtil.create(
 			selPortlet, servletContext);

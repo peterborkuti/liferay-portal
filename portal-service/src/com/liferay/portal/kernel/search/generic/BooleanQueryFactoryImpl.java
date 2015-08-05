@@ -18,8 +18,10 @@ import com.liferay.portal.kernel.search.BooleanQuery;
 import com.liferay.portal.kernel.search.BooleanQueryFactory;
 
 /**
- * @author Michael C. Han
+ * @author     Michael C. Han
+ * @deprecated As of 7.0.0
  */
+@Deprecated
 public class BooleanQueryFactoryImpl implements BooleanQueryFactory {
 
 	@Override

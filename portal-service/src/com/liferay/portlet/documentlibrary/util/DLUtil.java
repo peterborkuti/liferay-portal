@@ -184,10 +184,6 @@ public class DLUtil {
 			request, emailFromAddress, emailFromName);
 	}
 
-	public static List<Object> getEntries(Hits hits) {
-		return getDL().getEntries(hits);
-	}
-
 	public static List<FileEntry> getFileEntries(Hits hits) {
 		return getDL().getFileEntries(hits);
 	}
@@ -328,14 +324,18 @@ public class DLUtil {
 		return getDL().getThumbnailSrc(fileEntry, themeDisplay);
 	}
 
-	public static String getThumbnailStyle() throws Exception {
+	public static String getThumbnailStyle() {
 		return getDL().getThumbnailStyle();
 	}
 
-	public static String getThumbnailStyle(boolean max, int margin)
-		throws Exception {
-
+	public static String getThumbnailStyle(boolean max, int margin) {
 		return getDL().getThumbnailStyle(max, margin);
+	}
+
+	public static String getThumbnailStyle(
+		boolean max, int margin, int height, int width) {
+
+		return getDL().getThumbnailStyle(max, margin, height, width);
 	}
 
 	public static String getTitleWithExtension(FileEntry fileEntry) {

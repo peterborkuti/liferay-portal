@@ -29,7 +29,6 @@ import com.liferay.portal.kernel.dao.orm.Query;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
-import com.liferay.portal.kernel.lar.ExportImportThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -2694,8 +2693,8 @@ public class PollsVotePersistenceImpl extends BasePersistenceImpl<PollsVote>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(PollsVote pollsVote) {
-		if (pollsVote.isNew()) {
+	protected void cacheUniqueFindersCache(PollsVote pollsVote, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					pollsVote.getUuid(), pollsVote.getGroupId()
 				};
@@ -2893,28 +2892,25 @@ public class PollsVotePersistenceImpl extends BasePersistenceImpl<PollsVote>
 			pollsVote.setUuid(uuid);
 		}
 
-		if (!ExportImportThreadLocal.isImportInProcess()) {
-			ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
+		ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
 
-			Date now = new Date();
+		Date now = new Date();
 
-			if (isNew && (pollsVote.getCreateDate() == null)) {
-				if (serviceContext == null) {
-					pollsVote.setCreateDate(now);
-				}
-				else {
-					pollsVote.setCreateDate(serviceContext.getCreateDate(now));
-				}
+		if (isNew && (pollsVote.getCreateDate() == null)) {
+			if (serviceContext == null) {
+				pollsVote.setCreateDate(now);
 			}
+			else {
+				pollsVote.setCreateDate(serviceContext.getCreateDate(now));
+			}
+		}
 
-			if (!pollsVoteModelImpl.hasSetModifiedDate()) {
-				if (serviceContext == null) {
-					pollsVote.setModifiedDate(now);
-				}
-				else {
-					pollsVote.setModifiedDate(serviceContext.getModifiedDate(
-							now));
-				}
+		if (!pollsVoteModelImpl.hasSetModifiedDate()) {
+			if (serviceContext == null) {
+				pollsVote.setModifiedDate(now);
+			}
+			else {
+				pollsVote.setModifiedDate(serviceContext.getModifiedDate(now));
 			}
 		}
 
@@ -3025,7 +3021,7 @@ public class PollsVotePersistenceImpl extends BasePersistenceImpl<PollsVote>
 			PollsVoteImpl.class, pollsVote.getPrimaryKey(), pollsVote, false);
 
 		clearUniqueFindersCache(pollsVote);
-		cacheUniqueFindersCache(pollsVote);
+		cacheUniqueFindersCache(pollsVote, isNew);
 
 		pollsVote.resetOriginalValues();
 
@@ -3052,6 +3048,7 @@ public class PollsVotePersistenceImpl extends BasePersistenceImpl<PollsVote>
 		pollsVoteImpl.setModifiedDate(pollsVote.getModifiedDate());
 		pollsVoteImpl.setQuestionId(pollsVote.getQuestionId());
 		pollsVoteImpl.setChoiceId(pollsVote.getChoiceId());
+		pollsVoteImpl.setLastPublishDate(pollsVote.getLastPublishDate());
 		pollsVoteImpl.setVoteDate(pollsVote.getVoteDate());
 
 		return pollsVoteImpl;
@@ -3412,6 +3409,11 @@ public class PollsVotePersistenceImpl extends BasePersistenceImpl<PollsVote>
 	@Override
 	protected Set<String> getBadColumnNames() {
 		return _badColumnNames;
+	}
+
+	@Override
+	protected Map<String, Integer> getTableColumnsMap() {
+		return PollsVoteModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

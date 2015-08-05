@@ -14,8 +14,28 @@
 	<td></td>
 </tr>
 <tr>
+	<td>COUNTRY</td>
+	<td>//div[label[contains(.,'Country')]]/select</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DEFAULT_LANGUAGE</td>
+	<td>//div[label[contains(.,'Default Language')]]/select</td>
+	<td></td>
+</tr>
+<tr>
 	<td>DISPLAY_STYLE</td>
 	<td>//div[label[contains(.,'Display Style')]]/select</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DISPLAY_TEMPLATE</td>
+	<td>//div[label[contains(.,'Display Template')]]/select</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DOCUMENT_TYPE</td>
+	<td>//select[contains(@id,'fileEntryTypeId')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -34,13 +54,53 @@
 	<td></td>
 </tr>
 <tr>
+	<td>LOCKOUT_DURATION</td>
+	<td>//div[label[contains(.,'Lockout Duration')]]/select</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MAXIMUM_FAILURE</td>
+	<td>//div[label[contains(.,'Maximum Failure')]]/select</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MINIMUM_AGE</td>
+	<td>//div[label[contains(.,'Minimum Age')]]/select</td>
+	<td></td>
+</tr>
+<tr>
 	<td>NESTED_CHILDREN</td>
 	<td>//div[label[contains(.,'Nested Children')]]/select</td>
 	<td></td>
 </tr>
 <tr>
+	<td>PORTLETS_AVAILABLE</td>
+	<td>//div[label[contains(.,'Portlets Available')]]/select</td>
+	<td></td>
+</tr>
+<tr>
 	<td>QUESTION</td>
 	<td>//div[label[contains(.,'Question')]]/select</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REGION</td>
+	<td>//div[label[contains(.,'Region')]]/select</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REMOTE_PORTLET</td>
+	<td>//div[label[contains(.,'Remote Portlet')]]/select</td>
+	<td></td>
+</tr>
+<tr>
+	<td>RESET_FAILURE_COUNT</td>
+	<td>//div[label[contains(.,'Reset Failure Count')]]/select</td>
+	<td></td>
+</tr>
+<tr>
+	<td>RESET_TICKET_MAX_AGE</td>
+	<td>//div[label[contains(.,'Reset Ticket Max Age')]]/select</td>
 	<td></td>
 </tr>
 <tr>
@@ -56,6 +116,21 @@
 <tr>
 	<td>SITES</td>
 	<td>//div[label[contains(.,'Sites')]]/select</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TYPE</td>
+	<td>//div[label[contains(.,'Type')]]/select</td>
+	<td></td>
+</tr>
+<tr>
+	<td>USER_STATUS</td>
+	<td>//select[contains(@id,'StatusSelect')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>VERSION</td>
+	<td>//div[label[contains(.,'Version')]]/select</td>
 	<td></td>
 </tr>
 </tbody>

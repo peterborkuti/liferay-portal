@@ -15,10 +15,12 @@
 package com.liferay.portlet.announcements.service.impl;
 
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.interval.IntervalActionProcessor;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.search.Indexer;
+import com.liferay.portal.kernel.portlet.PortletProvider;
+import com.liferay.portal.kernel.portlet.PortletProviderUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PropsKeys;
@@ -34,7 +36,6 @@ import com.liferay.portal.model.RoleConstants;
 import com.liferay.portal.model.User;
 import com.liferay.portal.model.UserGroup;
 import com.liferay.portal.util.PortalUtil;
-import com.liferay.portal.util.PortletKeys;
 import com.liferay.portal.util.PrefsPropsUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portal.util.SubscriptionSender;
@@ -446,39 +447,61 @@ public class AnnouncementsEntryLocalServiceImpl
 				user.getFullName());
 		}
 		else {
-			int count = 0;
-
-			if (teamId > 0) {
-				count = userLocalService.getTeamUsersCount(teamId);
-			}
-			else {
-				count = userLocalService.searchCount(
-					company.getCompanyId(), null,
-					WorkflowConstants.STATUS_APPROVED, params);
-			}
-
-			int pages = count / Indexer.DEFAULT_INTERVAL;
-
-			for (int i = 0; i <= pages; i++) {
-				int start = (i * Indexer.DEFAULT_INTERVAL);
-				int end = start + Indexer.DEFAULT_INTERVAL;
-
-				List<User> users = null;
-
-				if (teamId > 0) {
-					users = userLocalService.getTeamUsers(teamId, start, end);
-				}
-				else {
-					users = userLocalService.search(
-						company.getCompanyId(), null,
-						WorkflowConstants.STATUS_APPROVED, params, start, end,
-						(OrderByComparator<User>)null);
-				}
-
-				notifyUsers(
-					users, entry, company.getLocale(), toAddress, toName);
-			}
+			notifyUsers(entry, teamId, params, toName, toAddress, company);
 		}
+	}
+
+	protected void notifyUsers(
+			final AnnouncementsEntry entry, final long teamId,
+			final LinkedHashMap<String, Object> params, final String toName,
+			final String toAddress, final Company company)
+		throws PortalException {
+
+		int total = 0;
+
+		if (teamId > 0) {
+			total = userLocalService.getTeamUsersCount(teamId);
+		}
+		else {
+			total = userLocalService.searchCount(
+				company.getCompanyId(), null, WorkflowConstants.STATUS_APPROVED,
+				params);
+		}
+
+		final IntervalActionProcessor<Void> intervalActionProcessor =
+			new IntervalActionProcessor<>(total);
+
+		intervalActionProcessor.setPerformIntervalActionMethod(
+			new IntervalActionProcessor.PerformIntervalActionMethod<Void>() {
+
+				@Override
+				public Void performIntervalAction(int start, int end)
+					throws PortalException {
+
+					List<User> users = null;
+
+					if (teamId > 0) {
+						users = userLocalService.getTeamUsers(
+							teamId, start, end);
+					}
+					else {
+						users = userLocalService.search(
+							company.getCompanyId(), null,
+							WorkflowConstants.STATUS_APPROVED, params, start,
+							end, (OrderByComparator<User>)null);
+					}
+
+					notifyUsers(
+						users, entry, company.getLocale(), toAddress, toName);
+
+					intervalActionProcessor.incrementStart(users.size());
+
+					return null;
+				}
+
+			});
+
+		intervalActionProcessor.performIntervalActions();
 	}
 
 	protected void notifyUsers(
@@ -544,7 +567,12 @@ public class AnnouncementsEntryLocalServiceImpl
 		subscriptionSender.setFrom(fromAddress, fromName);
 		subscriptionSender.setHtmlFormat(true);
 		subscriptionSender.setMailId("announcements_entry", entry.getEntryId());
-		subscriptionSender.setPortletId(PortletKeys.ANNOUNCEMENTS);
+
+		String portletId = PortletProviderUtil.getPortletId(
+			AnnouncementsEntry.class.getName(), PortletProvider.Action.VIEW);
+
+		subscriptionSender.setPortletId(portletId);
+
 		subscriptionSender.setScopeGroupId(entry.getGroupId());
 		subscriptionSender.setSubject(subject);
 

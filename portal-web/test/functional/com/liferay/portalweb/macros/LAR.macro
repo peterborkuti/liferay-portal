@@ -8,6 +8,9 @@
 	<command name="configureExportSiteCP">
 		<execute macro="LAR#gotoExportSiteCmd" />
 
+		<execute function="SelectFrameTop" value1="relative=top" />
+		<execute function="SelectFrame" locator1="BasePortletExport#EXPORT_IMPORT_IFRAME" />
+
 		<execute macro="LAR#configureExportSiteOptionsCmd" />
 	</command>
 
@@ -258,6 +261,7 @@
 		<execute macro="LAR#gotoExportImportCmd" />
 
 		<execute macro="LAR#exportCmd">
+			<var name="exportPermissions" value="${exportPermissions}" />
 			<var name="larFileName" value="${larFileName}" />
 		</execute>
 	</command>
@@ -283,6 +287,7 @@
 		<execute function="SelectFrame" locator1="BasePortletExport#EXPORT_IMPORT_IFRAME" />
 
 		<execute macro="LAR#exportCmd">
+			<var name="exportPermissions" value="${exportPermissions}" />
 			<var name="larFileName" value="${larFileName}" />
 		</execute>
 	</command>
@@ -296,7 +301,7 @@
 
 		<echo message="value name ${valueName}" />
 
-		<var group="1" input="${valueName}"  name="larFileName" pattern="([a-zA-z0-9_.-]*)[(0-9k)]*" />
+		<var group="1" input="${valueName}" name="larFileName" pattern="([a-zA-z0-9_.-]*)[(0-9k)]*" />
 
 		<echo message="import file name ${larFileName}" />
 
@@ -305,10 +310,13 @@
 	</command>
 
 	<command name="exportSiteCP">
-		<execute macro="LAR#gotoExportSiteCmd" />
+		<execute macro="LAR#gotoExportSiteCmd">
+			<var name="siteScopeName" value="${siteScopeName}" />
+		</execute>
 
 		<execute macro="LAR#exportSiteCmd">
 			<var name="larFileName" value="${larFileName}" />
+			<var name="valueName" value="${valueName}" />
 		</execute>
 	</command>
 
@@ -316,46 +324,65 @@
 		<execute macro="LAR#gotoExportImportCmd" />
 
 		<execute macro="LAR#exportCmd">
+			<var name="exportPermissions" value="${exportPermissions}" />
 			<var name="larFileName" value="${larFileName}" />
 		</execute>
 	</command>
 
 	<command name="gotoExportImportCmd">
 		<execute macro="Portlet#gotoPortletOptions">
+			<var name="portletNameBorderless" value="${portletNameBorderless}" />
 			<var name="portletOption" value="Export / Import" />
 		</execute>
 	</command>
 
 	<command name="gotoExportSite">
-		<execute function="AssertClick" locator1="CPSitepages#TOOLBAR_EXPORT" value1="Export" />
+		<execute macro="LAR#gotoExportSiteCmd" />
+
+		<execute function="SelectFrameTop" value1="relative=top" />
+		<execute function="SelectFrame" locator1="BasePortletExport#EXPORT_IMPORT_IFRAME" />
 
 		<execute function="Pause" locator1="5000" />
 	</command>
 
 	<command name="gotoExportSiteCmd">
+		<execute macro="Page#gotoConfigurationCP">
+			<var name="portletCategoryName" value="Configuration" />
+			<var name="portletName" value="Export/Import" />
+			<var name="siteScopeName" value="${siteScopeName}" />
+		</execute>
+
 		<execute function="AssertClick" locator1="CPSitepages#TOOLBAR_EXPORT" value1="Export" />
 	</command>
 
 	<command name="gotoExportTemplateCP">
 		<execute macro="LAR#gotoExportSiteCmd" />
 
+		<execute function="SelectFrameTop" value1="relative=top" />
+		<execute function="SelectFrame" locator1="BasePortletExport#EXPORT_IMPORT_IFRAME" />
+
 		<execute function="Click" locator1="CPSitepagesExport#EXPORT_TEMPLATE_BUTTON" />
 	</command>
 
 	<command name="gotoImportSiteCmd">
-		<execute macro="Page#gotoPagesCP">
-			<var name="portletName" value="Site Pages" />
-			<var name="siteScopeName" value="${siteName}" />
+		<execute macro="Page#gotoConfigurationCP">
+			<var name="portletCategoryName" value="Configuration" />
+			<var name="portletName" value="Export/Import" />
 		</execute>
 
 		<execute function="AssertClick" locator1="CPSitepages#TOOLBAR_IMPORT" value1="Import" />
+
+		<execute function="SelectFrame" locator1="BasePortletExport#EXPORT_IMPORT_IFRAME" />
 	</command>
 
 	<command name="importDDL">
 		<execute macro="LAR#gotoExportImportCmd" />
 
 		<execute macro="LAR#selectImportFileCmd">
+			<var name="cannotImport" value="${cannotImport}" />
+			<var name="importPermissions" value="${importPermissions}" />
 			<var name="larFileName" value="${larFileName}" />
+			<var name="uploadFrom" value="${uploadFrom}" />
 		</execute>
 
 		<execute macro="LAR#importSiteCmd" />
@@ -368,7 +395,10 @@
 		<execute function="SelectFrame" locator1="BasePortletExport#EXPORT_IMPORT_IFRAME" />
 
 		<execute macro="LAR#selectImportFileCmd">
+			<var name="cannotImport" value="${cannotImport}" />
+			<var name="importPermissions" value="${importPermissions}" />
 			<var name="larFileName" value="${larFileName}" />
+			<var name="uploadFrom" value="${uploadFrom}" />
 		</execute>
 	</command>
 
@@ -417,6 +447,7 @@
 		<execute macro="LAR#gotoImportSiteCmd" />
 
 		<execute macro="LAR#selectImportFileSiteCmd">
+			<var name="importCampaignValidationError" value="${importCampaignValidationError}" />
 			<var name="importValidationMissingItem" value="${importValidationMissingItem}" />
 			<var name="larFileName" value="${larFileName}" />
 		</execute>
@@ -430,6 +461,10 @@
 			</not>
 			<then>
 				<execute macro="LAR#importSiteCmd">
+					<var name="checkContentNameList" value="${checkContentNameList}" />
+					<var name="contentDeletion" value="${contentDeletion}" />
+					<var name="contentName" value="${contentName}" />
+					<var name="importPermissions" value="${importPermissions}" />
 					<var name="larFileName" value="${larFileName}" />
 				</execute>
 			</then>
@@ -520,16 +555,15 @@
 				<execute function="AssertTextEquals" locator1="CPSitepagesImport#VALIDATION_ERROR_MESSAGE" value1="There are missing references that could not be found in the current site. Please import  the following elements first:" />
 				<execute function="AssertTextEquals#assertPartialText" locator1="CPSitepagesImport#VALIDATION_ERROR_LIST_ITEM" value1="${importValidationMissingItem}" />
 			</then>
-			<else>
-				<execute function="AssertTextEquals" locator1="CPSitepagesImport#FILE_TITLE" value1="${larFileName}" />
-				<execute function="AssertClickNoError" locator1="CPSitepagesImport#CONTINUE_BUTTON" value1="Continue" />
-				<execute function="Pause" locator1="5000" />
-				<execute function="AssertClickNoError" locator1="CPSitepagesImport#CONTINUE_BUTTON" value1="Continue" />
-				<execute function="Pause" locator1="5000" />
-				<execute function="AssertClickNoError" locator1="CPSitepagesImport#IMPORT_BUTTON" value1="Import" />
-				<execute function="Pause" locator1="5000" />
-				<execute function="AssertTextEquals" locator1="CPSitepagesImport#FILE_NAME" value1="${larFileName}" />
-			</else>
+		</if>
+
+		<if>
+			<equals arg1="importCampaignValidationError" arg2="true" />
+			<then>
+				<execute function="AssertTextEquals" locator1="CPSitepagesImport#VALIDATION_ERROR_MESSAGE" value1="The following data will not be imported:" />
+				<execute function="AssertTextEquals#assertPartialText" locator1="CPSitepagesImport#VALIDATION_ERROR_LIST_ITEM" value1="Campaign Tracking Action" />
+				<execute function="AssertTextEquals#assertPartialText" locator1="CPSitepagesImport#VALIDATION_ERROR_LIST_ITEM" value1="The original Referenced Asset does not exist in the current environment." />
+			</then>
 		</if>
 
 		<if>
@@ -563,10 +597,12 @@
 			<var name="campaignDescription" value="Campaign Description" />
 			<var name="campaignEndDate" value="1/1/2099" />
 			<var name="campaignEndTime" value="12:00 PM" />
+			<var name="campaignInactive" value="${campaignInactive}" />
 			<var name="campaignName" value="Campaign Name" />
 			<var name="campaignPriorityField" value="3" />
 			<var name="campaignStartDate" value="1/1/2015" />
 			<var name="campaignStartTime" value="12:00 AM" />
+			<var name="userSegmentSelect" value="${userSegmentSelect}" />
 		</execute>
 
 		<execute macro="ContentTargetingCampaign#saveCP" />
@@ -580,6 +616,7 @@
 
 		<execute macro="WebContent#addWithCategoryCP">
 			<var name="categoryName" value="User Segment Name" />
+			<var name="userSegmentDetailTitle" value="${userSegmentDetailTitle}" />
 			<var name="vocabularyName" value="User Segment" />
 			<var name="webContentContent" value="Web Content Content" />
 			<var name="webContentTitle" value="Web Content Title" />
@@ -589,28 +626,38 @@
 			<equals arg1="${stagingSetup}" arg2="true" />
 			<then>
 				<execute macro="Page#gotoPG">
+					<var name="defaultURL" value="${defaultURL}" />
+					<var name="nodePort" value="${nodePort}" />
 					<var name="pageName" value="Test Page Name" />
 					<var name="pageStaging" value="true" />
 					<var name="siteName" value="Site Name" />
 					<var name="siteURL" value="true" />
+					<var name="soDashboard" value="${soDashboard}" />
+					<var name="soPage" value="${soPage}" />
 				</execute>
 			</then>
 			<else>
 				<execute macro="Page#gotoPG">
+					<var name="defaultURL" value="${defaultURL}" />
+					<var name="nodePort" value="${nodePort}" />
 					<var name="pageName" value="Test Page Name" />
 					<var name="siteName" value="Site Name" />
 					<var name="siteURL" value="true" />
+					<var name="soDashboard" value="${soDashboard}" />
+					<var name="soPage" value="${soPage}" />
 				</execute>
 			</else>
 		</if>
 
 		<execute macro="Portlet#addPG">
+			<var name="i" value="${i}" />
 			<var name="portletName" value="User Segment Content Display" />
 		</execute>
 
 		<execute function="Refresh" />
 
 		<execute macro="Portlet#gotoPortletOptions">
+			<var name="portletNameBorderless" value="${portletNameBorderless}" />
 			<var name="portletOption" value="Configuration" />
 		</execute>
 
@@ -618,8 +665,12 @@
 			<var name="belongs" value="true" />
 			<var name="contentTitle" value="Web Content Title" />
 			<var name="contentType" value="Web Content Article" />
+			<var name="doesNotBelong" value="${doesNotBelong}" />
+			<var name="rowIndexNumber" value="${rowIndexNumber}" />
 			<var name="rowNumber" value="1" />
+			<var name="siteScope" value="${siteScope}" />
 			<var name="toAll" value="true" />
+			<var name="toAny" value="${toAny}" />
 			<var name="userSegmentName" value="User Segment Name" />
 		</execute>
 
@@ -629,28 +680,38 @@
 			<equals arg1="${stagingSetup}" arg2="true" />
 			<then>
 				<execute macro="Page#gotoPG">
+					<var name="defaultURL" value="${defaultURL}" />
+					<var name="nodePort" value="${nodePort}" />
 					<var name="pageName" value="Test Page Name" />
 					<var name="pageStaging" value="true" />
 					<var name="siteName" value="Site Name" />
 					<var name="siteURL" value="true" />
+					<var name="soDashboard" value="${soDashboard}" />
+					<var name="soPage" value="${soPage}" />
 				</execute>
 			</then>
 			<else>
 				<execute macro="Page#gotoPG">
+					<var name="defaultURL" value="${defaultURL}" />
+					<var name="nodePort" value="${nodePort}" />
 					<var name="pageName" value="Test Page Name" />
 					<var name="siteName" value="Site Name" />
 					<var name="siteURL" value="true" />
+					<var name="soDashboard" value="${soDashboard}" />
+					<var name="soPage" value="${soPage}" />
 				</execute>
 			</else>
 		</if>
 
 		<execute macro="Portlet#addPG">
+			<var name="i" value="${i}" />
 			<var name="portletName" value="Campaign Content Display" />
 		</execute>
 
 		<execute function="Refresh" />
 
 		<execute macro="Portlet#gotoPortletOptions">
+			<var name="portletNameBorderless" value="${portletNameBorderless}" />
 			<var name="portletOption" value="Configuration" />
 		</execute>
 
@@ -667,22 +728,31 @@
 			<equals arg1="${stagingSetup}" arg2="true" />
 			<then>
 				<execute macro="Page#gotoPG">
+					<var name="defaultURL" value="${defaultURL}" />
+					<var name="nodePort" value="${nodePort}" />
 					<var name="pageName" value="Test Page Name" />
 					<var name="pageStaging" value="true" />
 					<var name="siteName" value="Site Name" />
 					<var name="siteURL" value="true" />
+					<var name="soDashboard" value="${soDashboard}" />
+					<var name="soPage" value="${soPage}" />
 				</execute>
 			</then>
 			<else>
 				<execute macro="Page#gotoPG">
+					<var name="defaultURL" value="${defaultURL}" />
+					<var name="nodePort" value="${nodePort}" />
 					<var name="pageName" value="Test Page Name" />
 					<var name="siteName" value="Site Name" />
 					<var name="siteURL" value="true" />
+					<var name="soDashboard" value="${soDashboard}" />
+					<var name="soPage" value="${soPage}" />
 				</execute>
 			</else>
 		</if>
 
 		<execute macro="Portlet#addPG">
+			<var name="i" value="${i}" />
 			<var name="portletName" value="User Segment Content List" />
 		</execute>
 

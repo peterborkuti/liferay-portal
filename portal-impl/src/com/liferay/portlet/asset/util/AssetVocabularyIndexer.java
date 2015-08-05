@@ -21,13 +21,14 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.BaseIndexer;
 import com.liferay.portal.kernel.search.BooleanClauseOccur;
 import com.liferay.portal.kernel.search.BooleanQuery;
-import com.liferay.portal.kernel.search.BooleanQueryFactoryUtil;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.DocumentImpl;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchEngineUtil;
 import com.liferay.portal.kernel.search.Summary;
+import com.liferay.portal.kernel.search.filter.BooleanFilter;
+import com.liferay.portal.kernel.search.generic.BooleanQueryImpl;
 import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -46,7 +47,7 @@ import javax.portlet.PortletResponse;
  * @author Istvan Andras Dezsi
  */
 @OSGiBeanProperties
-public class AssetVocabularyIndexer extends BaseIndexer {
+public class AssetVocabularyIndexer extends BaseIndexer<AssetVocabulary> {
 
 	public static final String CLASS_NAME = AssetVocabulary.class.getName();
 
@@ -79,14 +80,14 @@ public class AssetVocabularyIndexer extends BaseIndexer {
 
 	@Override
 	public void postProcessSearchQuery(
-			BooleanQuery searchQuery, SearchContext searchContext)
+			BooleanQuery searchQuery, BooleanFilter fullQueryBooleanFilter,
+			SearchContext searchContext)
 		throws Exception {
 
 		String title = (String)searchContext.getAttribute(Field.TITLE);
 
 		if (Validator.isNotNull(title)) {
-			BooleanQuery localizedQuery = BooleanQueryFactoryUtil.create(
-				searchContext);
+			BooleanQuery localizedQuery = new BooleanQueryImpl();
 
 			addSearchLocalizedTerm(
 				localizedQuery, searchContext, Field.TITLE, true);
@@ -96,37 +97,35 @@ public class AssetVocabularyIndexer extends BaseIndexer {
 	}
 
 	@Override
-	protected void doDelete(Object obj) throws Exception {
-		AssetVocabulary vocabulary = (AssetVocabulary)obj;
-
+	protected void doDelete(AssetVocabulary assetVocabulary) throws Exception {
 		Document document = new DocumentImpl();
 
-		document.addUID(CLASS_NAME, vocabulary.getVocabularyId());
+		document.addUID(CLASS_NAME, assetVocabulary.getVocabularyId());
 
 		SearchEngineUtil.deleteDocument(
-			getSearchEngineId(), vocabulary.getCompanyId(),
+			getSearchEngineId(), assetVocabulary.getCompanyId(),
 			document.get(Field.UID), isCommitImmediately());
 	}
 
 	@Override
-	protected Document doGetDocument(Object obj) throws Exception {
-		AssetVocabulary vocabulary = (AssetVocabulary)obj;
+	protected Document doGetDocument(AssetVocabulary assetVocabulary)
+		throws Exception {
 
 		if (_log.isDebugEnabled()) {
-			_log.debug("Indexing vocabulary " + vocabulary);
+			_log.debug("Indexing asset vocabulary " + assetVocabulary);
 		}
 
-		Document document = getBaseModelDocument(CLASS_NAME, vocabulary);
+		Document document = getBaseModelDocument(CLASS_NAME, assetVocabulary);
 
 		document.addKeyword(
-			Field.ASSET_VOCABULARY_ID, vocabulary.getVocabularyId());
+			Field.ASSET_VOCABULARY_ID, assetVocabulary.getVocabularyId());
 		document.addLocalizedText(
-			Field.DESCRIPTION, vocabulary.getDescriptionMap());
-		document.addText(Field.NAME, vocabulary.getName());
-		document.addLocalizedText(Field.TITLE, vocabulary.getTitleMap());
+			Field.DESCRIPTION, assetVocabulary.getDescriptionMap());
+		document.addText(Field.NAME, assetVocabulary.getName());
+		document.addLocalizedText(Field.TITLE, assetVocabulary.getTitleMap());
 
 		if (_log.isDebugEnabled()) {
-			_log.debug("Document " + vocabulary + " indexed successfully");
+			_log.debug("Document " + assetVocabulary + " indexed successfully");
 		}
 
 		return document;
@@ -141,14 +140,12 @@ public class AssetVocabularyIndexer extends BaseIndexer {
 	}
 
 	@Override
-	protected void doReindex(Object obj) throws Exception {
-		AssetVocabulary vocabulary = (AssetVocabulary)obj;
-
-		Document document = getDocument(vocabulary);
+	protected void doReindex(AssetVocabulary assetVocabulary) throws Exception {
+		Document document = getDocument(assetVocabulary);
 
 		if (document != null) {
 			SearchEngineUtil.updateDocument(
-				getSearchEngineId(), vocabulary.getCompanyId(), document,
+				getSearchEngineId(), assetVocabulary.getCompanyId(), document,
 				isCommitImmediately());
 		}
 	}
@@ -179,15 +176,23 @@ public class AssetVocabularyIndexer extends BaseIndexer {
 			new ActionableDynamicQuery.PerformActionMethod() {
 
 				@Override
-				public void performAction(Object object)
-					throws PortalException {
-
+				public void performAction(Object object) {
 					AssetVocabulary assetVocabulary = (AssetVocabulary)object;
 
-					Document document = getDocument(assetVocabulary);
+					try {
+						Document document = getDocument(assetVocabulary);
 
-					if (document != null) {
-						actionableDynamicQuery.addDocument(document);
+						if (document != null) {
+							actionableDynamicQuery.addDocument(document);
+						}
+					}
+					catch (PortalException pe) {
+						if (_log.isWarnEnabled()) {
+							_log.warn(
+								"Unable to index asset vocabulary " +
+									assetVocabulary.getVocabularyId(),
+								pe);
+						}
 					}
 				}
 

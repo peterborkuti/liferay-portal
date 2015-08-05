@@ -16,8 +16,9 @@ package com.liferay.portal.model;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.util.Validator;
+
+import com.liferay.portlet.exportimport.lar.StagedModelType;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -65,6 +66,7 @@ public class RepositoryEntryWrapper implements RepositoryEntry,
 		attributes.put("repositoryId", getRepositoryId());
 		attributes.put("mappedId", getMappedId());
 		attributes.put("manualCheckInRequired", getManualCheckInRequired());
+		attributes.put("lastPublishDate", getLastPublishDate());
 
 		return attributes;
 	}
@@ -143,6 +145,12 @@ public class RepositoryEntryWrapper implements RepositoryEntry,
 		if (manualCheckInRequired != null) {
 			setManualCheckInRequired(manualCheckInRequired);
 		}
+
+		Date lastPublishDate = (Date)attributes.get("lastPublishDate");
+
+		if (lastPublishDate != null) {
+			setLastPublishDate(lastPublishDate);
+		}
 	}
 
 	@Override
@@ -189,6 +197,16 @@ public class RepositoryEntryWrapper implements RepositoryEntry,
 	@Override
 	public long getGroupId() {
 		return _repositoryEntry.getGroupId();
+	}
+
+	/**
+	* Returns the last publish date of this repository entry.
+	*
+	* @return the last publish date of this repository entry
+	*/
+	@Override
+	public Date getLastPublishDate() {
+		return _repositoryEntry.getLastPublishDate();
 	}
 
 	/**
@@ -391,6 +409,16 @@ public class RepositoryEntryWrapper implements RepositoryEntry,
 	@Override
 	public void setGroupId(long groupId) {
 		_repositoryEntry.setGroupId(groupId);
+	}
+
+	/**
+	* Sets the last publish date of this repository entry.
+	*
+	* @param lastPublishDate the last publish date of this repository entry
+	*/
+	@Override
+	public void setLastPublishDate(Date lastPublishDate) {
+		_repositoryEntry.setLastPublishDate(lastPublishDate);
 	}
 
 	/**

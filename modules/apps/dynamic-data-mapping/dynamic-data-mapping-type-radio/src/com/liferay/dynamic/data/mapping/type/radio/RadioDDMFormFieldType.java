@@ -14,14 +14,16 @@
 
 package com.liferay.dynamic.data.mapping.type.radio;
 
+import com.liferay.dynamic.data.mapping.registry.BaseDDMFormFieldType;
+import com.liferay.dynamic.data.mapping.registry.DDMFormFieldRenderer;
+import com.liferay.dynamic.data.mapping.registry.DDMFormFieldType;
+import com.liferay.dynamic.data.mapping.registry.DDMFormFieldTypeSettings;
+import com.liferay.dynamic.data.mapping.registry.DDMFormFieldValueAccessor;
+import com.liferay.dynamic.data.mapping.registry.DDMFormFieldValueParameterSerializer;
+import com.liferay.dynamic.data.mapping.registry.DDMFormFieldValueRendererAccessor;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portlet.dynamicdatamapping.registry.DDMFormFieldRenderer;
-import com.liferay.portlet.dynamicdatamapping.registry.DDMFormFieldType;
-import com.liferay.portlet.dynamicdatamapping.registry.DDMFormFieldValueAccessor;
-import com.liferay.portlet.dynamicdatamapping.registry.DDMFormFieldValueParameterSerializer;
-import com.liferay.portlet.dynamicdatamapping.registry.DDMFormFieldValueRendererAccessor;
 
 import java.util.Locale;
 
@@ -34,11 +36,28 @@ import org.osgi.service.component.annotations.Reference;
  * @author Renato Rego
  */
 @Component(immediate = true, service = DDMFormFieldType.class)
-public class RadioDDMFormFieldType implements DDMFormFieldType {
+public class RadioDDMFormFieldType extends BaseDDMFormFieldType {
 
 	@Override
 	public DDMFormFieldRenderer getDDMFormFieldRenderer() {
 		return _ddmFormFieldRenderer;
+	}
+
+	@Override
+	public String getDDMFormFieldTypeJavaScriptClass() {
+		return "Liferay.DDM.Field.Radio";
+	}
+
+	@Override
+	public String getDDMFormFieldTypeJavaScriptModule() {
+		return "liferay-ddm-form-field-radio";
+	}
+
+	@Override
+	public Class<? extends DDMFormFieldTypeSettings>
+		getDDMFormFieldTypeSettings() {
+
+		return RadioDDMFormFieldTypeSettings.class;
 	}
 
 	@Override
@@ -76,6 +95,11 @@ public class RadioDDMFormFieldType implements DDMFormFieldType {
 
 		return new RadioDDMFormFieldValueRendererAccessor(
 			getDDMFormFieldValueAccessor(locale));
+	}
+
+	@Override
+	public String getIcon() {
+		return "icon-ok-circle";
 	}
 
 	@Override

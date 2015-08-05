@@ -18,10 +18,10 @@
 
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
 
-<%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %>
-<%@ taglib uri="http://liferay.com/tld/portlet" prefix="liferay-portlet" %>
-<%@ taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %>
-<%@ taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
+<%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %><%@
+taglib uri="http://liferay.com/tld/portlet" prefix="liferay-portlet" %><%@
+taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %><%@
+taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
 
 <%@ page import="com.liferay.portal.kernel.dao.search.SearchContainer" %><%@
 page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
@@ -38,11 +38,11 @@ page import="com.liferay.portlet.social.service.SocialActivityLocalServiceUtil" 
 
 <%@ page import="java.util.List" %>
 
-<%@ page import="javax.portlet.ActionRequest" %><%@
-page import="javax.portlet.ResourceURL" %>
+<%@ page import="javax.portlet.ResourceURL" %>
+
+<portlet:defineObjects />
 
 <liferay-theme:defineObjects />
-<portlet:defineObjects />
 
 <%
 int max = GetterUtil.getInteger(portletPreferences.getValue("max", "10"));

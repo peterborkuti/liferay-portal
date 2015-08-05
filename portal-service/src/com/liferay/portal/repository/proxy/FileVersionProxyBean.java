@@ -15,11 +15,11 @@
 package com.liferay.portal.repository.proxy;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.repository.model.RepositoryModelOperation;
 import com.liferay.portlet.expando.model.ExpandoBridge;
+import com.liferay.portlet.exportimport.lar.StagedModelType;
 
 import java.io.InputStream;
 import java.io.Serializable;
@@ -133,6 +133,11 @@ public class FileVersionProxyBean
 	@Override
 	public String getIcon() {
 		return _fileVersion.getIcon();
+	}
+
+	@Override
+	public Date getLastPublishDate() {
+		return _fileVersion.getLastPublishDate();
 	}
 
 	@Override
@@ -276,8 +281,8 @@ public class FileVersionProxyBean
 	}
 
 	@Override
-	public void setCreateDate(Date date) {
-		_fileVersion.setCreateDate(date);
+	public void setCreateDate(Date createDate) {
+		_fileVersion.setCreateDate(createDate);
 	}
 
 	@Override
@@ -286,8 +291,13 @@ public class FileVersionProxyBean
 	}
 
 	@Override
-	public void setModifiedDate(Date date) {
-		_fileVersion.setModifiedDate(date);
+	public void setLastPublishDate(Date lastPublishDate) {
+		_fileVersion.setLastPublishDate(lastPublishDate);
+	}
+
+	@Override
+	public void setModifiedDate(Date modifiedDate) {
+		_fileVersion.setModifiedDate(modifiedDate);
 	}
 
 	@Override

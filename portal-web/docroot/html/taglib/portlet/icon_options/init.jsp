@@ -17,5 +17,12 @@
 <%@ include file="/html/taglib/init.jsp" %>
 
 <%@ page import="com.liferay.portal.kernel.portlet.configuration.PortletConfigurationIcon" %><%@
+page import="com.liferay.portal.kernel.portlet.configuration.PortletConfigurationIconFactory" %><%@
 page import="com.liferay.portal.kernel.portlet.configuration.PortletConfigurationIconTracker" %><%@
 page import="com.liferay.util.PropertyComparator" %>
+
+<%
+String direction = (String)request.getAttribute("liferay-ui:icon:direction");
+boolean showArrow = GetterUtil.getBoolean((String)request.getAttribute("liferay-ui:icon:showArrow"));
+String view = (String)request.getAttribute("liferay-ui:icon:view");
+%>

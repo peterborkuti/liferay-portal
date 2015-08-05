@@ -14,7 +14,7 @@
 
 package com.liferay.journal.web.notifications;
 
-import com.liferay.journal.web.constants.JournalPortletKeys;
+import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.portal.kernel.notifications.UserNotificationDefinition;
 import com.liferay.portal.kernel.notifications.UserNotificationDeliveryType;
 import com.liferay.portal.model.UserNotificationDeliveryConstants;
@@ -37,7 +37,7 @@ public class JournalUpdateEntryUserNotificationDefinition
 			JournalPortletKeys.JOURNAL, 0,
 			UserNotificationDefinition.NOTIFICATION_TYPE_UPDATE_ENTRY,
 			"receive-a-notification-when-someone-updates-a-web-content-you-" +
-				"are-subscribed-to<");
+				"are-subscribed-to");
 
 		addUserNotificationDeliveryType(
 			new UserNotificationDeliveryType(

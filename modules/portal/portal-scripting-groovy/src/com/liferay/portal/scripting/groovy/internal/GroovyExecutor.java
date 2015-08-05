@@ -16,13 +16,11 @@ package com.liferay.portal.scripting.groovy.internal;
 
 import com.liferay.portal.kernel.concurrent.ConcurrentReferenceKeyHashMap;
 import com.liferay.portal.kernel.memory.FinalizeManager;
-import com.liferay.portal.kernel.scripting.BaseScriptingExecutor;
 import com.liferay.portal.kernel.scripting.ExecutionException;
 import com.liferay.portal.kernel.scripting.ScriptingException;
 import com.liferay.portal.kernel.scripting.ScriptingExecutor;
-import com.liferay.portal.kernel.util.AggregateClassLoader;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
+import com.liferay.portal.scripting.BaseScriptingExecutor;
 
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
@@ -33,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 
 /**
@@ -92,12 +91,20 @@ public class GroovyExecutor extends BaseScriptingExecutor {
 		return new GroovyExecutor();
 	}
 
+	@Activate
+	protected void activate(Map<String, Object> properties) {
+		initScriptingExecutorClassLoader();
+
+		_groovyShell = new GroovyShell(getScriptingExecutorClassLoader());
+	}
+
 	protected GroovyShell getGroovyShell(ClassLoader[] classLoaders) {
 		if (ArrayUtil.isEmpty(classLoaders)) {
 			if (_groovyShell == null) {
 				synchronized (this) {
 					if (_groovyShell == null) {
-						_groovyShell = new GroovyShell();
+						_groovyShell = new GroovyShell(
+							getScriptingExecutorClassLoader());
 					}
 				}
 			}
@@ -105,9 +112,8 @@ public class GroovyExecutor extends BaseScriptingExecutor {
 			return _groovyShell;
 		}
 
-		ClassLoader aggregateClassLoader =
-			AggregateClassLoader.getAggregateClassLoader(
-				PortalClassLoaderUtil.getClassLoader(), classLoaders);
+		ClassLoader aggregateClassLoader = getAggregateClassLoader(
+			classLoaders);
 
 		GroovyShell groovyShell = _groovyShells.get(aggregateClassLoader);
 
@@ -125,7 +131,7 @@ public class GroovyExecutor extends BaseScriptingExecutor {
 		return groovyShell;
 	}
 
-	private volatile GroovyShell _groovyShell = new GroovyShell();
+	private volatile GroovyShell _groovyShell;
 	private final ConcurrentMap<ClassLoader, GroovyShell> _groovyShells =
 		new ConcurrentReferenceKeyHashMap<>(
 			FinalizeManager.WEAK_REFERENCE_FACTORY);

@@ -29,7 +29,6 @@ import com.liferay.portal.kernel.dao.orm.Query;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
-import com.liferay.portal.kernel.lar.ExportImportThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -2438,8 +2437,8 @@ public class AppPersistenceImpl extends BasePersistenceImpl<App>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(App app) {
-		if (app.isNew()) {
+	protected void cacheUniqueFindersCache(App app, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] { app.getRemoteAppId() };
 
 			FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_REMOTEAPPID, args,
@@ -2594,27 +2593,25 @@ public class AppPersistenceImpl extends BasePersistenceImpl<App>
 			app.setUuid(uuid);
 		}
 
-		if (!ExportImportThreadLocal.isImportInProcess()) {
-			ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
+		ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
 
-			Date now = new Date();
+		Date now = new Date();
 
-			if (isNew && (app.getCreateDate() == null)) {
-				if (serviceContext == null) {
-					app.setCreateDate(now);
-				}
-				else {
-					app.setCreateDate(serviceContext.getCreateDate(now));
-				}
+		if (isNew && (app.getCreateDate() == null)) {
+			if (serviceContext == null) {
+				app.setCreateDate(now);
 			}
+			else {
+				app.setCreateDate(serviceContext.getCreateDate(now));
+			}
+		}
 
-			if (!appModelImpl.hasSetModifiedDate()) {
-				if (serviceContext == null) {
-					app.setModifiedDate(now);
-				}
-				else {
-					app.setModifiedDate(serviceContext.getModifiedDate(now));
-				}
+		if (!appModelImpl.hasSetModifiedDate()) {
+			if (serviceContext == null) {
+				app.setModifiedDate(now);
+			}
+			else {
+				app.setModifiedDate(serviceContext.getModifiedDate(now));
 			}
 		}
 
@@ -2718,7 +2715,7 @@ public class AppPersistenceImpl extends BasePersistenceImpl<App>
 			AppImpl.class, app.getPrimaryKey(), app, false);
 
 		clearUniqueFindersCache(app);
-		cacheUniqueFindersCache(app);
+		cacheUniqueFindersCache(app, isNew);
 
 		app.resetOriginalValues();
 
@@ -3105,6 +3102,11 @@ public class AppPersistenceImpl extends BasePersistenceImpl<App>
 	@Override
 	protected Set<String> getBadColumnNames() {
 		return _badColumnNames;
+	}
+
+	@Override
+	protected Map<String, Integer> getTableColumnsMap() {
+		return AppModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

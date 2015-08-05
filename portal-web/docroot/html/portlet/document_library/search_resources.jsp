@@ -52,7 +52,7 @@ boolean showSearchInfo = ParamUtil.getBoolean(request, "showSearchInfo");
 
 PortletURL portletURL = liferayPortletResponse.createRenderURL();
 
-portletURL.setParameter("struts_action", "/document_library/search");
+portletURL.setParameter("mvcRenderCommandName", "/document_library/search");
 portletURL.setParameter("redirect", redirect);
 portletURL.setParameter("breadcrumbsFolderId", String.valueOf(breadcrumbsFolderId));
 portletURL.setParameter("searchFolderId", String.valueOf(searchFolderId));
@@ -84,7 +84,7 @@ SearchContainer searchContainer = new SearchContainer(liferayPortletRequest, por
 				<span class="change-search-folder">
 
 					<portlet:renderURL var="changeSearchFolderURL">
-						<portlet:param name="struts_action" value="/document_library/search" />
+						<portlet:param name="mvcRenderCommandName" value="/document_library/search" />
 						<portlet:param name="repositoryId" value="<%= String.valueOf(repositoryId) %>" />
 						<portlet:param name="searchRepositoryId" value="<%= !searchEverywhere ? String.valueOf(scopeGroupId) : String.valueOf(repositoryId) %>" />
 						<portlet:param name="folderId" value="<%= String.valueOf(folderId) %>" />
@@ -99,7 +99,7 @@ SearchContainer searchContainer = new SearchContainer(liferayPortletRequest, por
 			</c:if>
 
 			<portlet:renderURL var="closeSearchURL">
-				<portlet:param name="struts_action" value="/document_library/view" />
+				<portlet:param name="mvcRenderCommandName" value="/document_library/view" />
 			</portlet:renderURL>
 
 			<liferay-ui:icon cssClass="close-search" iconCssClass="icon-remove" id="closeSearch" message="remove" url="<%= closeSearchURL %>" />
@@ -120,7 +120,7 @@ SearchContainer searchContainer = new SearchContainer(liferayPortletRequest, por
 
 <liferay-util:buffer var="searchResults">
 	<liferay-portlet:renderURL varImpl="searchURL">
-		<portlet:param name="struts_action" value="/document_library/search" />
+		<portlet:param name="mvcRenderCommandName" value="/document_library/search" />
 	</liferay-portlet:renderURL>
 
 	<div class="document-container" id="<portlet:namespace />entriesContainer">
@@ -179,7 +179,7 @@ SearchContainer searchContainer = new SearchContainer(liferayPortletRequest, por
 							<%
 							PortletURL tempRowURL = liferayPortletResponse.createRenderURL();
 
-							tempRowURL.setParameter("struts_action", "/document_library/view_file_entry");
+							tempRowURL.setParameter("mvcRenderCommandName", "/document_library/view_file_entry");
 							tempRowURL.setParameter("redirect", HttpUtil.removeParameter(currentURL, liferayPortletResponse.getNamespace() + "ajax"));
 							tempRowURL.setParameter("fileEntryId", String.valueOf(fileEntry.getFileEntryId()));
 
@@ -194,18 +194,18 @@ SearchContainer searchContainer = new SearchContainer(liferayPortletRequest, por
 
 							<liferay-ui:app-view-search-entry
 								actionJsp="/html/portlet/document_library/file_entry_action.jsp"
+								commentRelatedSearchResults="<%= searchResult.getCommentRelatedSearchResults() %>"
 								containerName="<%= DLUtil.getAbsolutePath(liferayPortletRequest, fileEntry.getFolderId()) %>"
 								cssClass='<%= MathUtil.isEven(i) ? "alt" : StringPool.BLANK %>'
-								description="<%= (summary != null) ? summary.getContent() : fileEntry.getDescription() %>"
+								description="<%= ((summary != null) && Validator.isNotNull(summary.getContent())) ? summary.getContent() : fileEntry.getDescription() %>"
 								locked="<%= fileEntry.isCheckedOut() %>"
-								mbMessages="<%= searchResult.getMBMessages() %>"
 								queryTerms="<%= hits.getQueryTerms() %>"
 								rowCheckerId="<%= String.valueOf(fileEntry.getFileEntryId()) %>"
 								rowCheckerName="<%= FileEntry.class.getSimpleName() %>"
 								showCheckbox="<%= DLFileEntryPermission.contains(permissionChecker, fileEntry, ActionKeys.DELETE) || DLFileEntryPermission.contains(permissionChecker, fileEntry, ActionKeys.UPDATE) %>"
 								status="<%= latestFileVersion.getStatus() %>"
 								thumbnailSrc="<%= DLUtil.getThumbnailSrc(fileEntry, themeDisplay) %>"
-								title="<%= (summary != null) ? summary.getTitle() : fileEntry.getTitle() %>"
+								title="<%= ((summary != null) && Validator.isNotNull(summary.getTitle())) ? summary.getTitle() : fileEntry.getTitle() %>"
 								url="<%= tempRowURL.toString() %>"
 							/>
 						</c:when>
@@ -227,7 +227,7 @@ SearchContainer searchContainer = new SearchContainer(liferayPortletRequest, por
 
 							PortletURL tempRowURL = liferayPortletResponse.createRenderURL();
 
-							tempRowURL.setParameter("struts_action", "/document_library/view");
+							tempRowURL.setParameter("mvcRenderCommandName", "/document_library/view");
 							tempRowURL.setParameter("redirect", HttpUtil.removeParameter(currentURL, liferayPortletResponse.getNamespace() + "ajax"));
 							tempRowURL.setParameter("folderId", String.valueOf(curFolder.getFolderId()));
 
@@ -240,13 +240,13 @@ SearchContainer searchContainer = new SearchContainer(liferayPortletRequest, por
 								actionJsp="/html/portlet/document_library/folder_action.jsp"
 								containerName="<%= DLUtil.getAbsolutePath(liferayPortletRequest, curFolder.getParentFolderId()) %>"
 								cssClass='<%= MathUtil.isEven(i) ? "alt" : StringPool.BLANK %>'
-								description="<%= (summary != null) ? summary.getContent() : curFolder.getDescription() %>"
+								description="<%= ((summary != null) && Validator.isNotNull(summary.getContent())) ? summary.getContent() : curFolder.getDescription() %>"
 								queryTerms="<%= hits.getQueryTerms() %>"
 								rowCheckerId="<%= String.valueOf(curFolder.getFolderId()) %>"
 								rowCheckerName="<%= Folder.class.getSimpleName() %>"
 								showCheckbox="<%= DLFolderPermission.contains(permissionChecker, curFolder, ActionKeys.DELETE) || DLFolderPermission.contains(permissionChecker, curFolder, ActionKeys.UPDATE) %>"
 								thumbnailSrc='<%= themeDisplay.getPathThemeImages() + "/file_system/large/" + folderImage + ".png" %>'
-								title="<%= (summary != null) ? summary.getTitle() : curFolder.getName() %>"
+								title="<%= ((summary != null) && Validator.isNotNull(summary.getTitle())) ? summary.getTitle() : curFolder.getName() %>"
 								url="<%= tempRowURL.toString() %>"
 							/>
 						</c:when>
@@ -286,7 +286,7 @@ SearchContainer searchContainer = new SearchContainer(liferayPortletRequest, por
 		<%
 		PortletURL searchRepositoryURL = liferayPortletResponse.createRenderURL();
 
-		searchRepositoryURL.setParameter("struts_action", "/document_library/search");
+		searchRepositoryURL.setParameter("mvcRenderCommandName", "/document_library/search");
 		searchRepositoryURL.setParameter("repositoryId", String.valueOf(scopeGroupId));
 		searchRepositoryURL.setParameter("searchRepositoryId", String.valueOf(scopeGroupId));
 		searchRepositoryURL.setParameter("keywords", keywords);

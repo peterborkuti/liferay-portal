@@ -16,7 +16,6 @@ package com.liferay.portlet.calendar.model;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.ModelWrapper;
 
@@ -31,8 +30,10 @@ import java.util.Map;
  *
  * @author Brian Wing Shun Chan
  * @see CalEvent
+ * @deprecated As of 7.0.0, with no direct replacement
  * @generated
  */
+@Deprecated
 @ProviderType
 public class CalEventWrapper implements CalEvent, ModelWrapper<CalEvent> {
 	public CalEventWrapper(CalEvent calEvent) {
@@ -882,11 +883,6 @@ public class CalEventWrapper implements CalEvent, ModelWrapper<CalEvent> {
 		}
 
 		return false;
-	}
-
-	@Override
-	public StagedModelType getStagedModelType() {
-		return _calEvent.getStagedModelType();
 	}
 
 	/**

@@ -15,10 +15,10 @@
 package com.liferay.portal.kernel.repository.model;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.model.ModelWrapper;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portlet.expando.model.ExpandoBridge;
+import com.liferay.portlet.exportimport.lar.StagedModelType;
 
 import java.io.Serializable;
 
@@ -102,6 +102,11 @@ public class FileShortcutWrapper
 	}
 
 	@Override
+	public Date getLastPublishDate() {
+		return _fileShortcut.getLastPublishDate();
+	}
+
+	@Override
 	public Object getModel() {
 		return _fileShortcut.getModel();
 	}
@@ -182,8 +187,8 @@ public class FileShortcutWrapper
 	}
 
 	@Override
-	public void setCreateDate(Date date) {
-		_fileShortcut.setCreateDate(date);
+	public void setCreateDate(Date createDate) {
+		_fileShortcut.setCreateDate(createDate);
 	}
 
 	@Override
@@ -192,8 +197,13 @@ public class FileShortcutWrapper
 	}
 
 	@Override
-	public void setModifiedDate(Date date) {
-		_fileShortcut.setModifiedDate(date);
+	public void setLastPublishDate(Date lastPublishDate) {
+		_fileShortcut.setLastPublishDate(lastPublishDate);
+	}
+
+	@Override
+	public void setModifiedDate(Date modifiedDate) {
+		_fileShortcut.setModifiedDate(modifiedDate);
 	}
 
 	@Override

@@ -18,18 +18,83 @@
 
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
 
-<%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %>
-<%@ taglib uri="http://liferay.com/tld/ddm" prefix="liferay-ddm" %>
-<%@ taglib uri="http://liferay.com/tld/portlet" prefix="liferay-portlet" %>
-<%@ taglib uri="http://liferay.com/tld/security" prefix="liferay-security" %>
-<%@ taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %>
-<%@ taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
-<%@ taglib uri="http://liferay.com/tld/util" prefix="liferay-util" %>
+<%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %><%@
+taglib uri="http://liferay.com/tld/ddm" prefix="liferay-ddm" %><%@
+taglib uri="http://liferay.com/tld/portlet" prefix="liferay-portlet" %><%@
+taglib uri="http://liferay.com/tld/security" prefix="liferay-security" %><%@
+taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %><%@
+taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %><%@
+taglib uri="http://liferay.com/tld/util" prefix="liferay-util" %>
 
-<%@ page import="com.liferay.journal.web.asset.JournalArticleAssetRenderer" %><%@
+<%@ page import="com.liferay.dynamic.data.mapping.exception.NoSuchStructureException" %><%@
+page import="com.liferay.dynamic.data.mapping.exception.NoSuchTemplateException" %><%@
+page import="com.liferay.dynamic.data.mapping.exception.StorageFieldRequiredException" %><%@
+page import="com.liferay.dynamic.data.mapping.model.DDMStructure" %><%@
+page import="com.liferay.dynamic.data.mapping.model.DDMTemplate" %><%@
+page import="com.liferay.dynamic.data.mapping.service.DDMStructureLocalServiceUtil" %><%@
+page import="com.liferay.dynamic.data.mapping.service.DDMStructureServiceUtil" %><%@
+page import="com.liferay.dynamic.data.mapping.service.DDMTemplateLocalServiceUtil" %><%@
+page import="com.liferay.dynamic.data.mapping.service.DDMTemplateServiceUtil" %><%@
+page import="com.liferay.dynamic.data.mapping.service.permission.DDMStructurePermission" %><%@
+page import="com.liferay.dynamic.data.mapping.service.permission.DDMTemplatePermission" %><%@
+page import="com.liferay.dynamic.data.mapping.storage.Fields" %><%@
+page import="com.liferay.dynamic.data.mapping.util.FieldsToDDMFormValuesConverterUtil" %><%@
+page import="com.liferay.item.selector.ItemSelector" %><%@
+page import="com.liferay.item.selector.ItemSelectorReturnType" %><%@
+page import="com.liferay.item.selector.criteria.UUIDItemSelectorReturnType" %><%@
+page import="com.liferay.item.selector.criteria.layout.criterion.LayoutItemSelectorCriterion" %><%@
+page import="com.liferay.journal.configuration.JournalGroupServiceConfiguration" %><%@
+page import="com.liferay.journal.configuration.JournalServiceConfigurationValues" %><%@
+page import="com.liferay.journal.constants.JournalConstants" %><%@
+page import="com.liferay.journal.constants.JournalPortletKeys" %><%@
+page import="com.liferay.journal.constants.JournalWebKeys" %><%@
+page import="com.liferay.journal.exception.ArticleContentException" %><%@
+page import="com.liferay.journal.exception.ArticleContentSizeException" %><%@
+page import="com.liferay.journal.exception.ArticleDisplayDateException" %><%@
+page import="com.liferay.journal.exception.ArticleExpirationDateException" %><%@
+page import="com.liferay.journal.exception.ArticleIdException" %><%@
+page import="com.liferay.journal.exception.ArticleSmallImageNameException" %><%@
+page import="com.liferay.journal.exception.ArticleSmallImageSizeException" %><%@
+page import="com.liferay.journal.exception.ArticleTitleException" %><%@
+page import="com.liferay.journal.exception.ArticleVersionException" %><%@
+page import="com.liferay.journal.exception.DuplicateArticleIdException" %><%@
+page import="com.liferay.journal.exception.DuplicateFeedIdException" %><%@
+page import="com.liferay.journal.exception.DuplicateFolderNameException" %><%@
+page import="com.liferay.journal.exception.FeedContentFieldException" %><%@
+page import="com.liferay.journal.exception.FeedIdException" %><%@
+page import="com.liferay.journal.exception.FeedNameException" %><%@
+page import="com.liferay.journal.exception.FeedTargetLayoutFriendlyUrlException" %><%@
+page import="com.liferay.journal.exception.FeedTargetPortletIdException" %><%@
+page import="com.liferay.journal.exception.FolderNameException" %><%@
+page import="com.liferay.journal.exception.InvalidDDMStructureException" %><%@
+page import="com.liferay.journal.exception.NoSuchArticleException" %><%@
+page import="com.liferay.journal.exception.NoSuchFolderException" %><%@
+page import="com.liferay.journal.model.JournalArticle" %><%@
+page import="com.liferay.journal.model.JournalArticleConstants" %><%@
+page import="com.liferay.journal.model.JournalArticleDisplay" %><%@
+page import="com.liferay.journal.model.JournalArticleResource" %><%@
+page import="com.liferay.journal.model.JournalFeed" %><%@
+page import="com.liferay.journal.model.JournalFeedConstants" %><%@
+page import="com.liferay.journal.model.JournalFolder" %><%@
+page import="com.liferay.journal.model.JournalFolderConstants" %><%@
+page import="com.liferay.journal.service.JournalArticleLocalServiceUtil" %><%@
+page import="com.liferay.journal.service.JournalArticleResourceLocalServiceUtil" %><%@
+page import="com.liferay.journal.service.JournalArticleServiceUtil" %><%@
+page import="com.liferay.journal.service.JournalFeedLocalServiceUtil" %><%@
+page import="com.liferay.journal.service.JournalFolderLocalServiceUtil" %><%@
+page import="com.liferay.journal.service.JournalFolderServiceUtil" %><%@
+page import="com.liferay.journal.service.permission.JournalArticlePermission" %><%@
+page import="com.liferay.journal.service.permission.JournalFeedPermission" %><%@
+page import="com.liferay.journal.service.permission.JournalFolderPermission" %><%@
+page import="com.liferay.journal.service.permission.JournalPermission" %><%@
+page import="com.liferay.journal.util.JournalContentUtil" %><%@
+page import="com.liferay.journal.util.JournalConverterUtil" %><%@
+page import="com.liferay.journal.util.comparator.ArticleVersionComparator" %><%@
+page import="com.liferay.journal.util.impl.JournalUtil" %><%@
+page import="com.liferay.journal.web.asset.JournalArticleAssetRenderer" %><%@
 page import="com.liferay.journal.web.configuration.JournalWebConfigurationValues" %><%@
-page import="com.liferay.journal.web.constants.JournalPortletKeys" %><%@
 page import="com.liferay.journal.web.context.JournalDisplayContext" %><%@
+page import="com.liferay.journal.web.context.util.JournalWebRequestHelper" %><%@
 page import="com.liferay.journal.web.portlet.JournalPortlet" %><%@
 page import="com.liferay.journal.web.portlet.action.ActionUtil" %><%@
 page import="com.liferay.journal.web.search.ArticleDisplayTerms" %><%@
@@ -91,20 +156,18 @@ page import="com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil" %><
 page import="com.liferay.portal.layoutconfiguration.util.RuntimePageUtil" %><%@
 page import="com.liferay.portal.model.*" %><%@
 page import="com.liferay.portal.model.impl.*" %><%@
-page import="com.liferay.portal.security.auth.PrincipalException" %><%@
 page import="com.liferay.portal.security.permission.ActionKeys" %><%@
 page import="com.liferay.portal.service.*" %><%@
 page import="com.liferay.portal.upload.LiferayFileItem" %><%@
 page import="com.liferay.portal.util.PortalUtil" %><%@
-page import="com.liferay.portal.util.PortletKeys" %><%@
 page import="com.liferay.portal.util.PrefsPropsUtil" %><%@
-page import="com.liferay.portal.util.PropsValues" %><%@
 page import="com.liferay.portal.util.WebKeys" %><%@
 page import="com.liferay.portlet.PortalPreferences" %><%@
 page import="com.liferay.portlet.PortletPreferencesFactoryUtil" %><%@
 page import="com.liferay.portlet.PortletURLFactoryUtil" %><%@
 page import="com.liferay.portlet.PortletURLImpl" %><%@
 page import="com.liferay.portlet.PortletURLUtil" %><%@
+page import="com.liferay.portlet.RequestBackedPortletURLFactoryUtil" %><%@
 page import="com.liferay.portlet.admin.util.PortalAdministrationApplicationType" %><%@
 page import="com.liferay.portlet.asset.AssetRendererFactoryRegistryUtil" %><%@
 page import="com.liferay.portlet.asset.model.AssetEntry" %><%@
@@ -115,69 +178,14 @@ page import="com.liferay.portlet.asset.util.AssetUtil" %><%@
 page import="com.liferay.portlet.documentlibrary.DuplicateFileException" %><%@
 page import="com.liferay.portlet.documentlibrary.FileSizeException" %><%@
 page import="com.liferay.portlet.documentlibrary.model.DLFileEntry" %><%@
-page import="com.liferay.portlet.dynamicdatamapping.NoSuchStructureException" %><%@
-page import="com.liferay.portlet.dynamicdatamapping.NoSuchTemplateException" %><%@
-page import="com.liferay.portlet.dynamicdatamapping.StorageFieldRequiredException" %><%@
 page import="com.liferay.portlet.dynamicdatamapping.model.DDMForm" %><%@
 page import="com.liferay.portlet.dynamicdatamapping.model.DDMFormField" %><%@
 page import="com.liferay.portlet.dynamicdatamapping.model.DDMFormFieldOptions" %><%@
-page import="com.liferay.portlet.dynamicdatamapping.model.DDMStructure" %><%@
-page import="com.liferay.portlet.dynamicdatamapping.model.DDMTemplate" %><%@
 page import="com.liferay.portlet.dynamicdatamapping.model.LocalizedValue" %><%@
-page import="com.liferay.portlet.dynamicdatamapping.service.DDMStructureLocalServiceUtil" %><%@
-page import="com.liferay.portlet.dynamicdatamapping.service.DDMStructureServiceUtil" %><%@
-page import="com.liferay.portlet.dynamicdatamapping.service.DDMTemplateLocalServiceUtil" %><%@
-page import="com.liferay.portlet.dynamicdatamapping.service.DDMTemplateServiceUtil" %><%@
-page import="com.liferay.portlet.dynamicdatamapping.service.permission.DDMStructurePermission" %><%@
-page import="com.liferay.portlet.dynamicdatamapping.service.permission.DDMTemplatePermission" %><%@
-page import="com.liferay.portlet.dynamicdatamapping.storage.Fields" %><%@
-page import="com.liferay.portlet.journal.ArticleContentException" %><%@
-page import="com.liferay.portlet.journal.ArticleContentSizeException" %><%@
-page import="com.liferay.portlet.journal.ArticleDisplayDateException" %><%@
-page import="com.liferay.portlet.journal.ArticleExpirationDateException" %><%@
-page import="com.liferay.portlet.journal.ArticleIdException" %><%@
-page import="com.liferay.portlet.journal.ArticleSmallImageNameException" %><%@
-page import="com.liferay.portlet.journal.ArticleSmallImageSizeException" %><%@
-page import="com.liferay.portlet.journal.ArticleTitleException" %><%@
-page import="com.liferay.portlet.journal.ArticleVersionException" %><%@
-page import="com.liferay.portlet.journal.DuplicateArticleIdException" %><%@
-page import="com.liferay.portlet.journal.DuplicateFeedIdException" %><%@
-page import="com.liferay.portlet.journal.DuplicateFolderNameException" %><%@
-page import="com.liferay.portlet.journal.FeedContentFieldException" %><%@
-page import="com.liferay.portlet.journal.FeedIdException" %><%@
-page import="com.liferay.portlet.journal.FeedNameException" %><%@
-page import="com.liferay.portlet.journal.FeedTargetLayoutFriendlyUrlException" %><%@
-page import="com.liferay.portlet.journal.FeedTargetPortletIdException" %><%@
-page import="com.liferay.portlet.journal.FolderNameException" %><%@
-page import="com.liferay.portlet.journal.InvalidDDMStructureException" %><%@
-page import="com.liferay.portlet.journal.NoSuchArticleException" %><%@
-page import="com.liferay.portlet.journal.NoSuchFolderException" %><%@
-page import="com.liferay.portlet.journal.model.JournalArticle" %><%@
-page import="com.liferay.portlet.journal.model.JournalArticleConstants" %><%@
-page import="com.liferay.portlet.journal.model.JournalArticleDisplay" %><%@
-page import="com.liferay.portlet.journal.model.JournalArticleResource" %><%@
-page import="com.liferay.portlet.journal.model.JournalFeed" %><%@
-page import="com.liferay.portlet.journal.model.JournalFeedConstants" %><%@
-page import="com.liferay.portlet.journal.model.JournalFolder" %><%@
-page import="com.liferay.portlet.journal.model.JournalFolderConstants" %><%@
-page import="com.liferay.portlet.journal.service.JournalArticleLocalServiceUtil" %><%@
-page import="com.liferay.portlet.journal.service.JournalArticleResourceLocalServiceUtil" %><%@
-page import="com.liferay.portlet.journal.service.JournalArticleServiceUtil" %><%@
-page import="com.liferay.portlet.journal.service.JournalFeedLocalServiceUtil" %><%@
-page import="com.liferay.portlet.journal.service.JournalFolderLocalServiceUtil" %><%@
-page import="com.liferay.portlet.journal.service.JournalFolderServiceUtil" %><%@
-page import="com.liferay.portlet.journal.service.permission.JournalArticlePermission" %><%@
-page import="com.liferay.portlet.journal.service.permission.JournalFeedPermission" %><%@
-page import="com.liferay.portlet.journal.service.permission.JournalFolderPermission" %><%@
-page import="com.liferay.portlet.journal.service.permission.JournalPermission" %><%@
-page import="com.liferay.portlet.journal.util.JournalContentUtil" %><%@
-page import="com.liferay.portlet.journal.util.JournalConverterUtil" %><%@
-page import="com.liferay.portlet.journal.util.JournalUtil" %><%@
-page import="com.liferay.portlet.journal.util.comparator.ArticleVersionComparator" %><%@
+page import="com.liferay.portlet.dynamicdatamapping.storage.DDMFormValues" %><%@
 page import="com.liferay.portlet.trash.model.TrashEntry" %><%@
 page import="com.liferay.portlet.trash.util.TrashUtil" %><%@
 page import="com.liferay.taglib.search.ResultRow" %><%@
-page import="com.liferay.util.ContentUtil" %><%@
 page import="com.liferay.util.RSSUtil" %>
 
 <%@ page import="java.text.Format" %>
@@ -198,8 +206,9 @@ page import="javax.portlet.PortletURL" %><%@
 page import="javax.portlet.ResourceURL" %><%@
 page import="javax.portlet.WindowState" %>
 
-<liferay-theme:defineObjects />
 <portlet:defineObjects />
+
+<liferay-theme:defineObjects />
 
 <%
 WindowState windowState = liferayPortletRequest.getWindowState();
@@ -211,6 +220,10 @@ String currentURL = currentURLObj.toString();
 PortalPreferences portalPreferences = PortletPreferencesFactoryUtil.getPortalPreferences(liferayPortletRequest);
 
 JournalDisplayContext journalDisplayContext = new JournalDisplayContext(liferayPortletRequest, portletPreferences);
+
+JournalWebRequestHelper journalWebRequestHelper = new JournalWebRequestHelper(request);
+
+JournalGroupServiceConfiguration journalGroupServiceConfiguration = journalWebRequestHelper.getJournalGroupServiceConfiguration();
 
 Format dateFormatDateTime = FastDateFormatFactoryUtil.getDateTime(locale, timeZone);
 %>

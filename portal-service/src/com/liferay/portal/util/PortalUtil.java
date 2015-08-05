@@ -415,15 +415,11 @@ public class PortalUtil {
 	}
 
 	/**
-	 * Returns the user's ID from the HTTP authentication headers after
-	 * validating his credentials.
-	 *
-	 * @param  request the servlet request from which to retrieve the HTTP
-	 *         authentication headers
-	 * @return the user's ID if HTTP authentication headers are present and his
-	 *         credentials are valid; <code>0</code> otherwise
-	 * @throws PortalException if an authentication exception occurred
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             com.liferay.portal.kernel.security.auth.http.HttpAuthManagerUtil#getBasicUserId(
+	 *             HttpServletRequest)}
 	 */
+	@Deprecated
 	public static long getBasicAuthUserId(HttpServletRequest request)
 		throws PortalException {
 
@@ -431,16 +427,11 @@ public class PortalUtil {
 	}
 
 	/**
-	 * Returns the user's ID from the HTTP authentication headers after
-	 * validating his credentials.
-	 *
-	 * @param  request the servlet request from which to retrieve the HTTP
-	 *         authentication headers
-	 * @param  companyId the company's ID. This parameter is not used.
-	 * @return the user's ID if HTTP authentication headers are present and his
-	 *         credentials are valid; <code>0</code> otherwise
-	 * @throws PortalException if an authentication exception occurred
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             com.liferay.portal.kernel.security.auth.http.HttpAuthManagerUtil#getBasicUserId(
+	 *             HttpServletRequest)}
 	 */
+	@Deprecated
 	public static long getBasicAuthUserId(
 			HttpServletRequest request, long companyId)
 		throws PortalException {
@@ -896,6 +887,12 @@ public class PortalUtil {
 		return getPortal().getDefaultCompanyId();
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             com.liferay.portal.kernel.security.auth.http.HttpAuthManagerUtil#getDigestUserId(
+	 *             HttpServletRequest)}
+	 */
+	@Deprecated
 	public static long getDigestAuthUserId(HttpServletRequest request)
 		throws PortalException {
 
@@ -1101,6 +1098,10 @@ public class PortalUtil {
 			locale, defaultI18nPathLanguageId);
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static String getJournalArticleActualURL(
 			long groupId, boolean privateLayout, String mainPath,
 			String friendlyURL, Map<String, String[]> params,
@@ -1112,6 +1113,10 @@ public class PortalUtil {
 			requestContext);
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static Layout getJournalArticleLayout(
 			long groupId, boolean privateLayout, String friendlyURL)
 		throws PortalException {
@@ -2026,6 +2031,10 @@ public class PortalUtil {
 		return getPortal().getVirtualHostname(layoutSet);
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static String getVirtualLayoutActualURL(
 			long groupId, boolean privateLayout, String mainPath,
 			String friendlyURL, Map<String, String[]> params,
@@ -2037,6 +2046,10 @@ public class PortalUtil {
 			requestContext);
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static LayoutFriendlyURLComposite
 		getVirtualLayoutFriendlyURLComposite(
 			boolean privateLayout, String friendlyURL,
@@ -2062,6 +2075,10 @@ public class PortalUtil {
 		return getPortal().initUser(request);
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static void invokeTaglibDiscussion(
 			PortletConfig portletConfig, ActionRequest actionRequest,
 			ActionResponse actionResponse)
@@ -2071,6 +2088,10 @@ public class PortalUtil {
 			portletConfig, actionRequest, actionResponse);
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static void invokeTaglibDiscussionPagination(
 			PortletConfig portletConfig, ResourceRequest resourceRequest,
 			ResourceResponse resourceResponse)
@@ -2410,17 +2431,19 @@ public class PortalUtil {
 	}
 
 	public static void updateImageId(
-			BaseModel<?> baseModel, boolean image, byte[] bytes,
+			BaseModel<?> baseModel, boolean hasImage, byte[] bytes,
 			String fieldName, long maxSize, int maxHeight, int maxWidth)
 		throws PortalException {
 
 		getPortal().updateImageId(
-			baseModel, image, bytes, fieldName, maxSize, maxHeight, maxWidth);
+			baseModel, hasImage, bytes, fieldName, maxSize, maxHeight,
+			maxWidth);
 	}
 
 	public static PortletMode updatePortletMode(
-		String portletId, User user, Layout layout, PortletMode portletMode,
-		HttpServletRequest request) {
+			String portletId, User user, Layout layout, PortletMode portletMode,
+			HttpServletRequest request)
+		throws PortalException {
 
 		return getPortal().updatePortletMode(
 			portletId, user, layout, portletMode, request);

@@ -15,13 +15,13 @@
 package com.liferay.portal.repository.proxy;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.repository.model.FileShortcut;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.repository.model.RepositoryModelOperation;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portlet.expando.model.ExpandoBridge;
+import com.liferay.portlet.exportimport.lar.StagedModelType;
 
 import java.io.Serializable;
 
@@ -108,6 +108,11 @@ public class FileShortcutProxyBean extends RepositoryModelProxyBean
 	}
 
 	@Override
+	public Date getLastPublishDate() {
+		return _fileShortcut.getLastPublishDate();
+	}
+
+	@Override
 	public Object getModel() {
 		return _fileShortcut.getModel();
 	}
@@ -183,8 +188,8 @@ public class FileShortcutProxyBean extends RepositoryModelProxyBean
 	}
 
 	@Override
-	public void setCreateDate(Date date) {
-		_fileShortcut.setCreateDate(date);
+	public void setCreateDate(Date createDate) {
+		_fileShortcut.setCreateDate(createDate);
 	}
 
 	@Override
@@ -193,8 +198,13 @@ public class FileShortcutProxyBean extends RepositoryModelProxyBean
 	}
 
 	@Override
-	public void setModifiedDate(Date date) {
-		_fileShortcut.setModifiedDate(date);
+	public void setLastPublishDate(Date lastPublishDate) {
+		_fileShortcut.setLastPublishDate(lastPublishDate);
+	}
+
+	@Override
+	public void setModifiedDate(Date modifiedDate) {
+		_fileShortcut.setModifiedDate(modifiedDate);
 	}
 
 	@Override

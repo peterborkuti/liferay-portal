@@ -124,6 +124,7 @@
 
 	<command name="viewConfiguredDisplayContent">
 		<execute macro="Portlet#gotoPortletOptions">
+			<var name="portletNameBorderless" value="${portletNameBorderless}" />
 			<var name="portletOption" value="Configuration" />
 		</execute>
 
@@ -207,7 +208,7 @@
 		<if>
 			<isset var="preview1Text" />
 			<then>
-				<execute function="MouseOverNoError" locator1="PGUsersegmentcontentdisplay#PREVIEW_1" />
+				<execute function="MouseOver" locator1="PGUsersegmentcontentdisplay#PREVIEW_1" />
 				<execute function="AssertTextEquals" locator1="PGUsersegmentcontentdisplay#PREVIEW_1" value1="${preview1Text}" />
 			</then>
 		</if>
@@ -217,7 +218,7 @@
 		<if>
 			<isset var="preview2Text" />
 			<then>
-				<execute function="MouseOverNoError" locator1="PGUsersegmentcontentdisplay#PREVIEW_2" />
+				<execute function="MouseOver" locator1="PGUsersegmentcontentdisplay#PREVIEW_2" />
 				<execute function="AssertTextEquals" locator1="PGUsersegmentcontentdisplay#PREVIEW_2" value1="${preview2Text}" />
 			</then>
 		</if>

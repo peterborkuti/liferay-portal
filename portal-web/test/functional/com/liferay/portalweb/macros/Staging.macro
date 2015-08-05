@@ -33,7 +33,7 @@
 			</then>
 		</if>
 
-		<for list="Application Display Templates,Audience Targeting,Blogs,Bookmarks,Calendar,Documents and Media,Dynamic Data Lists,Message Boards,Mobile Device Families,Polls,Shopping,Web Content,Wiki" param="contentName">
+		<for list="Application Display Template,Audience Targeting,Blogs,Bookmarks,Calendar,Documents and Media,Dynamic Data Lists,Message Boards,Mobile Device Families,Polls,Shopping,Web Content,Wiki" param="contentName">
 			<var name="key_contentName" value="${contentName}" />
 
 			<if>
@@ -50,6 +50,15 @@
 				<var name="key_contentName" value="${uncheckContent}" />
 
 				<execute function="Uncheck" locator1="CPSitesEdit#STAGING_CONTENT_CHECKBOX" />
+			</then>
+		</if>
+
+		<if>
+			<isset var="isNotEditable" />
+			<then>
+				<var name="key_contentName" value="${isNotEditable}" />
+
+				<execute function="AssertNotEditable" locator1="CPSitesEdit#STAGING_CONTENT_CHECKBOX" />
 			</then>
 		</if>
 
@@ -437,6 +446,7 @@
 		<execute function="AssertClick" locator1="PGStaging#STAGING_MENU_ENABLE_PAGE_BUTTON" value1="Enable in ${sitePagesVariationName}" />
 
 		<execute macro="Page#viewPG">
+			<var name="liferaySite" value="${liferaySite}" />
 			<var name="pageName" value="${pageName}" />
 		</execute>
 	</command>
@@ -623,10 +633,14 @@
 		</execute>
 
 		<execute macro="Staging#activateStagingCP">
+			<var name="contentName" value="${contentName}" />
+			<var name="editActivateStaging" value="${editActivateStaging}" />
 			<var name="pageVersioningEnabled" value="${pageVersioningEnabled}" />
+			<var name="remotePort" value="${remotePort}" />
 			<var name="remoteStaging" value="true" />
 			<var name="siteID" value="${siteID}" />
 			<var name="siteName" value="${siteName}" />
+			<var name="uncheckContent" value="${uncheckContent}" />
 		</execute>
 	</command>
 
@@ -888,5 +902,28 @@
 		</if>
 
 		<execute function="AssertTextEquals" locator1="PGStaging#STAGING_MENU_STATUS" value1="${stagingWorkflowStatus}" />
+	</command>
+
+	<command name="viewValidationError">
+		<execute function="AssertClick" locator1="StagingPublishToLive#CURRENT_AND_PREVIOUS_LINK" value1="Current and Previous" />
+
+		<execute function="Click" locator1="StagingPublishToLive#CURRENT_AND_PREVIOUS_DETAILS" />
+
+		<execute function="Pause" locator1="5000" />
+
+		<if>
+			<condition function="IsElementNotPresent#isNotVisible" locator1="StagingPublishToLive#CURRENT_AND_PREVIOUS_DETAILS_STATUS" />
+			<then>
+				<execute function="Click" locator1="StagingPublishToLive#CURRENT_AND_PREVIOUS_DETAILS" />
+			</then>
+		</if>
+
+		<execute function="AssertTextEquals#assertPartialText" locator1="StagingPublishToLive#CURRENT_AND_PREVIOUS_DETAILS_STATUS" value1="${validateErrorMessage}" />
+
+		<execute function="SelectFrameTop" value1="relative=top" />
+
+		<execute function="Pause" locator1="5000" />
+
+		<execute function="Refresh" />
 	</command>
 </definition>

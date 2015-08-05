@@ -14,12 +14,15 @@
 
 package com.liferay.sync.engine.documentlibrary.handler;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.liferay.sync.engine.documentlibrary.event.Event;
 import com.liferay.sync.engine.model.SyncFile;
 import com.liferay.sync.engine.service.SyncFileService;
+import com.liferay.sync.engine.util.JSONUtil;
+
+import java.net.SocketException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Shinn Lok
@@ -31,11 +34,32 @@ public class AddFileFolderHandler extends BaseJSONHandler {
 	}
 
 	@Override
-	public void processResponse(String response) throws Exception {
-		ObjectMapper objectMapper = new ObjectMapper();
+	public void handleException(Exception e) {
+		if (e instanceof SocketException) {
+			String message = e.getMessage();
 
-		SyncFile remoteSyncFile = objectMapper.readValue(
-			response, new TypeReference<SyncFile>() {});
+			if (message.equals("Broken pipe")) {
+				if (_logger.isDebugEnabled()) {
+					_logger.debug("Handling exception {}", e.toString());
+				}
+
+				SyncFile syncFile = getLocalSyncFile();
+
+				syncFile.setState(SyncFile.STATE_ERROR);
+				syncFile.setUiEvent(SyncFile.UI_EVENT_UPLOAD_EXCEPTION);
+
+				SyncFileService.update(syncFile);
+
+				return;
+			}
+		}
+
+		super.handleException(e);
+	}
+
+	@Override
+	public void processResponse(String response) throws Exception {
+		SyncFile remoteSyncFile = JSONUtil.readValue(response, SyncFile.class);
 
 		SyncFile localSyncFile = getLocalSyncFile();
 
@@ -60,5 +84,8 @@ public class AddFileFolderHandler extends BaseJSONHandler {
 
 		SyncFileService.update(localSyncFile);
 	}
+
+	private static final Logger _logger = LoggerFactory.getLogger(
+		AddFileFolderHandler.class);
 
 }

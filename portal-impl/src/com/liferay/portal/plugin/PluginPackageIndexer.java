@@ -19,15 +19,13 @@ import com.liferay.portal.kernel.plugin.PluginPackage;
 import com.liferay.portal.kernel.search.BaseIndexer;
 import com.liferay.portal.kernel.search.BooleanClauseOccur;
 import com.liferay.portal.kernel.search.BooleanQuery;
-import com.liferay.portal.kernel.search.BooleanQueryFactoryUtil;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.DocumentImpl;
 import com.liferay.portal.kernel.search.Field;
-import com.liferay.portal.kernel.search.Query;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchEngineUtil;
 import com.liferay.portal.kernel.search.Summary;
-import com.liferay.portal.kernel.search.TermQueryFactoryUtil;
+import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -52,7 +50,7 @@ import javax.portlet.PortletResponse;
  * @author Raymond Augé
  */
 @OSGiBeanProperties
-public class PluginPackageIndexer extends BaseIndexer {
+public class PluginPackageIndexer extends BaseIndexer<PluginPackage> {
 
 	public static final String CLASS_NAME = PluginPackage.class.getName();
 
@@ -70,15 +68,13 @@ public class PluginPackageIndexer extends BaseIndexer {
 	}
 
 	@Override
-	protected void doDelete(Object obj) throws Exception {
-		PluginPackage pluginPackage = (PluginPackage)obj;
-
+	protected void doDelete(PluginPackage pluginPackage) throws Exception {
 		deleteDocument(CompanyConstants.SYSTEM, pluginPackage.getModuleId());
 	}
 
 	@Override
-	protected Document doGetDocument(Object obj) throws Exception {
-		PluginPackage pluginPackage = (PluginPackage)obj;
+	protected Document doGetDocument(PluginPackage pluginPackage)
+		throws Exception {
 
 		Document document = new DocumentImpl();
 
@@ -185,9 +181,7 @@ public class PluginPackageIndexer extends BaseIndexer {
 	}
 
 	@Override
-	protected void doReindex(Object obj) throws Exception {
-		PluginPackage pluginPackage = (PluginPackage)obj;
-
+	protected void doReindex(PluginPackage pluginPackage) throws Exception {
 		Document document = getDocument(pluginPackage);
 
 		SearchEngineUtil.updateDocument(
@@ -225,52 +219,35 @@ public class PluginPackageIndexer extends BaseIndexer {
 			BooleanQuery fullQuery, SearchContext searchContext)
 		throws Exception {
 
+		BooleanFilter booleanFilter = fullQuery.getPreBooleanFilter();
+
+		if (booleanFilter == null) {
+			booleanFilter = new BooleanFilter();
+		}
+
 		String type = (String)searchContext.getAttribute("type");
 
 		if (Validator.isNotNull(type)) {
-			BooleanQuery searchQuery = BooleanQueryFactoryUtil.create(
-				searchContext);
-
-			searchQuery.addRequiredTerm("type", type);
-
-			fullQuery.add(searchQuery, BooleanClauseOccur.MUST);
+			booleanFilter.addRequiredTerm("type", type);
 		}
 
 		String tag = (String)searchContext.getAttribute("tag");
 
 		if (Validator.isNotNull(tag)) {
-			BooleanQuery searchQuery = BooleanQueryFactoryUtil.create(
-				searchContext);
-
-			searchQuery.addExactTerm("tag", tag);
-
-			fullQuery.add(searchQuery, BooleanClauseOccur.MUST);
+			booleanFilter.addRequiredTerm("tag", tag);
 		}
 
 		String repositoryURL = (String)searchContext.getAttribute(
 			"repositoryURL");
 
 		if (Validator.isNotNull(repositoryURL)) {
-			BooleanQuery searchQuery = BooleanQueryFactoryUtil.create(
-				searchContext);
-
-			Query query = TermQueryFactoryUtil.create(
-				searchContext, "repositoryURL", repositoryURL);
-
-			searchQuery.add(query, BooleanClauseOccur.SHOULD);
-
-			fullQuery.add(searchQuery, BooleanClauseOccur.MUST);
+			booleanFilter.addRequiredTerm("repositoryURL", repositoryURL);
 		}
 
 		String license = (String)searchContext.getAttribute("license");
 
 		if (Validator.isNotNull(license)) {
-			BooleanQuery searchQuery = BooleanQueryFactoryUtil.create(
-				searchContext);
-
-			searchQuery.addExactTerm("license", license);
-
-			fullQuery.add(searchQuery, BooleanClauseOccur.MUST);
+			booleanFilter.addRequiredTerm("license", license);
 		}
 
 		String status = (String)searchContext.getAttribute(Field.STATUS);
@@ -279,23 +256,26 @@ public class PluginPackageIndexer extends BaseIndexer {
 			return;
 		}
 
-		BooleanQuery searchQuery = BooleanQueryFactoryUtil.create(
-			searchContext);
-
 		if (status.equals(
 				PluginPackageImpl.
 					STATUS_NOT_INSTALLED_OR_OLDER_VERSION_INSTALLED)) {
 
-			searchQuery.addExactTerm(
+			BooleanFilter statusBooleanFilter = new BooleanFilter();
+
+			statusBooleanFilter.addTerm(
 				Field.STATUS, PluginPackageImpl.STATUS_NOT_INSTALLED);
-			searchQuery.addExactTerm(
+			statusBooleanFilter.addTerm(
 				Field.STATUS, PluginPackageImpl.STATUS_OLDER_VERSION_INSTALLED);
+
+			booleanFilter.add(statusBooleanFilter, BooleanClauseOccur.MUST);
 		}
 		else {
-			searchQuery.addExactTerm(Field.STATUS, status);
+			booleanFilter.addRequiredTerm(Field.STATUS, status);
 		}
 
-		fullQuery.add(searchQuery, BooleanClauseOccur.MUST);
+		if (booleanFilter.hasClauses()) {
+			fullQuery.setPreBooleanFilter(booleanFilter);
+		}
 	}
 
 }

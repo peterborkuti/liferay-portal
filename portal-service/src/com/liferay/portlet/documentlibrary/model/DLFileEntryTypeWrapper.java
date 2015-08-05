@@ -16,9 +16,10 @@ package com.liferay.portlet.documentlibrary.model;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.ModelWrapper;
+
+import com.liferay.portlet.exportimport.lar.StagedModelType;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -65,6 +66,7 @@ public class DLFileEntryTypeWrapper implements DLFileEntryType,
 		attributes.put("fileEntryTypeKey", getFileEntryTypeKey());
 		attributes.put("name", getName());
 		attributes.put("description", getDescription());
+		attributes.put("lastPublishDate", getLastPublishDate());
 
 		return attributes;
 	}
@@ -136,6 +138,12 @@ public class DLFileEntryTypeWrapper implements DLFileEntryType,
 		if (description != null) {
 			setDescription(description);
 		}
+
+		Date lastPublishDate = (Date)attributes.get("lastPublishDate");
+
+		if (lastPublishDate != null) {
+			setLastPublishDate(lastPublishDate);
+		}
 	}
 
 	@Override
@@ -175,7 +183,7 @@ public class DLFileEntryTypeWrapper implements DLFileEntryType,
 	}
 
 	@Override
-	public java.util.List<com.liferay.portlet.dynamicdatamapping.model.DDMStructure> getDDMStructures() {
+	public java.util.List<com.liferay.portlet.dynamicdatamapping.DDMStructure> getDDMStructures() {
 		return _dlFileEntryType.getDDMStructures();
 	}
 
@@ -295,6 +303,16 @@ public class DLFileEntryTypeWrapper implements DLFileEntryType,
 	@Override
 	public long getGroupId() {
 		return _dlFileEntryType.getGroupId();
+	}
+
+	/**
+	* Returns the last publish date of this document library file entry type.
+	*
+	* @return the last publish date of this document library file entry type
+	*/
+	@Override
+	public Date getLastPublishDate() {
+		return _dlFileEntryType.getLastPublishDate();
 	}
 
 	/**
@@ -626,6 +644,16 @@ public class DLFileEntryTypeWrapper implements DLFileEntryType,
 	@Override
 	public void setGroupId(long groupId) {
 		_dlFileEntryType.setGroupId(groupId);
+	}
+
+	/**
+	* Sets the last publish date of this document library file entry type.
+	*
+	* @param lastPublishDate the last publish date of this document library file entry type
+	*/
+	@Override
+	public void setLastPublishDate(Date lastPublishDate) {
+		_dlFileEntryType.setLastPublishDate(lastPublishDate);
 	}
 
 	/**

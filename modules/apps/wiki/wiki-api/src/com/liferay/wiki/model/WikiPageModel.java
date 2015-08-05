@@ -395,6 +395,22 @@ public interface WikiPageModel extends BaseModel<WikiPage>, ContainerModel,
 	public void setRedirectTitle(String redirectTitle);
 
 	/**
+	 * Returns the last publish date of this wiki page.
+	 *
+	 * @return the last publish date of this wiki page
+	 */
+	@Override
+	public Date getLastPublishDate();
+
+	/**
+	 * Sets the last publish date of this wiki page.
+	 *
+	 * @param lastPublishDate the last publish date of this wiki page
+	 */
+	@Override
+	public void setLastPublishDate(Date lastPublishDate);
+
+	/**
 	 * Returns the status of this wiki page.
 	 *
 	 * @return the status of this wiki page

@@ -14,39 +14,54 @@
 
 package com.liferay.layout.item.selector.web;
 
+import com.liferay.item.selector.ItemSelectorReturnType;
 import com.liferay.item.selector.ItemSelectorView;
+import com.liferay.item.selector.criteria.URLItemSelectorReturnType;
+import com.liferay.item.selector.criteria.UUIDItemSelectorReturnType;
+import com.liferay.item.selector.criteria.layout.criterion.LayoutItemSelectorCriterion;
+import com.liferay.layout.item.selector.web.display.context.LayoutItemSelectorViewDisplayContext;
+import com.liferay.portal.kernel.util.ListUtil;
 
 import java.io.IOException;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 import javax.portlet.PortletURL;
 
 import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Roberto Díaz
  */
+@Component(service = ItemSelectorView.class)
 public class LayoutItemSelectorView
 	implements ItemSelectorView<LayoutItemSelectorCriterion> {
 
-	public static final String ITEM_SELECTED_CALLBACK =
-		LayoutItemSelectorView.class.getName() + "#ITEM_SELECTED_CALLBACK";
-
-	public static final String LAYOUT_ITEM_SELECTOR_CRITERION =
-		LayoutItemSelectorView.class.getName() +
-			"#LAYOUT_ITEM_SELECTOR_CRITERION";
-
-	public static final String PORTLET_URL =
-		LayoutItemSelectorView.class.getName() + "#PORTLET_URL";
+	public static final String LAYOUT_ITEM_SELECTOR_VIEW_DISPLAY_CONTEXT =
+		"LAYOUT_ITEM_SELECTOR_VIEW_DISPLAY_CONTEXT";
 
 	@Override
 	public Class<LayoutItemSelectorCriterion> getItemSelectorCriterionClass() {
 		return LayoutItemSelectorCriterion.class;
+	}
+
+	public ServletContext getServletContext() {
+		return _servletContext;
+	}
+
+	@Override
+	public List<ItemSelectorReturnType> getSupportedItemSelectorReturnTypes() {
+		return _supportedItemSelectorReturnTypes;
 	}
 
 	@Override
@@ -58,21 +73,50 @@ public class LayoutItemSelectorView
 	}
 
 	@Override
+	public boolean isShowSearch() {
+		return false;
+	}
+
+	@Override
 	public void renderHTML(
 			ServletRequest request, ServletResponse response,
 			LayoutItemSelectorCriterion layoutItemSelectorCriterion,
-			PortletURL portletURL, String itemSelectedCallback)
+			PortletURL portletURL, String itemSelectedEventName)
 		throws IOException, ServletException {
 
-		request.setAttribute(ITEM_SELECTED_CALLBACK, itemSelectedCallback);
-		request.setAttribute(
-			LAYOUT_ITEM_SELECTOR_CRITERION, layoutItemSelectorCriterion);
-		request.setAttribute(PORTLET_URL, portletURL);
+		LayoutItemSelectorViewDisplayContext
+			layoutItemSelectorViewDisplayContext =
+				new LayoutItemSelectorViewDisplayContext(
+					layoutItemSelectorCriterion, itemSelectedEventName);
 
-		RequestDispatcher requestDispatcher = request.getRequestDispatcher(
-			"/o/layout-item-selector-web/layouts.jsp");
+		request.setAttribute(
+			LAYOUT_ITEM_SELECTOR_VIEW_DISPLAY_CONTEXT,
+			layoutItemSelectorViewDisplayContext);
+
+		ServletContext servletContext = getServletContext();
+
+		RequestDispatcher requestDispatcher =
+			servletContext.getRequestDispatcher("/layouts.jsp");
 
 		requestDispatcher.include(request, response);
 	}
+
+	@Reference(
+		target = "(osgi.web.symbolicname=com.liferay.layout.item.selector.web)",
+		unbind = "-"
+	)
+	public void setServletContext(ServletContext servletContext) {
+		_servletContext = servletContext;
+	}
+
+	private static final List<ItemSelectorReturnType>
+		_supportedItemSelectorReturnTypes = Collections.unmodifiableList(
+			ListUtil.fromArray(
+				new ItemSelectorReturnType[] {
+					new URLItemSelectorReturnType(),
+					new UUIDItemSelectorReturnType()
+				}));
+
+	private ServletContext _servletContext;
 
 }

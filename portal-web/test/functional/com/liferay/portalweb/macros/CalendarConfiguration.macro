@@ -59,7 +59,7 @@
 	</command>
 
 	<command name="tearDown">
-		<execute macro="Calendar#gotoConfiguration" />
+		<execute macro="CalendarNavigator#gotoConfiguration" />
 
 		<execute macro="CalendarConfiguration#selectDefaultDuration">
 			<var name="defaultDuration" value="60 Minutes" />
@@ -72,6 +72,8 @@
 		<execute macro="CalendarConfiguration#selectWeekStartsOn">
 			<var name="weekStartDay" value="Sunday" />
 		</execute>
+
+		<execute macro="CalendarConfiguration#save" />
 
 		<execute macro="CalendarConfiguration#enableRSS" />
 

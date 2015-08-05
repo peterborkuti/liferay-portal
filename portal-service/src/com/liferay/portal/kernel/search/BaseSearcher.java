@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.search;
 
+import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.StringPool;
 
@@ -26,7 +27,7 @@ import javax.portlet.PortletResponse;
  * @author Eudaldo Alonso
  * @author László Csontos
  */
-public abstract class BaseSearcher extends BaseIndexer {
+public abstract class BaseSearcher extends BaseIndexer<Object> {
 
 	@Override
 	public String getClassName() {
@@ -40,7 +41,8 @@ public abstract class BaseSearcher extends BaseIndexer {
 
 	@Override
 	public void postProcessSearchQuery(
-			BooleanQuery searchQuery, SearchContext searchContext)
+			BooleanQuery searchQuery, BooleanFilter fullQueryBooleanFilter,
+			SearchContext searchContext)
 		throws Exception {
 
 		String[] classNames = getSearchClassNames();
@@ -50,13 +52,14 @@ public abstract class BaseSearcher extends BaseIndexer {
 		}
 
 		for (String className : classNames) {
-			Indexer indexer = IndexerRegistryUtil.getIndexer(className);
+			Indexer<?> indexer = IndexerRegistryUtil.getIndexer(className);
 
 			if (indexer == null) {
 				continue;
 			}
 
-			indexer.postProcessSearchQuery(searchQuery, searchContext);
+			indexer.postProcessSearchQuery(
+				searchQuery, fullQueryBooleanFilter, searchContext);
 		}
 	}
 
@@ -84,6 +87,19 @@ public abstract class BaseSearcher extends BaseIndexer {
 		throws Exception {
 
 		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * @deprecated As of 7.0.0, added strictly to support backwards
+	 *             compatibility of {@link
+	 *             Indexer#postProcessSearchQuery(BooleanQuery, SearchContext)}
+	 */
+	@Deprecated
+	@Override
+	protected void doPostProcessSearchQuery(
+			Indexer<?> indexer, BooleanQuery searchQuery,
+			SearchContext searchContext)
+		throws Exception {
 	}
 
 	@Override

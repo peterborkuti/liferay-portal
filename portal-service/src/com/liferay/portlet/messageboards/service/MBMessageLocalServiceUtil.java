@@ -89,13 +89,15 @@ public class MBMessageLocalServiceUtil {
 	public static com.liferay.portlet.messageboards.model.MBMessage addMessage(
 		long userId, java.lang.String userName, long groupId, long categoryId,
 		java.lang.String subject, java.lang.String body,
-		java.lang.String fileName, java.io.File file,
+		java.lang.String format, java.lang.String fileName, java.io.File file,
+		boolean anonymous, double priority, boolean allowPingbacks,
 		com.liferay.portal.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			java.io.FileNotFoundException {
 		return getService()
 				   .addMessage(userId, userName, groupId, categoryId, subject,
-			body, fileName, file, serviceContext);
+			body, format, fileName, file, anonymous, priority, allowPingbacks,
+			serviceContext);
 	}
 
 	public static com.liferay.portlet.messageboards.model.MBMessage addMessage(
@@ -136,6 +138,13 @@ public class MBMessageLocalServiceUtil {
 			priority, allowPingbacks, serviceContext);
 	}
 
+	public static void addMessageAttachment(long userId, long messageId,
+		java.lang.String fileName, java.io.File file, java.lang.String mimeType)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		getService()
+			.addMessageAttachment(userId, messageId, fileName, file, mimeType);
+	}
+
 	public static void addMessageResources(
 		com.liferay.portlet.messageboards.model.MBMessage message,
 		boolean addGroupPermissions, boolean addGuestPermissions)
@@ -147,10 +156,9 @@ public class MBMessageLocalServiceUtil {
 
 	public static void addMessageResources(
 		com.liferay.portlet.messageboards.model.MBMessage message,
-		java.lang.String[] groupPermissions, java.lang.String[] guestPermissions)
+		com.liferay.portal.service.permission.ModelPermissions modelPermissions)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		getService()
-			.addMessageResources(message, groupPermissions, guestPermissions);
+		getService().addMessageResources(message, modelPermissions);
 	}
 
 	public static void addMessageResources(long messageId,
@@ -162,10 +170,9 @@ public class MBMessageLocalServiceUtil {
 	}
 
 	public static void addMessageResources(long messageId,
-		java.lang.String[] groupPermissions, java.lang.String[] guestPermissions)
+		com.liferay.portal.service.permission.ModelPermissions modelPermissions)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		getService()
-			.addMessageResources(messageId, groupPermissions, guestPermissions);
+		getService().addMessageResources(messageId, modelPermissions);
 	}
 
 	/**
@@ -445,7 +452,7 @@ public class MBMessageLocalServiceUtil {
 	}
 
 	public static com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery getExportActionableDynamicQuery(
-		com.liferay.portal.kernel.lar.PortletDataContext portletDataContext) {
+		com.liferay.portlet.exportimport.lar.PortletDataContext portletDataContext) {
 		return getService().getExportActionableDynamicQuery(portletDataContext);
 	}
 

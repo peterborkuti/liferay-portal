@@ -19,14 +19,16 @@ import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.BaseIndexer;
-import com.liferay.portal.kernel.search.BooleanQuery;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.DocumentImpl;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchEngineUtil;
 import com.liferay.portal.kernel.search.Summary;
+import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -50,7 +52,7 @@ import javax.portlet.PortletResponse;
  * @author Eudaldo Alonso
  */
 @OSGiBeanProperties
-public class MBThreadIndexer extends BaseIndexer {
+public class MBThreadIndexer extends BaseIndexer<MBThread> {
 
 	public static final String CLASS_NAME = MBThread.class.getName();
 
@@ -77,16 +79,16 @@ public class MBThreadIndexer extends BaseIndexer {
 	}
 
 	@Override
-	public void postProcessContextQuery(
-			BooleanQuery contextQuery, SearchContext searchContext)
+	public void postProcessContextBooleanFilter(
+			BooleanFilter contextBooleanFilter, SearchContext searchContext)
 		throws Exception {
 
-		addStatus(contextQuery, searchContext);
+		addStatus(contextBooleanFilter, searchContext);
 
 		boolean discussion = GetterUtil.getBoolean(
 			searchContext.getAttribute("discussion"), false);
 
-		contextQuery.addRequiredTerm("discussion", discussion);
+		contextBooleanFilter.addRequiredTerm("discussion", discussion);
 
 		long endDate = GetterUtil.getLong(
 			searchContext.getAttribute("endDate"));
@@ -94,44 +96,41 @@ public class MBThreadIndexer extends BaseIndexer {
 			searchContext.getAttribute("startDate"));
 
 		if ((endDate > 0) && (startDate > 0)) {
-			contextQuery.addRangeTerm("lastPostDate", startDate, endDate);
+			contextBooleanFilter.addRangeTerm(
+				"lastPostDate", startDate, endDate);
 		}
 
 		long participantUserId = GetterUtil.getLong(
 			searchContext.getAttribute("participantUserId"));
 
 		if (participantUserId > 0) {
-			contextQuery.addRequiredTerm(
+			contextBooleanFilter.addRequiredTerm(
 				"participantUserIds", participantUserId);
 		}
 	}
 
 	@Override
-	protected void doDelete(Object obj) throws Exception {
+	protected void doDelete(MBThread mbThread) throws Exception {
 		SearchContext searchContext = new SearchContext();
 
 		searchContext.setSearchEngineId(getSearchEngineId());
 
-		MBThread thread = (MBThread)obj;
-
 		Document document = new DocumentImpl();
 
-		document.addUID(CLASS_NAME, thread.getThreadId());
+		document.addUID(CLASS_NAME, mbThread.getThreadId());
 
 		SearchEngineUtil.deleteDocument(
-			getSearchEngineId(), thread.getCompanyId(), document.get(Field.UID),
-			isCommitImmediately());
+			getSearchEngineId(), mbThread.getCompanyId(),
+			document.get(Field.UID), isCommitImmediately());
 	}
 
 	@Override
-	protected Document doGetDocument(Object obj) throws Exception {
-		MBThread thread = (MBThread)obj;
-
-		Document document = getBaseModelDocument(CLASS_NAME, thread);
+	protected Document doGetDocument(MBThread mbThread) throws Exception {
+		Document document = getBaseModelDocument(CLASS_NAME, mbThread);
 
 		MBDiscussion discussion =
 			MBDiscussionLocalServiceUtil.fetchThreadDiscussion(
-				thread.getThreadId());
+				mbThread.getThreadId());
 
 		if (discussion == null) {
 			document.addKeyword("discussion", false);
@@ -140,9 +139,10 @@ public class MBThreadIndexer extends BaseIndexer {
 			document.addKeyword("discussion", true);
 		}
 
-		document.addKeyword("lastPostDate", thread.getLastPostDate().getTime());
 		document.addKeyword(
-			"participantUserIds", thread.getParticipantUserIds());
+			"lastPostDate", mbThread.getLastPostDate().getTime());
+		document.addKeyword(
+			"participantUserIds", mbThread.getParticipantUserIds());
 
 		return document;
 	}
@@ -156,13 +156,11 @@ public class MBThreadIndexer extends BaseIndexer {
 	}
 
 	@Override
-	protected void doReindex(Object obj) throws Exception {
-		MBThread thread = (MBThread)obj;
-
-		Document document = getDocument(thread);
+	protected void doReindex(MBThread mbThread) throws Exception {
+		Document document = getDocument(mbThread);
 
 		SearchEngineUtil.updateDocument(
-			getSearchEngineId(), thread.getCompanyId(), document,
+			getSearchEngineId(), mbThread.getCompanyId(), document,
 			isCommitImmediately());
 	}
 
@@ -289,14 +287,22 @@ public class MBThreadIndexer extends BaseIndexer {
 			new ActionableDynamicQuery.PerformActionMethod() {
 
 				@Override
-				public void performAction(Object object)
-					throws PortalException {
-
+				public void performAction(Object object) {
 					MBThread thread = (MBThread)object;
 
-					Document document = getDocument(thread);
+					try {
+						Document document = getDocument(thread);
 
-					actionableDynamicQuery.addDocument(document);
+						actionableDynamicQuery.addDocument(document);
+					}
+					catch (PortalException pe) {
+						if (_log.isWarnEnabled()) {
+							_log.warn(
+								"Unable to index message boards thread " +
+									thread.getThreadId(),
+								pe);
+						}
+					}
 				}
 
 			});
@@ -304,5 +310,8 @@ public class MBThreadIndexer extends BaseIndexer {
 
 		actionableDynamicQuery.performActions();
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		MBThreadIndexer.class);
 
 }

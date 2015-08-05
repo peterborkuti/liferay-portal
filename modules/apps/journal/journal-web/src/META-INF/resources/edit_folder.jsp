@@ -190,7 +190,7 @@ if (workflowEnabled) {
 							/>
 
 							<liferay-ui:search-container-row
-								className="com.liferay.portlet.dynamicdatamapping.model.DDMStructure"
+								className="com.liferay.dynamic.data.mapping.model.DDMStructure"
 								keyProperty="structureId"
 								modelVar="ddmStructure"
 							>
@@ -332,15 +332,15 @@ if (workflowEnabled) {
 	function <portlet:namespace />openDDMStructureSelector() {
 		Liferay.Util.openDDMPortlet(
 			{
-				basePortletURL: '<%= PortletURLFactoryUtil.create(request, PortletKeys.DYNAMIC_DATA_MAPPING, themeDisplay.getPlid(), PortletRequest.RENDER_PHASE) %>',
+				basePortletURL: '<%= PortletURLFactoryUtil.create(request, PortletProviderUtil.getPortletId(DDMStructure.class.getName(), PortletProvider.Action.VIEW), themeDisplay.getPlid(), PortletRequest.RENDER_PHASE) %>',
 				dialog: {
 					destroyOnHide: true
 				},
 				eventName: '<portlet:namespace />selectStructure',
 				groupId: <%= scopeGroupId %>,
+				mvcPath: '/select_structure.jsp',
 				refererPortletName: '<%= JournalPortletKeys.JOURNAL %>',
 				showAncestorScopes: true,
-				struts_action: '/dynamic_data_mapping/select_structure',
 				title: '<%= UnicodeLanguageUtil.get(request, "structures") %>'
 			},
 			function(event) {

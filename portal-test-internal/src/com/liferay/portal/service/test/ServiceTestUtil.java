@@ -14,7 +14,6 @@
 
 package com.liferay.portal.service.test;
 
-import com.liferay.portal.jcr.JCRFactoryUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.BaseDestination;
@@ -24,13 +23,12 @@ import com.liferay.portal.kernel.messaging.MessageBus;
 import com.liferay.portal.kernel.messaging.MessageBusUtil;
 import com.liferay.portal.kernel.messaging.SynchronousDestination;
 import com.liferay.portal.kernel.messaging.sender.SynchronousMessageSender;
+import com.liferay.portal.kernel.scheduler.SchedulerEngineHelper;
 import com.liferay.portal.kernel.scheduler.SchedulerEngineHelperUtil;
 import com.liferay.portal.kernel.search.SearchEngineUtil;
 import com.liferay.portal.kernel.test.util.RoleTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
-import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
-import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.model.Portlet;
 import com.liferay.portal.model.Role;
 import com.liferay.portal.model.User;
@@ -48,11 +46,10 @@ import com.liferay.portal.service.ServiceContextThreadLocal;
 import com.liferay.portal.tools.DBUpgrader;
 import com.liferay.portal.util.PortalInstances;
 import com.liferay.portal.util.PortalUtil;
-import com.liferay.portal.util.PropsUtil;
-import com.liferay.portal.util.PropsValues;
 import com.liferay.registry.Filter;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
+import com.liferay.registry.dependency.ServiceDependencyListener;
 import com.liferay.registry.dependency.ServiceDependencyManager;
 
 import java.util.Calendar;
@@ -120,21 +117,6 @@ public class ServiceTestUtil {
 			roleName, roleType, resourceName, scope, primKey, actionId);
 	}
 
-	public static void destroyServices() {
-		_deleteDirectories();
-	}
-
-	public static void initPermissions() {
-		try {
-			PortalInstances.addCompanyId(TestPropsValues.getCompanyId());
-
-			setUser(TestPropsValues.getUser());
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-		}
-	}
-
 	public static void initMainServletServices() {
 
 		// Upgrade
@@ -155,12 +137,37 @@ public class ServiceTestUtil {
 
 		// Scheduler
 
-		try {
-			SchedulerEngineHelperUtil.start();
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-		}
+		ServiceDependencyManager schedulerServiceDependencyManager =
+			new ServiceDependencyManager();
+
+		schedulerServiceDependencyManager.addServiceDependencyListener(
+			new ServiceDependencyListener() {
+
+				@Override
+				public void dependenciesFulfilled() {
+					try {
+						SchedulerEngineHelperUtil.start();
+					}
+					catch (Exception e) {
+						_log.error(e, e);
+					}
+				}
+
+				@Override
+				public void destroy() {
+				}
+
+			});
+
+		final Registry registry = RegistryUtil.getRegistry();
+
+		Filter filter = registry.getFilter(
+			"(objectClass=com.liferay.portal.scheduler.quartz.internal." +
+				"QuartzSchemaManager)");
+
+		schedulerServiceDependencyManager.registerDependencies(
+			new Class[] {SchedulerEngineHelper.class},
+			new Filter[] {filter});
 
 		// Verify
 
@@ -172,12 +179,31 @@ public class ServiceTestUtil {
 		}
 	}
 
-	private static Filter _registerDestinationFilter(String destinationName) {
-		Registry registry = RegistryUtil.getRegistry();
+	public static void initPermissions() {
+		try {
+			PortalInstances.addCompanyId(TestPropsValues.getCompanyId());
 
-		return registry.getFilter(
-			"(&(destination.name=" + destinationName +
-				")(objectClass=" + Destination.class.getName() + "))");
+			setUser(TestPropsValues.getUser());
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+		}
+	}
+
+	public static void initServices() {
+
+		// Thread locals
+
+		_setThreadLocals();
+
+		// Search engine
+
+		try {
+			SearchEngineUtil.initialize(TestPropsValues.getCompanyId());
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+		}
 	}
 
 	public static void initStaticServices() {
@@ -234,10 +260,6 @@ public class ServiceTestUtil {
 			_log.error(e, e);
 		}
 
-		// Trash
-
-		PortalRegisterTestUtil.registerTrashHandlers();
-
 		// Workflow
 
 		PortalRegisterTestUtil.registerWorkflowHandlers();
@@ -251,35 +273,6 @@ public class ServiceTestUtil {
 		try {
 			CompanyLocalServiceUtil.checkCompany(
 				TestPropsValues.COMPANY_WEB_ID);
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-		}
-	}
-
-	public static void initServices() {
-
-		// JCR
-
-		try {
-			JCRFactoryUtil.prepare();
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-		}
-
-		// Thread locals
-
-		_setThreadLocals();
-
-		// Directories
-
-		_deleteDirectories();
-
-		// Search engine
-
-		try {
-			SearchEngineUtil.initialize(TestPropsValues.getCompanyId());
 		}
 		catch (Exception e) {
 			_log.error(e, e);
@@ -345,11 +338,12 @@ public class ServiceTestUtil {
 		}
 	}
 
-	private static void _deleteDirectories() {
-		FileUtil.deltree(PropsValues.DL_STORE_FILE_SYSTEM_ROOT_DIR);
+	private static Filter _registerDestinationFilter(String destinationName) {
+		Registry registry = RegistryUtil.getRegistry();
 
-		FileUtil.deltree(
-			PropsUtil.get(PropsKeys.JCR_JACKRABBIT_REPOSITORY_ROOT));
+		return registry.getFilter(
+			"(&(destination.name=" + destinationName +
+				")(objectClass=" + Destination.class.getName() + "))");
 	}
 
 	private static void _replaceWithSynchronousDestination(String name) {

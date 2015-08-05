@@ -14,6 +14,16 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ADD_SAMPLE_DATA</td>
+	<td>//label[contains(.,'Add Sample Data')]/input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ALLOW_DICTIONARY_WORDS</td>
+	<td>//label[contains(.,'Allow Dictionary Words')]/input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ALLOW_MANUAL_MEMBERSHIP_MANAGEMENT</td>
 	<td>//label[contains(.,'Allow Manual Membership Management')]/input[@type='checkbox']</td>
 	<td></td>
@@ -21,6 +31,21 @@
 <tr>
 	<td>ALLOW_SITE_ADMIN_MODIFY_PAGES</td>
 	<td>//label[contains(.,'Allow site administrators to modify')]/input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>BLOGS_ENTRY</td>
+	<td>//input[contains(@id,'BlogsEntry')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CHANGEABLE</td>
+	<td>//label[contains(.,'Changeable')]/input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CHANGE_REQUIRED</td>
+	<td>//label[contains(.,'Change Required')]/input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
@@ -74,6 +99,16 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ENABLE_FULLSCREEN</td>
+	<td>//input[@id='_86_enableFullscreen']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ENABLE_GOOGLE_AUTHENTICATION</td>
+	<td>//input[contains(@id,'google-auth')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ENABLE_PAGE_RATINGS</td>
 	<td>//label[contains(.,'Enable Page Ratings')]//input[@type='checkbox']</td>
 	<td></td>
@@ -104,6 +139,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ENABLE_RSS_SUBSCRIPTION</td>
+	<td>//label[contains(.,'RSS Subscription')]/input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ENABLE_SOCIAL_BOOKMARKS</td>
 	<td>//label[contains(.,'Enable Social Bookmarks')]/input[@type='checkbox']</td>
 	<td></td>
@@ -114,8 +154,48 @@
 	<td></td>
 </tr>
 <tr>
+	<td>FACEBOOK</td>
+	<td>//input[contains(@id,'facebook')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>GOOGLE_PLUS</td>
+	<td>//input[contains(@id,'plusone')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>EXPIRATION_ENABLED</td>
+	<td>//label[contains(.,'Expiration Enabled')]/input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>HIDE_FROM_NAVIGATION_MENU</td>
 	<td>//label[contains(.,'Hide from Navigation Menu')]/input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>HISTORY_ENABLED</td>
+	<td>//label[contains(.,'History Enabled')]/input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>LOCKOUT_ENABLED</td>
+	<td>//label[contains(.,'Lockout Enabled')]/input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MAILING</td>
+	<td>//label[contains(.,'Mailing')]/input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MENTIONS</td>
+	<td>//input[contains(@id,'mentionsEnabledCheckbox')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MENTIONS_CHECKBOX_DISABLED</td>
+	<td>//input[contains(@id,'mentionsEnabled') and contains(@class,'disabled')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -159,6 +239,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>SHOW_ACTIONS_CHECKBOX</td>
+	<td>//input[@id='_86_showActions']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>SHOW_ADD_CONTENT_BUTTON</td>
 	<td>//label[contains(.,'Show Add Content Button')]/input[@type='checkbox']</td>
 	<td></td>
@@ -166,6 +251,21 @@
 <tr>
 	<td>SHOW_AVAILABLE_LOCALES</td>
 	<td>//label[contains(.,'Show Available Locales')]/input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SHOW_FOLDER_MENU_CHECKBOX</td>
+	<td>//input[@id='_86_showFolderMenu']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SHOW_NAVIGATION_LINKS_CHECKBOX</td>
+	<td>//input[@id='_86_showTabs']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SHOW_SEARCH_CHECKBOX</td>
+	<td>//input[@id='_86_showFoldersSearch']</td>
 	<td></td>
 </tr>
 <tr>
@@ -179,8 +279,18 @@
 	<td></td>
 </tr>
 <tr>
+	<td>SYNTAX_CHECKING_ENABLED</td>
+	<td>//label[contains(.,'Syntax Checking Enabled')]/input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>THIS_IS_A_MINOR_EDIT</td>
 	<td>//label[contains(.,'This is a minor edit.')]/input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TWITTER</td>
+	<td>//input[contains(@id,'twitter')]</td>
 	<td></td>
 </tr>
 </tbody>

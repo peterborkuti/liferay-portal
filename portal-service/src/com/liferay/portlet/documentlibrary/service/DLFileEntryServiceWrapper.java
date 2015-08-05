@@ -267,7 +267,8 @@ public class DLFileEntryServiceWrapper implements DLFileEntryService,
 	}
 
 	@Override
-	public com.liferay.portal.model.Lock getFileEntryLock(long fileEntryId) {
+	public com.liferay.portal.kernel.lock.Lock getFileEntryLock(
+		long fileEntryId) {
 		return _dlFileEntryService.getFileEntryLock(fileEntryId);
 	}
 
@@ -344,6 +345,14 @@ public class DLFileEntryServiceWrapper implements DLFileEntryService,
 	}
 
 	@Override
+	public boolean isKeepFileVersionLabel(long fileEntryId,
+		com.liferay.portal.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return _dlFileEntryService.isKeepFileVersionLabel(fileEntryId,
+			serviceContext);
+	}
+
+	@Override
 	public com.liferay.portlet.documentlibrary.model.DLFileEntry moveFileEntry(
 		long fileEntryId, long newFolderId,
 		com.liferay.portal.service.ServiceContext serviceContext)
@@ -353,7 +362,7 @@ public class DLFileEntryServiceWrapper implements DLFileEntryService,
 	}
 
 	@Override
-	public com.liferay.portal.model.Lock refreshFileEntryLock(
+	public com.liferay.portal.kernel.lock.Lock refreshFileEntryLock(
 		java.lang.String lockUuid, long companyId, long expirationTime)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return _dlFileEntryService.refreshFileEntryLock(lockUuid, companyId,
@@ -407,6 +416,16 @@ public class DLFileEntryServiceWrapper implements DLFileEntryService,
 		return _dlFileEntryService.updateFileEntry(fileEntryId, sourceFileName,
 			mimeType, title, description, changeLog, majorVersion,
 			fileEntryTypeId, ddmFormValuesMap, file, is, size, serviceContext);
+	}
+
+	@Override
+	public com.liferay.portlet.documentlibrary.model.DLFileEntry updateStatus(
+		long userId, long fileVersionId, int status,
+		com.liferay.portal.service.ServiceContext serviceContext,
+		java.util.Map<java.lang.String, java.io.Serializable> workflowContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return _dlFileEntryService.updateStatus(userId, fileVersionId, status,
+			serviceContext, workflowContext);
 	}
 
 	@Override

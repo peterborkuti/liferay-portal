@@ -15,12 +15,13 @@
 package com.liferay.portal.kernel.repository.model;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.lar.StagedModelType;
+import com.liferay.portal.kernel.lock.Lock;
+import com.liferay.portal.kernel.repository.capabilities.Capability;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.model.Lock;
 import com.liferay.portal.model.ModelWrapper;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portlet.expando.model.ExpandoBridge;
+import com.liferay.portlet.exportimport.lar.StagedModelType;
 
 import java.io.InputStream;
 import java.io.Serializable;
@@ -173,6 +174,11 @@ public class FileEntryWrapper implements FileEntry, ModelWrapper<FileEntry> {
 	}
 
 	@Override
+	public Date getLastPublishDate() {
+		return _fileEntry.getLastPublishDate();
+	}
+
+	@Override
 	public FileVersion getLatestFileVersion() throws PortalException {
 		return _fileEntry.getLatestFileVersion();
 	}
@@ -232,6 +238,13 @@ public class FileEntryWrapper implements FileEntry, ModelWrapper<FileEntry> {
 	@Override
 	public int getReadCount() {
 		return _fileEntry.getReadCount();
+	}
+
+	@Override
+	public <T extends Capability> T getRepositoryCapability(
+		Class<T> capabilityClass) {
+
+		return _fileEntry.getRepositoryCapability(capabilityClass);
 	}
 
 	@Override
@@ -340,6 +353,13 @@ public class FileEntryWrapper implements FileEntry, ModelWrapper<FileEntry> {
 	}
 
 	@Override
+	public <T extends Capability> boolean isRepositoryCapabilityProvided(
+		Class<T> capabilityClass) {
+
+		return _fileEntry.isRepositoryCapabilityProvided(capabilityClass);
+	}
+
+	@Override
 	public boolean isSupportsLocking() {
 		return _fileEntry.isSupportsLocking();
 	}
@@ -360,8 +380,8 @@ public class FileEntryWrapper implements FileEntry, ModelWrapper<FileEntry> {
 	}
 
 	@Override
-	public void setCreateDate(Date date) {
-		_fileEntry.setCreateDate(date);
+	public void setCreateDate(Date createDate) {
+		_fileEntry.setCreateDate(createDate);
 	}
 
 	@Override
@@ -370,8 +390,13 @@ public class FileEntryWrapper implements FileEntry, ModelWrapper<FileEntry> {
 	}
 
 	@Override
-	public void setModifiedDate(Date date) {
-		_fileEntry.setModifiedDate(date);
+	public void setLastPublishDate(Date lastPublishDate) {
+		_fileEntry.setLastPublishDate(lastPublishDate);
+	}
+
+	@Override
+	public void setModifiedDate(Date modifiedDate) {
+		_fileEntry.setModifiedDate(modifiedDate);
 	}
 
 	@Override

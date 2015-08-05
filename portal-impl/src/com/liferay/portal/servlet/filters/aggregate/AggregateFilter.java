@@ -21,7 +21,6 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.servlet.BrowserSniffer;
 import com.liferay.portal.kernel.servlet.BufferCacheServletResponse;
-import com.liferay.portal.kernel.servlet.FileTimestampUtil;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.servlet.PortalWebResourceConstants;
 import com.liferay.portal.kernel.servlet.PortalWebResourcesUtil;
@@ -264,12 +263,11 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 		String bundleDirName = PropsUtil.get(
 			PropsKeys.JAVASCRIPT_BUNDLE_DIR, new Filter(bundleId));
 
-		ServletContext portalWebResourcesServletContext =
+		ServletContext jsServletContext =
 			PortalWebResourcesUtil.getServletContext(
 				PortalWebResourceConstants.RESOURCE_TYPE_JS);
 
-		URL bundleDirURL = portalWebResourcesServletContext.getResource(
-			bundleDirName);
+		URL bundleDirURL = jsServletContext.getResource(bundleDirName);
 
 		if (bundleDirURL == null) {
 			return null;
@@ -282,21 +280,10 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 		File cacheFile = new File(_tempDir, cacheFileName);
 
 		if (cacheFile.exists()) {
-			boolean staleCache = false;
+			long lastModified = PortalWebResourcesUtil.getLastModified(
+				PortalWebResourceConstants.RESOURCE_TYPE_JS);
 
-			for (String fileName : fileNames) {
-				long lastModified = FileTimestampUtil.getTimestamp(
-					portalWebResourcesServletContext,
-					bundleDirName.concat(StringPool.SLASH).concat(fileName));
-
-				if (lastModified > cacheFile.lastModified()) {
-					staleCache = true;
-
-					break;
-				}
-			}
-
-			if (!staleCache) {
+			if (lastModified <= cacheFile.lastModified()) {
 				response.setContentType(ContentTypes.TEXT_JAVASCRIPT);
 
 				return cacheFile;
@@ -314,9 +301,7 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 		}
 		else {
 			content = aggregateJavaScript(
-				new ServletPaths(
-					portalWebResourcesServletContext, bundleDirName),
-				fileNames);
+				new ServletPaths(jsServletContext, bundleDirName), fileNames);
 		}
 
 		response.setContentType(ContentTypes.TEXT_JAVASCRIPT);
@@ -375,7 +360,11 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 		URL resourceURL = _servletContext.getResource(resourcePath);
 
 		if (resourceURL == null) {
-			return null;
+			resourceURL = PortalWebResourcesUtil.getResource(resourcePath);
+
+			if (resourceURL == null) {
+				return null;
+			}
 		}
 
 		String cacheCommonFileName = getCacheFileName(request);
@@ -435,7 +424,7 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 				AggregateFilter.class, request, bufferCacheServletResponse,
 				filterChain);
 
-			bufferCacheServletResponse.finishResponse();
+			bufferCacheServletResponse.finishResponse(false);
 
 			content = bufferCacheServletResponse.getString();
 
@@ -465,11 +454,23 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 		String resourcePath, String content) {
 
 		try {
-			content = DynamicCSSUtil.parseSass(
-				_servletContext, request, resourcePath, content);
+			ServletContext cssServletContext = null;
+
+			String requestURI = request.getRequestURI();
+
+			if (PortalWebResourcesUtil.hasContextPath(requestURI)) {
+				cssServletContext =
+					PortalWebResourcesUtil.getPathServletContext(requestURI);
+			}
+			else {
+				cssServletContext = _servletContext;
+			}
+
+			content = DynamicCSSUtil.replaceToken(
+				cssServletContext, request, content);
 		}
 		catch (Exception e) {
-			_log.error("Unable to parse SASS on CSS " + resourcePath, e);
+			_log.error("Unable to replace tokens in CSS " + resourcePath, e);
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(content);
@@ -520,10 +521,7 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 	protected boolean isModuleRequest(HttpServletRequest request) {
 		String requestURI = request.getRequestURI();
 
-		String contextPath = PortalWebResourcesUtil.getContextPath(
-			PortalWebResourceConstants.RESOURCE_TYPE_JS);
-
-		if (requestURI.startsWith(contextPath)) {
+		if (PortalWebResourcesUtil.hasContextPath(requestURI)) {
 			return false;
 		}
 

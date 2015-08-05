@@ -70,6 +70,11 @@ public abstract class BaseMobileDriverImpl
 	}
 
 	@Override
+	public void assertEditable(String locator) throws Exception {
+		LiferaySeleniumHelper.assertEditable(this, locator);
+	}
+
+	@Override
 	public void assertElementNotPresent(String locator) throws Exception {
 		LiferaySeleniumHelper.assertElementNotPresent(this, locator);
 	}
@@ -140,6 +145,11 @@ public abstract class BaseMobileDriverImpl
 	@Override
 	public void assertNotChecked(String locator) throws Exception {
 		LiferaySeleniumHelper.assertNotChecked(this, locator);
+	}
+
+	@Override
+	public void assertNotEditable(String locator) throws Exception {
+		LiferaySeleniumHelper.assertNotEditable(this, locator);
 	}
 
 	@Override
@@ -225,12 +235,16 @@ public abstract class BaseMobileDriverImpl
 
 	@Override
 	public void clickAndWait(String locator) {
-		throw new UnsupportedOperationException();
+		super.click(locator);
+
+		super.waitForPageToLoad("30000");
 	}
 
 	@Override
 	public void clickAtAndWait(String locator, String coordString) {
-		throw new UnsupportedOperationException();
+		super.clickAt(locator, coordString);
+
+		super.waitForPageToLoad("30000");
 	}
 
 	@Override
@@ -279,11 +293,6 @@ public abstract class BaseMobileDriverImpl
 	@Override
 	public String getCurrentYear() {
 		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public String getDependenciesDirName() {
-		return _DEPENDENCIES_DIR_NAME;
 	}
 
 	@Override
@@ -337,8 +346,15 @@ public abstract class BaseMobileDriverImpl
 	}
 
 	@Override
+	public String getTestDependenciesDirName() {
+		return _TEST_DEPENDENCIES_DIR_NAME;
+	}
+
+	@Override
 	public void goBackAndWait() {
-		throw new UnsupportedOperationException();
+		super.goBack();
+
+		super.waitForPageToLoad("30000");
 	}
 
 	@Override
@@ -348,7 +364,7 @@ public abstract class BaseMobileDriverImpl
 
 	@Override
 	public boolean isElementNotPresent(String locator) {
-		return LiferaySeleniumHelper.isElementNotPresent(this, locator);
+		return WebDriverHelper.isElementNotPresent(this, locator);
 	}
 
 	@Override
@@ -369,6 +385,11 @@ public abstract class BaseMobileDriverImpl
 	@Override
 	public boolean isNotChecked(String locator) {
 		return LiferaySeleniumHelper.isNotChecked(this, locator);
+	}
+
+	@Override
+	public boolean isNotEditable(String locator) {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -407,6 +428,11 @@ public abstract class BaseMobileDriverImpl
 	}
 
 	@Override
+	public boolean isSikuliImagePresent(String image) throws Exception {
+		return LiferaySeleniumHelper.isSikuliImagePresent(this, image);
+	}
+
+	@Override
 	public boolean isTCatEnabled() {
 		return LiferaySeleniumHelper.isTCatEnabled();
 	}
@@ -423,7 +449,7 @@ public abstract class BaseMobileDriverImpl
 
 	@Override
 	public boolean isValue(String locator, String value) {
-		throw new UnsupportedOperationException();
+		return value.equals(getValue(locator, "1"));
 	}
 
 	@Override
@@ -486,7 +512,6 @@ public abstract class BaseMobileDriverImpl
 
 	@Override
 	public void saveScreenshotAndSource() throws Exception {
-		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -507,7 +532,9 @@ public abstract class BaseMobileDriverImpl
 
 	@Override
 	public void selectAndWait(String selectLocator, String optionLocator) {
-		throw new UnsupportedOperationException();
+		super.select(selectLocator, optionLocator);
+
+		super.waitForPageToLoad("30000");
 	}
 
 	@Override
@@ -554,7 +581,6 @@ public abstract class BaseMobileDriverImpl
 
 	@Override
 	public void setDefaultTimeout() {
-		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -585,6 +611,13 @@ public abstract class BaseMobileDriverImpl
 	@Override
 	public void sikuliClick(String image) throws Exception {
 		LiferaySeleniumHelper.sikuliClick(this, image);
+	}
+
+	@Override
+	public void sikuliClickByIndex(String image, String index)
+		throws Exception {
+
+		LiferaySeleniumHelper.sikuliClickByIndex(this, image, index);
 	}
 
 	@Override
@@ -651,7 +684,6 @@ public abstract class BaseMobileDriverImpl
 
 	@Override
 	public void stopLogger() {
-		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -660,13 +692,13 @@ public abstract class BaseMobileDriverImpl
 	}
 
 	@Override
-	public void typeCKEditor(String locator, String value) {
-		WebDriverHelper.typeCKEditor(this, locator, value);
+	public void typeAlloyEditor(String locator, String value) {
+		WebDriverHelper.typeAlloyEditor(this, locator, value);
 	}
 
 	@Override
-	public void typeFrame(String locator, String value) {
-		LiferaySeleniumHelper.typeFrame(this, locator, value);
+	public void typeCKEditor(String locator, String value) {
+		LiferaySeleniumHelper.typeCKEditor(this, locator, value);
 	}
 
 	@Override
@@ -784,13 +816,13 @@ public abstract class BaseMobileDriverImpl
 		throw new UnsupportedOperationException();
 	}
 
-	private static final String _DEPENDENCIES_DIR_NAME =
-		"portal-web//test//functional//com//liferay//portalweb//dependencies//";
-
 	private static final String _OUTPUT_DIR_NAME = PropsValues.OUTPUT_DIR_NAME;
 
 	private static final String _SIKULI_IMAGES_DIR_NAME =
-		_DEPENDENCIES_DIR_NAME + "sikuli//linux//";
+		PropsValues.TEST_DEPENDENCIES_DIR_NAME + "//sikuli//linux//";
+
+	private static final String _TEST_DEPENDENCIES_DIR_NAME =
+		PropsValues.TEST_DEPENDENCIES_DIR_NAME;
 
 	private String _primaryTestSuiteName;
 	private final String _projectDirName;

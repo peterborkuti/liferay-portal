@@ -16,9 +16,10 @@ package com.liferay.portlet.ratings.model;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.ModelWrapper;
+
+import com.liferay.portlet.exportimport.lar.StagedModelType;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -64,6 +65,7 @@ public class RatingsEntryWrapper implements RatingsEntry,
 		attributes.put("classNameId", getClassNameId());
 		attributes.put("classPK", getClassPK());
 		attributes.put("score", getScore());
+		attributes.put("lastPublishDate", getLastPublishDate());
 
 		return attributes;
 	}
@@ -128,6 +130,12 @@ public class RatingsEntryWrapper implements RatingsEntry,
 
 		if (score != null) {
 			setScore(score);
+		}
+
+		Date lastPublishDate = (Date)attributes.get("lastPublishDate");
+
+		if (lastPublishDate != null) {
+			setLastPublishDate(lastPublishDate);
 		}
 	}
 
@@ -205,6 +213,16 @@ public class RatingsEntryWrapper implements RatingsEntry,
 	@Override
 	public com.liferay.portlet.expando.model.ExpandoBridge getExpandoBridge() {
 		return _ratingsEntry.getExpandoBridge();
+	}
+
+	/**
+	* Returns the last publish date of this ratings entry.
+	*
+	* @return the last publish date of this ratings entry
+	*/
+	@Override
+	public Date getLastPublishDate() {
+		return _ratingsEntry.getLastPublishDate();
 	}
 
 	/**
@@ -383,6 +401,16 @@ public class RatingsEntryWrapper implements RatingsEntry,
 	public void setExpandoBridgeAttributes(
 		com.liferay.portal.service.ServiceContext serviceContext) {
 		_ratingsEntry.setExpandoBridgeAttributes(serviceContext);
+	}
+
+	/**
+	* Sets the last publish date of this ratings entry.
+	*
+	* @param lastPublishDate the last publish date of this ratings entry
+	*/
+	@Override
+	public void setLastPublishDate(Date lastPublishDate) {
+		_ratingsEntry.setLastPublishDate(lastPublishDate);
 	}
 
 	/**

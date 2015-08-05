@@ -25,7 +25,6 @@ import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
-import com.liferay.portal.kernel.lar.ExportImportThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -3956,29 +3955,27 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 			layoutSetPrototype.setUuid(uuid);
 		}
 
-		if (!ExportImportThreadLocal.isImportInProcess()) {
-			ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
+		ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
 
-			Date now = new Date();
+		Date now = new Date();
 
-			if (isNew && (layoutSetPrototype.getCreateDate() == null)) {
-				if (serviceContext == null) {
-					layoutSetPrototype.setCreateDate(now);
-				}
-				else {
-					layoutSetPrototype.setCreateDate(serviceContext.getCreateDate(
-							now));
-				}
+		if (isNew && (layoutSetPrototype.getCreateDate() == null)) {
+			if (serviceContext == null) {
+				layoutSetPrototype.setCreateDate(now);
 			}
+			else {
+				layoutSetPrototype.setCreateDate(serviceContext.getCreateDate(
+						now));
+			}
+		}
 
-			if (!layoutSetPrototypeModelImpl.hasSetModifiedDate()) {
-				if (serviceContext == null) {
-					layoutSetPrototype.setModifiedDate(now);
-				}
-				else {
-					layoutSetPrototype.setModifiedDate(serviceContext.getModifiedDate(
-							now));
-				}
+		if (!layoutSetPrototypeModelImpl.hasSetModifiedDate()) {
+			if (serviceContext == null) {
+				layoutSetPrototype.setModifiedDate(now);
+			}
+			else {
+				layoutSetPrototype.setModifiedDate(serviceContext.getModifiedDate(
+						now));
 			}
 		}
 
@@ -4121,6 +4118,7 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 		layoutSetPrototypeImpl.setDescription(layoutSetPrototype.getDescription());
 		layoutSetPrototypeImpl.setSettings(layoutSetPrototype.getSettings());
 		layoutSetPrototypeImpl.setActive(layoutSetPrototype.isActive());
+		layoutSetPrototypeImpl.setLastPublishDate(layoutSetPrototype.getLastPublishDate());
 
 		return layoutSetPrototypeImpl;
 	}
@@ -4484,6 +4482,11 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 	@Override
 	protected Set<String> getBadColumnNames() {
 		return _badColumnNames;
+	}
+
+	@Override
+	protected Map<String, Integer> getTableColumnsMap() {
+		return LayoutSetPrototypeModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

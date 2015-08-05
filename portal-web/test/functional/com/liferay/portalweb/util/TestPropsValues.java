@@ -49,6 +49,18 @@ public class TestPropsValues
 	public static final String DATABASE_DB2_USERNAME = TestPropsUtil.get(
 		"database.db2.username");
 
+	public static final String DATABASE_HSQL_DRIVER = TestPropsUtil.get(
+		"database.hsql.driver");
+
+	public static final String DATABASE_HSQL_PASSWORD = TestPropsUtil.get(
+		"database.hsql.password");
+
+	public static final String DATABASE_HSQL_URL = TestPropsUtil.get(
+		"database.hsql.url");
+
+	public static final String DATABASE_HSQL_USERNAME = TestPropsUtil.get(
+		"database.hsql.username");
+
 	public static final String DATABASE_MYSQL_DRIVER = TestPropsUtil.get(
 		"database.mysql.driver");
 
@@ -208,6 +220,9 @@ public class TestPropsValues
 	public static final boolean MOBILE_DEVICE_ENABLED = GetterUtil.getBoolean(
 		TestPropsUtil.get("mobile.device.enabled"));
 
+	public static final String OSB_LCS_PORTLET_HOST_NAME = TestPropsUtil.get(
+		"osb.lcs.portlet.host.name");
+
 	public static final String OUTPUT_DIR_NAME = TestPropsUtil.get(
 		"output.dir");
 
@@ -218,6 +233,9 @@ public class TestPropsValues
 
 	public static final boolean SAVE_SOURCE = GetterUtil.getBoolean(
 		TestPropsUtil.get("save.source"));
+
+	public static final String SELENIUM_CHROME_DRIVER_EXECUTABLE =
+		TestPropsUtil.get("selenium.chrome.driver.executable");
 
 	public static final String SELENIUM_EXECUTABLE_DIR_NAME = TestPropsUtil.get(
 		"selenium.executable.dir");

@@ -30,7 +30,7 @@ import com.liferay.portal.util.PortalUtil;
 import com.liferay.portlet.asset.model.AssetCategory;
 import com.liferay.portlet.asset.service.AssetCategoryLocalServiceUtil;
 import com.liferay.portlet.asset.service.AssetTagLocalServiceUtil;
-import com.liferay.portlet.dynamicdatamapping.util.DDMIndexer;
+import com.liferay.portlet.dynamicdatamapping.DDMStructureManager;
 
 import java.io.Serializable;
 
@@ -57,7 +57,8 @@ public class AssetEntryQuery {
 	public static String checkOrderByCol(String orderByCol) {
 		if (ArrayUtil.contains(ORDER_BY_COLUMNS, orderByCol) ||
 			((orderByCol != null) &&
-			 orderByCol.startsWith(DDMIndexer.DDM_FIELD_PREFIX))) {
+			 orderByCol.startsWith(
+				 DDMStructureManager.STRUCTURE_INDEXER_FIELD_PREFIX))) {
 
 			return orderByCol;
 		}
@@ -458,7 +459,7 @@ public class AssetEntryQuery {
 		_toString = null;
 	}
 
-	public void setListable(boolean listable) {
+	public void setListable(Boolean listable) {
 		_listable = listable;
 	}
 
@@ -703,7 +704,7 @@ public class AssetEntryQuery {
 	private String _keywords;
 	private Layout _layout;
 	private long _linkedAssetEntryId = 0;
-	private boolean _listable = true;
+	private Boolean _listable = true;
 	private long[] _notAllCategoryIds = new long[0];
 	private long[] _notAllTagIds = new long[0];
 	private long[][] _notAllTagIdsArray = new long[0][];

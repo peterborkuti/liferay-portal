@@ -9,6 +9,11 @@
 </thead>
 <tbody>
 <tr>
+	<td>CHECKOUT_SUCCESS</td>
+	<td>//div[contains(@class,'lfr-asset-column-details')]/div[contains(@class,'alert-success')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>CUSTOMIZED_PAGE_INFO</td>
 	<td>//div[@class='page-customization-bar']/div[contains(@class,'page-customization-bar-text')]</td>
 	<td></td>
@@ -31,6 +36,11 @@
 <tr>
 	<td>ERROR_3</td>
 	<td>xpath=(//div[contains(@class,'alert') and (contains(@class,'alert-warning'))])</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ERROR_ENTER_VALID_CONTENT</td>
+	<td>//div[contains(@class,'alert-danger') and contains(.,'Please enter valid content')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -121,6 +131,11 @@
 <tr>
 	<td>SERVER_URL_SUCCESS</td>
 	<td>//tr[contains(.,'Server URL')]/td/span[contains(@class,'lfr-status-success')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SAVE_STATUS</td>
+	<td>//div[contains(@class,'alert') and contains(@class,'alert-success') and contains(@class,'save-status')]</td>
 	<td></td>
 </tr>
 <tr>

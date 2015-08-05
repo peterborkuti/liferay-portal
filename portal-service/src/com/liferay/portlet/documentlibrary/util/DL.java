@@ -130,8 +130,6 @@ public interface DL {
 		PortletRequest portletRequest, String emailFromAddress,
 		String emailFromName);
 
-	public List<Object> getEntries(Hits hits);
-
 	public List<FileEntry> getFileEntries(Hits hits);
 
 	public String getFileEntryImage(
@@ -211,9 +209,12 @@ public interface DL {
 			FileEntry fileEntry, ThemeDisplay themeDisplay)
 		throws Exception;
 
-	public String getThumbnailStyle() throws Exception;
+	public String getThumbnailStyle();
 
-	public String getThumbnailStyle(boolean max, int margin) throws Exception;
+	public String getThumbnailStyle(boolean max, int margin);
+
+	public String getThumbnailStyle(
+		boolean max, int margin, int height, int width);
 
 	public String getTitleWithExtension(FileEntry fileEntry);
 

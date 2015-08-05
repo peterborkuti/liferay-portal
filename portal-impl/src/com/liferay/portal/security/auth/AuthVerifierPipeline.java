@@ -17,6 +17,9 @@ package com.liferay.portal.security.auth;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.security.auth.verifier.AuthVerifier;
+import com.liferay.portal.kernel.security.auth.verifier.AuthVerifierConfiguration;
+import com.liferay.portal.kernel.security.auth.verifier.AuthVerifierResult;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -128,8 +131,6 @@ public class AuthVerifierPipeline {
 		AuthVerifierConfiguration authVerifierConfiguration,
 		String requestURI) {
 
-		AuthVerifier authVerifier = authVerifierConfiguration.getAuthVerifier();
-
 		Properties properties = authVerifierConfiguration.getProperties();
 
 		String[] urlsExcludes = StringUtil.split(
@@ -145,12 +146,6 @@ public class AuthVerifierPipeline {
 			properties.getProperty("urls.includes"));
 
 		if (urlsIncludes.length == 0) {
-			Class<?> authVerifierClass = authVerifier.getClass();
-
-			_log.error(
-				"Auth verifier " + authVerifierClass.getName() +
-					" does not have any URLs configured");
-
 			return false;
 		}
 
@@ -314,6 +309,10 @@ public class AuthVerifierPipeline {
 
 			AuthVerifier authVerifier = registry.getService(serviceReference);
 
+			if (authVerifier == null) {
+				return null;
+			}
+
 			Class<?> authVerifierClass = authVerifier.getClass();
 
 			AuthVerifierConfiguration authVerifierConfiguration =
@@ -324,6 +323,10 @@ public class AuthVerifierPipeline {
 				authVerifierClass.getName());
 			authVerifierConfiguration.setProperties(
 				_loadProperties(serviceReference, authVerifierClass.getName()));
+
+			if (!_validate(authVerifierConfiguration)) {
+				return null;
+			}
 
 			_authVerifierConfigurations.add(0, authVerifierConfiguration);
 
@@ -348,6 +351,10 @@ public class AuthVerifierPipeline {
 					authVerifierConfiguration.getAuthVerifierClassName()));
 
 			if (_authVerifierConfigurations.remove(authVerifierConfiguration)) {
+				if (!_validate(authVerifierConfiguration)) {
+					return;
+				}
+
 				_authVerifierConfigurations.add(
 					0, newAuthVerifierConfiguration);
 			}
@@ -393,6 +400,30 @@ public class AuthVerifierPipeline {
 			}
 
 			return properties;
+		}
+
+		private boolean _validate(
+			AuthVerifierConfiguration authVerifierConfiguration) {
+
+			Properties properties = authVerifierConfiguration.getProperties();
+
+			String[] urlsIncludes = StringUtil.split(
+				properties.getProperty("urls.includes"));
+
+			if (urlsIncludes.length == 0) {
+				if (_log.isWarnEnabled()) {
+					String authVerifierClassName =
+						authVerifierConfiguration.getAuthVerifierClassName();
+
+					_log.warn(
+						"Auth verifier " + authVerifierClassName +
+							" does not have URLs configured");
+				}
+
+				return false;
+			}
+
+			return true;
 		}
 
 	}

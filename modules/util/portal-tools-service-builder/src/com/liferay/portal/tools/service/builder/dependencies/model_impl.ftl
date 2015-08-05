@@ -34,7 +34,6 @@ import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSON;
 import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.trash.TrashHandlerRegistryUtil;
 import com.liferay.portal.kernel.util.DateUtil;
@@ -59,6 +58,8 @@ import com.liferay.portlet.expando.model.ExpandoBridge;
 import com.liferay.portlet.expando.util.ExpandoBridgeFactoryUtil;
 import com.liferay.portlet.trash.model.TrashEntry;
 import com.liferay.portlet.trash.service.TrashEntryLocalServiceUtil;
+
+import com.liferay.portlet.exportimport.lar.StagedModelType;
 
 import java.io.Serializable;
 
@@ -85,8 +86,15 @@ import java.util.TreeSet;
  * @see ${entity.name}Impl
  * @see ${packagePath}.model.${entity.name}
  * @see ${packagePath}.model.${entity.name}Model
+<#if classDeprecated>
+ * @deprecated ${classDeprecatedComment}
+</#if>
  * @generated
  */
+
+<#if classDeprecated>
+	@Deprecated
+</#if>
 
 <#if entity.jsonEnabled>
 	@JSON(strict = true)
@@ -115,6 +123,16 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 				</#if>
 			</#list>
 		};
+
+		public static final Map<String, Integer> TABLE_COLUMNS_MAP = new HashMap<String, Integer>();
+
+		static {
+			<#list entity.getRegularColList() as column>
+				<#assign sqlType = serviceBuilder.getSqlType(packagePath + ".model." + entity.getName(), column.getName(), column.getType())>
+
+				TABLE_COLUMNS_MAP.put("${column.DBName}", Types.${sqlType});
+			</#list>
+		}
 	</#compress>
 
 	public static final String TABLE_SQL_CREATE = "${serviceBuilder.getCreateTableSQL(entity)}";

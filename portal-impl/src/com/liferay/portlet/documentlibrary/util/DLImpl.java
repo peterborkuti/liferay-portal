@@ -62,8 +62,7 @@ import com.liferay.portal.util.PortletKeys;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.PortletURLFactoryUtil;
 import com.liferay.portlet.documentlibrary.DLPortletInstanceSettings;
-import com.liferay.portlet.documentlibrary.action.EditFileEntryAction;
-import com.liferay.portlet.documentlibrary.model.DLFileEntry;
+import com.liferay.portlet.documentlibrary.action.EditFileEntryMVCActionCommand;
 import com.liferay.portlet.documentlibrary.model.DLFileEntryConstants;
 import com.liferay.portlet.documentlibrary.model.DLFileEntryType;
 import com.liferay.portlet.documentlibrary.model.DLFileEntryTypeConstants;
@@ -75,11 +74,9 @@ import com.liferay.portlet.documentlibrary.service.DLAppLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.service.DLFolderLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.util.comparator.RepositoryModelCreateDateComparator;
 import com.liferay.portlet.documentlibrary.util.comparator.RepositoryModelModifiedDateComparator;
-import com.liferay.portlet.documentlibrary.util.comparator.RepositoryModelNameComparator;
 import com.liferay.portlet.documentlibrary.util.comparator.RepositoryModelReadCountComparator;
 import com.liferay.portlet.documentlibrary.util.comparator.RepositoryModelSizeComparator;
-import com.liferay.portlet.messageboards.model.MBMessage;
-import com.liferay.portlet.messageboards.service.MBMessageLocalServiceUtil;
+import com.liferay.portlet.documentlibrary.util.comparator.RepositoryModelTitleComparator;
 import com.liferay.portlet.trash.util.TrashUtil;
 
 import java.io.Serializable;
@@ -98,6 +95,7 @@ import java.util.TreeSet;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
 import javax.portlet.RenderResponse;
+import javax.portlet.WindowStateException;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -126,7 +124,7 @@ public class DLImpl implements DL {
 		FileEntry unescapedFileEntry = fileEntry.toUnescapedModel();
 
 		portletURL.setParameter(
-			"struts_action", "/document_library/view_file_entry");
+			"mvcRenderCommandName", "/document_library/view_file_entry");
 		portletURL.setParameter(
 			"fileEntryId", String.valueOf(fileEntry.getFileEntryId()));
 
@@ -153,7 +151,7 @@ public class DLImpl implements DL {
 		PortletURL portletURL = renderResponse.createRenderURL();
 
 		portletURL.setParameter(
-			"struts_action", "/document_library/view_file_entry");
+			"mvcRenderCommandName", "/document_library/view_file_entry");
 		portletURL.setParameter(
 			"fileEntryId", String.valueOf(fileShortcut.getToFileEntryId()));
 
@@ -173,7 +171,8 @@ public class DLImpl implements DL {
 
 		PortletURL portletURL = liferayPortletResponse.createRenderURL();
 
-		portletURL.setParameter("struts_action", "/document_library/view");
+		portletURL.setParameter(
+			"mvcRenderCommandName", "/document_library/view");
 
 		Map<String, Object> data = new HashMap<>();
 
@@ -282,7 +281,8 @@ public class DLImpl implements DL {
 			RenderResponse renderResponse)
 		throws Exception {
 
-		String strutsAction = ParamUtil.getString(request, "struts_action");
+		String mvcRenderCommandName = ParamUtil.getString(
+			request, "mvcRenderCommandName");
 
 		long groupId = ParamUtil.getLong(request, "groupId");
 		boolean ignoreRootFolder = ParamUtil.getBoolean(
@@ -290,26 +290,21 @@ public class DLImpl implements DL {
 
 		PortletURL portletURL = renderResponse.createRenderURL();
 
-		if (strutsAction.equals("/document_library/select_file_entry") ||
-			strutsAction.equals("/document_library/select_folder") ||
-			strutsAction.equals("/document_library_display/select_folder") ||
-			strutsAction.equals("/image_gallery_display/select_folder") ||
-			strutsAction.equals("/item_selector/view")) {
+		if (mvcRenderCommandName.equals(
+				"/document_library/select_file_entry") ||
+			mvcRenderCommandName.equals("/document_library/select_folder") ||
+			mvcRenderCommandName.equals(
+				"/document_library_display/select_folder") ||
+			mvcRenderCommandName.equals(
+				"/image_gallery_display/select_folder")) {
 
-			ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
-			portletURL.setParameter("struts_action", strutsAction);
-			portletURL.setParameter("groupId", String.valueOf(groupId));
-			portletURL.setParameter(
-				"ignoreRootFolder", String.valueOf(ignoreRootFolder));
-			portletURL.setWindowState(LiferayWindowState.POP_UP);
-
-			PortalUtil.addPortletBreadcrumbEntry(
-				request, themeDisplay.translate("home"), portletURL.toString());
+			_addPortletBreadcrumbEntry(
+				request, "mvcRenderCommandName", mvcRenderCommandName, groupId,
+				ignoreRootFolder, portletURL);
 		}
 		else {
-			portletURL.setParameter("struts_action", "/document_library/view");
+			portletURL.setParameter(
+				"mvcRenderCommandName", "/document_library/view");
 		}
 
 		addPortletBreadcrumbEntries(folder, request, portletURL);
@@ -460,7 +455,7 @@ public class DLImpl implements DL {
 			PortletRequest.RENDER_PHASE);
 
 		portletURL.setParameter(
-			"struts_action", "/document_library/view_file_entry");
+			"mvcRenderCommandName", "/document_library/view_file_entry");
 		portletURL.setParameter("fileEntryId", String.valueOf(fileEntryId));
 
 		return portletURL.toString();
@@ -479,7 +474,8 @@ public class DLImpl implements DL {
 			PortalUtil.getControlPanelPlid(themeDisplay.getCompanyId()),
 			PortletRequest.RENDER_PHASE);
 
-		portletURL.setParameter("struts_action", "/document_library/view");
+		portletURL.setParameter(
+			"mvcRenderCommandName", "/document_library/view");
 		portletURL.setParameter("folderId", String.valueOf(folderId));
 
 		return portletURL.toString();
@@ -639,46 +635,6 @@ public class DLImpl implements DL {
 	}
 
 	@Override
-	public List<Object> getEntries(Hits hits) {
-		List<Object> entries = new ArrayList<>();
-
-		for (Document document : hits.getDocs()) {
-			String entryClassName = GetterUtil.getString(
-				document.get(Field.ENTRY_CLASS_NAME));
-			long entryClassPK = GetterUtil.getLong(
-				document.get(Field.ENTRY_CLASS_PK));
-
-			try {
-				Object obj = null;
-
-				if (entryClassName.equals(DLFileEntry.class.getName())) {
-					obj = DLAppLocalServiceUtil.getFileEntry(entryClassPK);
-				}
-				else if (entryClassName.equals(MBMessage.class.getName())) {
-					long classPK = GetterUtil.getLong(
-						document.get(Field.CLASS_PK));
-
-					DLAppLocalServiceUtil.getFileEntry(classPK);
-
-					obj = MBMessageLocalServiceUtil.getMessage(entryClassPK);
-				}
-
-				entries.add(obj);
-			}
-			catch (Exception e) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(
-						"Documents and Media search index is stale and " +
-							"contains entry {className=" + entryClassName +
-								", classPK=" + entryClassPK + "}");
-				}
-			}
-		}
-
-		return entries;
-	}
-
-	@Override
 	public List<FileEntry> getFileEntries(Hits hits) {
 		List<FileEntry> entries = new ArrayList<>();
 
@@ -755,7 +711,7 @@ public class DLImpl implements DL {
 		String extension = FileUtil.getExtension(tempFileName);
 
 		int pos = tempFileName.lastIndexOf(
-			EditFileEntryAction.TEMP_RANDOM_SUFFIX);
+			EditFileEntryMVCActionCommand.TEMP_RANDOM_SUFFIX);
 
 		if (pos != -1) {
 			tempFileName = tempFileName.substring(0, pos);
@@ -947,7 +903,8 @@ public class DLImpl implements DL {
 			orderByComparator = new RepositoryModelSizeComparator<>(orderByAsc);
 		}
 		else {
-			orderByComparator = new RepositoryModelNameComparator<>(orderByAsc);
+			orderByComparator = new RepositoryModelTitleComparator<>(
+				orderByAsc);
 		}
 
 		return orderByComparator;
@@ -1064,13 +1021,25 @@ public class DLImpl implements DL {
 	}
 
 	@Override
-	public String getThumbnailStyle() throws Exception {
+	public String getThumbnailStyle() {
 		return getThumbnailStyle(true, 0);
 	}
 
 	@Override
-	public String getThumbnailStyle(boolean max, int margin) throws Exception {
-		StringBundler sb = new StringBundler(5);
+	public String getThumbnailStyle(boolean max, int margin) {
+		return getThumbnailStyle(
+			max, margin,
+			PrefsPropsUtil.getInteger(
+				PropsKeys.DL_FILE_ENTRY_THUMBNAIL_MAX_HEIGHT),
+			PrefsPropsUtil.getInteger(
+				PropsKeys.DL_FILE_ENTRY_THUMBNAIL_MAX_WIDTH));
+	}
+
+	@Override
+	public String getThumbnailStyle(
+		boolean max, int margin, int height, int width) {
+
+		StringBundler sb = new StringBundler(7);
 
 		if (max) {
 			sb.append("max-height: ");
@@ -1079,9 +1048,9 @@ public class DLImpl implements DL {
 			sb.append("height: ");
 		}
 
-		sb.append(
-			PrefsPropsUtil.getLong(
-				PropsKeys.DL_FILE_ENTRY_THUMBNAIL_MAX_HEIGHT) + 2 * margin);
+		height = height + (2 * margin);
+
+		sb.append(height);
 
 		if (max) {
 			sb.append("px; max-width: ");
@@ -1090,9 +1059,10 @@ public class DLImpl implements DL {
 			sb.append("px; width: ");
 		}
 
-		sb.append(
-			PrefsPropsUtil.getLong(
-				PropsKeys.DL_FILE_ENTRY_THUMBNAIL_MAX_WIDTH) + 2 * margin);
+		width = width + (2 * margin);
+
+		sb.append(width);
+
 		sb.append("px;");
 
 		return sb.toString();
@@ -1403,7 +1373,7 @@ public class DLImpl implements DL {
 			PortletRequest.RENDER_PHASE);
 
 		portletURL.setParameter(
-			"struts_action", "/document_library/view_file_entry");
+			"mvcRenderCommandName", "/document_library/view_file_entry");
 		portletURL.setParameter(
 			"fileEntryId", String.valueOf(dlFileVersion.getFileEntryId()));
 
@@ -1439,6 +1409,25 @@ public class DLImpl implements DL {
 		for (String extension : extensions) {
 			_genericNames.put(extension, genericName);
 		}
+	}
+
+	private void _addPortletBreadcrumbEntry(
+			HttpServletRequest request, String parameterName,
+			String parameterValue, long groupId, boolean ignoreRootFolder,
+			PortletURL portletURL)
+		throws WindowStateException {
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		portletURL.setParameter(parameterName, parameterValue);
+		portletURL.setParameter("groupId", String.valueOf(groupId));
+		portletURL.setParameter(
+			"ignoreRootFolder", String.valueOf(ignoreRootFolder));
+		portletURL.setWindowState(LiferayWindowState.POP_UP);
+
+		PortalUtil.addPortletBreadcrumbEntry(
+			request, themeDisplay.translate("home"), portletURL.toString());
 	}
 
 	private static final String _DEFAULT_FILE_ICON = "page";

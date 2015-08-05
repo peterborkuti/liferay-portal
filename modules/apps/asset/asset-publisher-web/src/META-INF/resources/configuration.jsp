@@ -155,6 +155,7 @@ List<AssetRendererFactory> classTypesAssetRendererFactories = new ArrayList<Asse
 
 						layoutSiteBrowserURL.setParameter("groupId", String.valueOf(layout.getGroupId()));
 						layoutSiteBrowserURL.setParameter("selectedGroupIds", StringUtil.merge(assetPublisherDisplayContext.getGroupIds()));
+						layoutSiteBrowserURL.setParameter("privateLayout", String.valueOf(layout.isPrivateLayout()));
 						layoutSiteBrowserURL.setParameter("type", "layoutScopes");
 						layoutSiteBrowserURL.setParameter("eventName", eventName);
 						layoutSiteBrowserURL.setPortletMode(PortletMode.VIEW);
@@ -298,7 +299,7 @@ List<AssetRendererFactory> classTypesAssetRendererFactories = new ArrayList<Asse
 		var form = AUI.$(document.<portlet:namespace />fm);
 
 		form.fm('<%= Constants.CMD %>').val('move-selection-down');
-		form.fm('redirect').val('<%= currentURL %>');
+		form.fm('redirect').val('<%= HtmlUtil.escapeJS(currentURL) %>');
 		form.fm('assetEntryOrder').val(assetEntryOrder);
 
 		submitForm(form);
@@ -308,7 +309,7 @@ List<AssetRendererFactory> classTypesAssetRendererFactories = new ArrayList<Asse
 		var form = AUI.$(document.<portlet:namespace />fm);
 
 		form.fm('<%= Constants.CMD %>').val('move-selection-up');
-		form.fm('redirect').val('<%= currentURL %>');
+		form.fm('redirect').val('<%= HtmlUtil.escapeJS(currentURL) %>');
 		form.fm('assetEntryOrder').val(assetEntryOrder);
 
 		submitForm(form);

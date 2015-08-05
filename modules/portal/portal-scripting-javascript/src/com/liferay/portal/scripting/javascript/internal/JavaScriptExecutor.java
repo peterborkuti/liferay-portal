@@ -18,7 +18,6 @@ import aQute.bnd.annotation.metatype.Configurable;
 
 import com.liferay.portal.kernel.cache.PortalCache;
 import com.liferay.portal.kernel.cache.SingleVMPool;
-import com.liferay.portal.kernel.scripting.BaseScriptingExecutor;
 import com.liferay.portal.kernel.scripting.ScriptingException;
 import com.liferay.portal.kernel.scripting.ScriptingExecutor;
 import com.liferay.portal.kernel.util.AggregateClassLoader;
@@ -26,6 +25,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.scripting.BaseScriptingExecutor;
 import com.liferay.portal.scripting.javascript.configuration.JavaScriptExecutorConfiguration;
 
 import java.util.Arrays;
@@ -141,6 +141,8 @@ public class JavaScriptExecutor extends BaseScriptingExecutor {
 	@Activate
 	@Modified
 	protected void activate(Map<String, Object> properties) {
+		initScriptingExecutorClassLoader();
+
 		JavaScriptExecutorConfiguration javaScriptExecutorConfiguration =
 			Configurable.createConfigurable(
 				JavaScriptExecutorConfiguration.class, properties);
@@ -169,11 +171,8 @@ public class JavaScriptExecutor extends BaseScriptingExecutor {
 			Context context = Context.enter();
 
 			if (ArrayUtil.isNotEmpty(classLoaders)) {
-				ClassLoader aggregateClassLoader =
-					AggregateClassLoader.getAggregateClassLoader(
-						PortalClassLoaderUtil.getClassLoader(), classLoaders);
-
-				context.setApplicationClassLoader(aggregateClassLoader);
+				context.setApplicationClassLoader(
+					getAggregateClassLoader(classLoaders));
 			}
 
 			compiledScript = context.compileString(script, "script", 0, null);
@@ -192,7 +191,7 @@ public class JavaScriptExecutor extends BaseScriptingExecutor {
 
 	@Reference(unbind = "-")
 	protected void setSingleVMPool(SingleVMPool singleVMPool) {
-		_portalCache = (PortalCache<String, Script>)singleVMPool.getCache(
+		_portalCache = (PortalCache<String, Script>)singleVMPool.getPortalCache(
 			_CACHE_NAME);
 	}
 

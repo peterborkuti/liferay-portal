@@ -23,7 +23,6 @@ import com.liferay.portal.kernel.dao.orm.Query;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
-import com.liferay.portal.kernel.lar.ExportImportThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -2574,8 +2573,9 @@ public class RatingsEntryPersistenceImpl extends BasePersistenceImpl<RatingsEntr
 		}
 	}
 
-	protected void cacheUniqueFindersCache(RatingsEntry ratingsEntry) {
-		if (ratingsEntry.isNew()) {
+	protected void cacheUniqueFindersCache(RatingsEntry ratingsEntry,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					ratingsEntry.getUserId(), ratingsEntry.getClassNameId(),
 					ratingsEntry.getClassPK()
@@ -2746,28 +2746,25 @@ public class RatingsEntryPersistenceImpl extends BasePersistenceImpl<RatingsEntr
 			ratingsEntry.setUuid(uuid);
 		}
 
-		if (!ExportImportThreadLocal.isImportInProcess()) {
-			ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
+		ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
 
-			Date now = new Date();
+		Date now = new Date();
 
-			if (isNew && (ratingsEntry.getCreateDate() == null)) {
-				if (serviceContext == null) {
-					ratingsEntry.setCreateDate(now);
-				}
-				else {
-					ratingsEntry.setCreateDate(serviceContext.getCreateDate(now));
-				}
+		if (isNew && (ratingsEntry.getCreateDate() == null)) {
+			if (serviceContext == null) {
+				ratingsEntry.setCreateDate(now);
 			}
+			else {
+				ratingsEntry.setCreateDate(serviceContext.getCreateDate(now));
+			}
+		}
 
-			if (!ratingsEntryModelImpl.hasSetModifiedDate()) {
-				if (serviceContext == null) {
-					ratingsEntry.setModifiedDate(now);
-				}
-				else {
-					ratingsEntry.setModifiedDate(serviceContext.getModifiedDate(
-							now));
-				}
+		if (!ratingsEntryModelImpl.hasSetModifiedDate()) {
+			if (serviceContext == null) {
+				ratingsEntry.setModifiedDate(now);
+			}
+			else {
+				ratingsEntry.setModifiedDate(serviceContext.getModifiedDate(now));
 			}
 		}
 
@@ -2887,7 +2884,7 @@ public class RatingsEntryPersistenceImpl extends BasePersistenceImpl<RatingsEntr
 			false);
 
 		clearUniqueFindersCache(ratingsEntry);
-		cacheUniqueFindersCache(ratingsEntry);
+		cacheUniqueFindersCache(ratingsEntry, isNew);
 
 		ratingsEntry.resetOriginalValues();
 
@@ -2914,6 +2911,7 @@ public class RatingsEntryPersistenceImpl extends BasePersistenceImpl<RatingsEntr
 		ratingsEntryImpl.setClassNameId(ratingsEntry.getClassNameId());
 		ratingsEntryImpl.setClassPK(ratingsEntry.getClassPK());
 		ratingsEntryImpl.setScore(ratingsEntry.getScore());
+		ratingsEntryImpl.setLastPublishDate(ratingsEntry.getLastPublishDate());
 
 		return ratingsEntryImpl;
 	}
@@ -3274,6 +3272,11 @@ public class RatingsEntryPersistenceImpl extends BasePersistenceImpl<RatingsEntr
 	@Override
 	protected Set<String> getBadColumnNames() {
 		return _badColumnNames;
+	}
+
+	@Override
+	protected Map<String, Integer> getTableColumnsMap() {
+		return RatingsEntryModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

@@ -16,30 +16,22 @@ package com.liferay.asset.tags.admin.web.lar;
 
 import com.liferay.asset.tags.admin.web.constants.AssetTagsAdminPortletKeys;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
-import com.liferay.portal.kernel.dao.orm.DynamicQuery;
-import com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery;
-import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.lar.BasePortletDataHandler;
-import com.liferay.portal.kernel.lar.ExportImportHelperUtil;
-import com.liferay.portal.kernel.lar.ManifestSummary;
-import com.liferay.portal.kernel.lar.PortletDataContext;
-import com.liferay.portal.kernel.lar.PortletDataHandler;
-import com.liferay.portal.kernel.lar.PortletDataHandlerBoolean;
-import com.liferay.portal.kernel.lar.StagedModelDataHandlerUtil;
-import com.liferay.portal.kernel.lar.StagedModelType;
-import com.liferay.portal.kernel.lar.xstream.XStreamAliasRegistryUtil;
+import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
 import com.liferay.portal.kernel.xml.Element;
-import com.liferay.portal.model.adapter.ModelAdapterUtil;
 import com.liferay.portlet.asset.model.AssetTag;
-import com.liferay.portlet.asset.model.adapter.StagedAssetTag;
-import com.liferay.portlet.asset.model.adapter.impl.StagedAssetTagImpl;
+import com.liferay.portlet.asset.model.impl.AssetTagImpl;
 import com.liferay.portlet.asset.service.AssetTagLocalServiceUtil;
+import com.liferay.portlet.exportimport.lar.BasePortletDataHandler;
+import com.liferay.portlet.exportimport.lar.PortletDataContext;
+import com.liferay.portlet.exportimport.lar.PortletDataHandler;
+import com.liferay.portlet.exportimport.lar.PortletDataHandlerBoolean;
+import com.liferay.portlet.exportimport.lar.StagedModelDataHandlerUtil;
+import com.liferay.portlet.exportimport.lar.StagedModelType;
+import com.liferay.portlet.exportimport.xstream.XStreamAliasRegistryUtil;
 
 import java.util.List;
 
 import javax.portlet.PortletPreferences;
-
-import javax.servlet.ServletContext;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -63,15 +55,14 @@ public class AssetTagsPortletDataHandler extends BasePortletDataHandler {
 	protected void activate() {
 		setDataAlwaysStaged(true);
 		setDeletionSystemEventStagedModelTypes(
-			new StagedModelType(StagedAssetTag.class));
+			new StagedModelType(AssetTag.class));
 		setExportControls(
 			new PortletDataHandlerBoolean(
 				NAMESPACE, "tags", true, false, null,
-				StagedAssetTag.class.getName()));
+				AssetTag.class.getName()));
 		setPublishToLiveByDefault(true);
 
-		XStreamAliasRegistryUtil.register(
-			StagedAssetTagImpl.class, "StagedAssetTag");
+		XStreamAliasRegistryUtil.register(AssetTagImpl.class, "AssetTag");
 	}
 
 	@Override
@@ -108,7 +99,8 @@ public class AssetTagsPortletDataHandler extends BasePortletDataHandler {
 		}
 
 		ActionableDynamicQuery actionableDynamicQuery =
-			getTagActionableDynamicQuery(portletDataContext);
+			AssetTagLocalServiceUtil.getExportActionableDynamicQuery(
+				portletDataContext);
 
 		actionableDynamicQuery.performActions();
 
@@ -126,7 +118,7 @@ public class AssetTagsPortletDataHandler extends BasePortletDataHandler {
 		}
 
 		Element tagsElement = portletDataContext.getImportDataGroupElement(
-			StagedAssetTag.class);
+			AssetTag.class);
 
 		List<Element> tagElements = tagsElement.elements();
 
@@ -145,85 +137,15 @@ public class AssetTagsPortletDataHandler extends BasePortletDataHandler {
 		throws Exception {
 
 		ActionableDynamicQuery actionableDynamicQuery =
-			getTagActionableDynamicQuery(portletDataContext);
+			AssetTagLocalServiceUtil.getExportActionableDynamicQuery(
+				portletDataContext);
 
 		actionableDynamicQuery.performCount();
 	}
 
-	protected ActionableDynamicQuery getTagActionableDynamicQuery(
-		final PortletDataContext portletDataContext) {
-
-		final ExportActionableDynamicQuery exportActionableDynamicQuery =
-			new ExportActionableDynamicQuery() {
-
-				@Override
-				public long performCount() throws PortalException {
-					ManifestSummary manifestSummary =
-						portletDataContext.getManifestSummary();
-
-					StagedModelType stagedModelType = getStagedModelType();
-
-					long modelAdditionCount = super.performCount();
-
-					manifestSummary.addModelAdditionCount(
-						stagedModelType.toString(), modelAdditionCount);
-
-					long modelDeletionCount =
-						ExportImportHelperUtil.getModelDeletionCount(
-							portletDataContext,
-							new StagedModelType(AssetTag.class));
-
-					manifestSummary.addModelDeletionCount(
-						stagedModelType.toString(), modelDeletionCount);
-
-					return modelAdditionCount;
-				}
-
-			};
-
-		exportActionableDynamicQuery.setAddCriteriaMethod(
-			new ActionableDynamicQuery.AddCriteriaMethod() {
-
-			@Override
-			public void addCriteria(DynamicQuery dynamicQuery) {
-				portletDataContext.addDateRangeCriteria(
-					dynamicQuery, "modifiedDate");
-			}
-
-		});
-		exportActionableDynamicQuery.setBaseLocalService(
-			AssetTagLocalServiceUtil.getService());
-		exportActionableDynamicQuery.setClass(AssetTag.class);
-		exportActionableDynamicQuery.setClassLoader(
-			this.getClass().getClassLoader());
-		exportActionableDynamicQuery.setCompanyId(
-			portletDataContext.getCompanyId());
-		exportActionableDynamicQuery.setGroupId(
-			portletDataContext.getScopeGroupId());
-		exportActionableDynamicQuery.setPerformActionMethod(
-			new ActionableDynamicQuery.PerformActionMethod() {
-
-				@Override
-				public void performAction(Object object)
-					throws PortalException {
-
-					StagedAssetTag stagedAssetTag = ModelAdapterUtil.adapt(
-						(AssetTag)object, AssetTag.class, StagedAssetTag.class);
-
-					StagedModelDataHandlerUtil.exportStagedModel(
-						portletDataContext, stagedAssetTag);
-				}
-
-			});
-		exportActionableDynamicQuery.setPrimaryKeyPropertyName("tagId");
-		exportActionableDynamicQuery.setStagedModelType(
-			new StagedModelType(StagedAssetTag.class));
-
-		return exportActionableDynamicQuery;
-	}
-
-	@Reference(target = "(original.bean=*)", unbind = "-")
-	protected void setServletContext(ServletContext servletContext) {
+	@Reference(target = ModuleServiceLifecycle.PORTAL_INITIALIZED, unbind = "-")
+	protected void setModuleServiceLifecycle(
+		ModuleServiceLifecycle moduleServiceLifecycle) {
 	}
 
 }

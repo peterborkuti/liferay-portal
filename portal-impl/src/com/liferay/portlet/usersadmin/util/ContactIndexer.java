@@ -16,6 +16,8 @@ package com.liferay.portlet.usersadmin.util;
 
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.BaseIndexer;
 import com.liferay.portal.kernel.search.BooleanQuery;
 import com.liferay.portal.kernel.search.Document;
@@ -23,6 +25,7 @@ import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchEngineUtil;
 import com.liferay.portal.kernel.search.Summary;
+import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -44,7 +47,7 @@ import javax.portlet.PortletResponse;
  * @author Hugo Huijser
  */
 @OSGiBeanProperties
-public class ContactIndexer extends BaseIndexer {
+public class ContactIndexer extends BaseIndexer<Contact> {
 
 	public static final String CLASS_NAME = Contact.class.getName();
 
@@ -59,7 +62,8 @@ public class ContactIndexer extends BaseIndexer {
 
 	@Override
 	public void postProcessSearchQuery(
-			BooleanQuery searchQuery, SearchContext searchContext)
+			BooleanQuery searchQuery, BooleanFilter fullQueryBooleanFilter,
+			SearchContext searchContext)
 		throws Exception {
 
 		addSearchTerm(searchQuery, searchContext, "city", false);
@@ -87,16 +91,12 @@ public class ContactIndexer extends BaseIndexer {
 	}
 
 	@Override
-	protected void doDelete(Object obj) throws Exception {
-		Contact contact = (Contact)obj;
-
+	protected void doDelete(Contact contact) throws Exception {
 		deleteDocument(contact.getCompanyId(), contact.getContactId());
 	}
 
 	@Override
-	protected Document doGetDocument(Object obj) throws Exception {
-		Contact contact = (Contact)obj;
-
+	protected Document doGetDocument(Contact contact) throws Exception {
 		if (contact.isUser()) {
 			User user = UserLocalServiceUtil.fetchUserByContactId(
 				contact.getContactId());
@@ -153,9 +153,7 @@ public class ContactIndexer extends BaseIndexer {
 	}
 
 	@Override
-	protected void doReindex(Object obj) throws Exception {
-		Contact contact = (Contact)obj;
-
+	protected void doReindex(Contact contact) throws Exception {
 		Document document = getDocument(contact);
 
 		if (document != null) {
@@ -188,15 +186,23 @@ public class ContactIndexer extends BaseIndexer {
 			new ActionableDynamicQuery.PerformActionMethod() {
 
 				@Override
-				public void performAction(Object object)
-					throws PortalException {
-
+				public void performAction(Object object) {
 					Contact contact = (Contact)object;
 
-					Document document = getDocument(contact);
+					try {
+						Document document = getDocument(contact);
 
-					if (document != null) {
-						actionableDynamicQuery.addDocument(document);
+						if (document != null) {
+							actionableDynamicQuery.addDocument(document);
+						}
+					}
+					catch (PortalException pe) {
+						if (_log.isWarnEnabled()) {
+							_log.warn(
+								"Unable to index contact " +
+									contact.getContactId(),
+								pe);
+						}
 					}
 				}
 
@@ -205,5 +211,7 @@ public class ContactIndexer extends BaseIndexer {
 
 		actionableDynamicQuery.performActions();
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(ContactIndexer.class);
 
 }

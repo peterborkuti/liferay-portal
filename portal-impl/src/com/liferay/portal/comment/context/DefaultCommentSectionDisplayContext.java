@@ -16,8 +16,8 @@ package com.liferay.portal.comment.context;
 
 import com.liferay.portal.comment.context.util.DiscussionRequestHelper;
 import com.liferay.portal.comment.context.util.DiscussionTaglibHelper;
-import com.liferay.portal.kernel.comment.Comment;
 import com.liferay.portal.kernel.comment.Discussion;
+import com.liferay.portal.kernel.comment.DiscussionComment;
 import com.liferay.portal.kernel.comment.DiscussionPermission;
 import com.liferay.portal.kernel.comment.context.CommentSectionDisplayContext;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -37,30 +37,37 @@ public class DefaultCommentSectionDisplayContext
 		_discussionRequestHelper = discussionRequestHelper;
 		_discussionTaglibHelper = discussionTaglibHelper;
 		_discussionPermission = discussionPermission;
-		_rootComment = discussion.getRootComment();
+
+		if (discussion == null) {
+			_rootDiscussionComment = null;
+		}
+		else {
+			_rootDiscussionComment = discussion.getRootDiscussionComment();
+		}
 	}
 
 	@Override
 	public boolean isControlsVisible() throws PortalException {
-		if (_discussionTaglibHelper.isHideControls()) {
+		if ((_discussionPermission == null) ||
+			_discussionTaglibHelper.isHideControls()) {
+
 			return false;
 		}
 
 		return _discussionPermission.hasAddPermission(
 			_discussionRequestHelper.getCompanyId(),
 			_discussionRequestHelper.getScopeGroupId(),
-			_discussionTaglibHelper.getPermissionClassName(),
-			_discussionTaglibHelper.getPermissionClassPK(),
-			_discussionTaglibHelper.getUserId());
+			_discussionTaglibHelper.getClassName(),
+			_discussionTaglibHelper.getClassPK());
 	}
 
 	@Override
 	public boolean isDiscussionVisible() throws PortalException {
-		if (_rootComment == null) {
+		if (_rootDiscussionComment == null) {
 			return false;
 		}
 
-		if ((_rootComment.getThreadCommentsCount() > 1) ||
+		if ((_rootDiscussionComment.getThreadCommentsCount() > 1) ||
 			hasViewPermission()) {
 
 			return true;
@@ -71,8 +78,8 @@ public class DefaultCommentSectionDisplayContext
 
 	@Override
 	public boolean isMessageThreadVisible() {
-		if ((_rootComment != null) &&
-			(_rootComment.getThreadCommentsCount() > 1)) {
+		if ((_rootDiscussionComment != null) &&
+			(_rootDiscussionComment.getThreadCommentsCount() > 1)) {
 
 			return true;
 		}
@@ -89,14 +96,13 @@ public class DefaultCommentSectionDisplayContext
 		return _discussionPermission.hasViewPermission(
 			_discussionRequestHelper.getCompanyId(),
 			_discussionRequestHelper.getScopeGroupId(),
-			_discussionTaglibHelper.getPermissionClassName(),
-			_discussionTaglibHelper.getPermissionClassPK(),
-			_discussionTaglibHelper.getUserId());
+			_discussionTaglibHelper.getClassName(),
+			_discussionTaglibHelper.getClassPK());
 	}
 
 	private final DiscussionPermission _discussionPermission;
 	private final DiscussionRequestHelper _discussionRequestHelper;
 	private final DiscussionTaglibHelper _discussionTaglibHelper;
-	private final Comment _rootComment;
+	private final DiscussionComment _rootDiscussionComment;
 
 }

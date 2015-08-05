@@ -16,7 +16,6 @@ package com.liferay.portal.test.rule;
 
 import com.liferay.portal.deploy.hot.HookHotDeployListener;
 import com.liferay.portal.deploy.hot.IndexerPostProcessorRegistry;
-import com.liferay.portal.deploy.hot.SchedulerEntryRegistry;
 import com.liferay.portal.deploy.hot.ServiceWrapperRegistry;
 import com.liferay.portal.kernel.deploy.hot.DependencyManagementThreadLocal;
 import com.liferay.portal.kernel.deploy.hot.HotDeployEvent;
@@ -24,6 +23,7 @@ import com.liferay.portal.kernel.deploy.hot.HotDeployUtil;
 import com.liferay.portal.kernel.portlet.PortletClassLoaderUtil;
 import com.liferay.portal.kernel.servlet.ServletContextPool;
 import com.liferay.portal.kernel.servlet.filters.invoker.InvokerFilterHelper;
+import com.liferay.portal.kernel.template.TemplateManagerUtil;
 import com.liferay.portal.kernel.util.ClassLoaderPool;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortalLifecycleUtil;
@@ -48,8 +48,6 @@ import java.security.ProtectionDomain;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import javax.naming.Context;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -81,10 +79,14 @@ public class PACLTestRule implements TestRule {
 
 			@Override
 			public void evaluate() throws Throwable {
+				PortletContextLoaderListener portletContextLoaderListener =
+					new PortletContextLoaderListener();
+
 				HotDeployEvent hotDeployEvent = null;
 
 				if (description.getMethodName() != null) {
-					hotDeployEvent = beforeClass(description);
+					hotDeployEvent = beforeClass(
+						description, portletContextLoaderListener);
 				}
 
 				try {
@@ -92,7 +94,9 @@ public class PACLTestRule implements TestRule {
 				}
 				finally {
 					if (hotDeployEvent != null) {
-						afterClass(description, hotDeployEvent);
+						afterClass(
+							description, hotDeployEvent,
+							portletContextLoaderListener);
 					}
 				}
 			}
@@ -101,12 +105,10 @@ public class PACLTestRule implements TestRule {
 	}
 
 	protected void afterClass(
-		Description description, HotDeployEvent hotDeployEvent) {
+		Description description, HotDeployEvent hotDeployEvent,
+		PortletContextLoaderListener portletContextLoaderListener) {
 
 		HotDeployUtil.fireUndeployEvent(hotDeployEvent);
-
-		PortletContextLoaderListener portletContextLoaderListener =
-			new PortletContextLoaderListener();
 
 		ClassLoaderPool.register(
 			hotDeployEvent.getServletContextName(),
@@ -124,7 +126,9 @@ public class PACLTestRule implements TestRule {
 		}
 	}
 
-	protected HotDeployEvent beforeClass(Description description)
+	protected HotDeployEvent beforeClass(
+			Description description,
+			PortletContextLoaderListener portletContextLoaderListener)
 		throws ReflectiveOperationException {
 
 		_testClass = _loadTestClass(description.getTestClass());
@@ -162,9 +166,6 @@ public class PACLTestRule implements TestRule {
 			mockServletContext, classLoader);
 
 		HotDeployUtil.fireDeployEvent(hotDeployEvent);
-
-		PortletContextLoaderListener portletContextLoaderListener =
-			new PortletContextLoaderListener();
 
 		ClassLoaderPool.register(
 			hotDeployEvent.getServletContextName(),
@@ -234,18 +235,6 @@ public class PACLTestRule implements TestRule {
 		"com.liferay.portal.security.pacl.test.";
 
 	static {
-		URL resource = PACLTestRule.class.getResource("pacl-test.properties");
-
-		if (resource != null) {
-			System.setProperty("external-properties", resource.getPath());
-		}
-
-		System.setProperty(
-			Context.INITIAL_CONTEXT_FACTORY,
-			"org.apache.naming.java.javaURLContextFactory");
-
-		System.setProperty("catalina.base", ".");
-
 		List<String> configLocations = ListUtil.fromArray(
 			PropsUtil.getArray(PropsKeys.SPRING_CONFIGS));
 
@@ -257,8 +246,16 @@ public class PACLTestRule implements TestRule {
 		ServiceTestUtil.initPermissions();
 
 		new IndexerPostProcessorRegistry();
-		new SchedulerEntryRegistry();
 		new ServiceWrapperRegistry();
+
+		try {
+			Class.forName(
+				TemplateManagerUtil.class.getName(), true,
+				PACLTestRule.class.getClassLoader());
+		}
+		catch (ClassNotFoundException cnfe) {
+			throw new ExceptionInInitializerError(cnfe);
+		}
 	}
 
 	private Object _instance;

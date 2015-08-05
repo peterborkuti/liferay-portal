@@ -23,7 +23,6 @@ import com.liferay.portal.kernel.dao.orm.Query;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
-import com.liferay.portal.kernel.lar.ExportImportThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -2694,8 +2693,9 @@ public class MBThreadFlagPersistenceImpl extends BasePersistenceImpl<MBThreadFla
 		}
 	}
 
-	protected void cacheUniqueFindersCache(MBThreadFlag mbThreadFlag) {
-		if (mbThreadFlag.isNew()) {
+	protected void cacheUniqueFindersCache(MBThreadFlag mbThreadFlag,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					mbThreadFlag.getUuid(), mbThreadFlag.getGroupId()
 				};
@@ -2900,28 +2900,25 @@ public class MBThreadFlagPersistenceImpl extends BasePersistenceImpl<MBThreadFla
 			mbThreadFlag.setUuid(uuid);
 		}
 
-		if (!ExportImportThreadLocal.isImportInProcess()) {
-			ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
+		ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
 
-			Date now = new Date();
+		Date now = new Date();
 
-			if (isNew && (mbThreadFlag.getCreateDate() == null)) {
-				if (serviceContext == null) {
-					mbThreadFlag.setCreateDate(now);
-				}
-				else {
-					mbThreadFlag.setCreateDate(serviceContext.getCreateDate(now));
-				}
+		if (isNew && (mbThreadFlag.getCreateDate() == null)) {
+			if (serviceContext == null) {
+				mbThreadFlag.setCreateDate(now);
 			}
+			else {
+				mbThreadFlag.setCreateDate(serviceContext.getCreateDate(now));
+			}
+		}
 
-			if (!mbThreadFlagModelImpl.hasSetModifiedDate()) {
-				if (serviceContext == null) {
-					mbThreadFlag.setModifiedDate(now);
-				}
-				else {
-					mbThreadFlag.setModifiedDate(serviceContext.getModifiedDate(
-							now));
-				}
+		if (!mbThreadFlagModelImpl.hasSetModifiedDate()) {
+			if (serviceContext == null) {
+				mbThreadFlag.setModifiedDate(now);
+			}
+			else {
+				mbThreadFlag.setModifiedDate(serviceContext.getModifiedDate(now));
 			}
 		}
 
@@ -3031,7 +3028,7 @@ public class MBThreadFlagPersistenceImpl extends BasePersistenceImpl<MBThreadFla
 			false);
 
 		clearUniqueFindersCache(mbThreadFlag);
-		cacheUniqueFindersCache(mbThreadFlag);
+		cacheUniqueFindersCache(mbThreadFlag, isNew);
 
 		mbThreadFlag.resetOriginalValues();
 
@@ -3057,6 +3054,7 @@ public class MBThreadFlagPersistenceImpl extends BasePersistenceImpl<MBThreadFla
 		mbThreadFlagImpl.setCreateDate(mbThreadFlag.getCreateDate());
 		mbThreadFlagImpl.setModifiedDate(mbThreadFlag.getModifiedDate());
 		mbThreadFlagImpl.setThreadId(mbThreadFlag.getThreadId());
+		mbThreadFlagImpl.setLastPublishDate(mbThreadFlag.getLastPublishDate());
 
 		return mbThreadFlagImpl;
 	}
@@ -3417,6 +3415,11 @@ public class MBThreadFlagPersistenceImpl extends BasePersistenceImpl<MBThreadFla
 	@Override
 	protected Set<String> getBadColumnNames() {
 		return _badColumnNames;
+	}
+
+	@Override
+	protected Map<String, Integer> getTableColumnsMap() {
+		return MBThreadFlagModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

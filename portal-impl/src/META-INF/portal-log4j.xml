@@ -136,14 +136,6 @@
 		<priority value="ERROR" />
 	</category>
 
-	<category name="com.liferay.portal.dao.shard">
-		<priority value="ERROR" />
-	</category>
-
-	<category name="com.liferay.portal.dao.shard.DefaultShardDataSourceTargetSource">
-		<priority value="INFO" />
-	</category>
-
 	<category name="com.liferay.portal.deploy">
 		<priority value="INFO" />
 	</category>
@@ -320,12 +312,12 @@
 		<priority value="INFO" />
 	</category>
 
-	<category name="com.liferay.portal.kernel.search.BaseSpellCheckIndexWriter">
-		<priority value="INFO" />
-	</category>
-
 	<category name="com.liferay.portal.kernel.search.HitsOpenSearchImpl">
 		<priority value="WARN" />
+	</category>
+
+	<category name="com.liferay.portal.kernel.search.suggest.BaseSpellCheckIndexWriter">
+		<priority value="INFO" />
 	</category>
 
 	<category name="com.liferay.portal.kernel.servlet.PipingServletResponse">
@@ -432,14 +424,6 @@
 		<priority value="ERROR" />
 	</category>
 
-	<category name="com.liferay.portal.scripting.ruby.RubyExecutor">
-		<priority value="ERROR" />
-	</category>
-
-	<category name="com.liferay.portal.search.IndexerRegistryImpl">
-		<priority value="WARN" />
-	</category>
-
 	<category name="com.liferay.portal.search.lucene">
 		<priority value="ERROR" />
 	</category>
@@ -450,6 +434,10 @@
 
 	<category name="com.liferay.portal.search.lucene.LuceneIndexWriterImpl">
 		<priority value="ERROR" />
+	</category>
+
+	<category name="com.liferay.portal.security">
+		<priority value="WARN" />
 	</category>
 
 	<category name="com.liferay.portal.security.auth.EmailAddressGeneratorFactory">
@@ -992,40 +980,8 @@
 		<priority value="WARN" />
 	</category>
 
-	<category name="com.liferay.portlet.journal">
-		<priority value="ERROR" />
-	</category>
-
-	<category name="com.liferay.portlet.journal.lar">
-		<priority value="WARN" />
-	</category>
-
-	<category name="com.liferay.portlet.journal.service.impl.JournalContentSearchLocalServiceImpl">
-		<priority value="INFO" />
-	</category>
-
-	<category name="com.liferay.portlet.journal.util.JournalContentUtil">
-		<priority value="ERROR" />
-	</category>
-
-	<category name="com.liferay.portlet.journal.util.JournalUtil">
-		<priority value="ERROR" />
-	</category>
-
-	<category name="com.liferay.portlet.journal.util.PropertiesTransformerListener">
-		<priority value="WARN" />
-	</category>
-
-	<category name="com.liferay.portlet.journal.util.RegexTransformerUtil">
-		<priority value="INFO" />
-	</category>
-
 	<category name="com.liferay.portlet.mail">
 		<priority value="WARN" />
-	</category>
-
-	<category name="com.liferay.portlet.messageboards.pop.MessageListenerImpl">
-		<priority value="ERROR" />
 	</category>
 
 	<category name="com.liferay.portlet.messageboards.service.impl.MBCategoryLocalServiceImpl">
@@ -1200,10 +1156,6 @@
 		<priority value="ERROR" />
 	</category>
 
-	<category name="org.apache.jackrabbit">
-		<priority value="ERROR" />
-	</category>
-
 	<category name="org.apache.pdfbox">
 		<priority value="ERROR" />
 	</category>
@@ -1241,10 +1193,6 @@
 	</category>
 
 	<category name="org.jabsorb">
-		<priority value="ERROR" />
-	</category>
-
-	<category name="org.jamwiki.Environment">
 		<priority value="ERROR" />
 	</category>
 

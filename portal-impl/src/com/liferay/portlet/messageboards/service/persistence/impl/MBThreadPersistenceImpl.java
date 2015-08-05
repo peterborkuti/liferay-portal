@@ -24,7 +24,6 @@ import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
-import com.liferay.portal.kernel.lar.ExportImportThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -12533,8 +12532,8 @@ public class MBThreadPersistenceImpl extends BasePersistenceImpl<MBThread>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(MBThread mbThread) {
-		if (mbThread.isNew()) {
+	protected void cacheUniqueFindersCache(MBThread mbThread, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					mbThread.getUuid(), mbThread.getGroupId()
 				};
@@ -12731,27 +12730,25 @@ public class MBThreadPersistenceImpl extends BasePersistenceImpl<MBThread>
 			mbThread.setUuid(uuid);
 		}
 
-		if (!ExportImportThreadLocal.isImportInProcess()) {
-			ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
+		ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
 
-			Date now = new Date();
+		Date now = new Date();
 
-			if (isNew && (mbThread.getCreateDate() == null)) {
-				if (serviceContext == null) {
-					mbThread.setCreateDate(now);
-				}
-				else {
-					mbThread.setCreateDate(serviceContext.getCreateDate(now));
-				}
+		if (isNew && (mbThread.getCreateDate() == null)) {
+			if (serviceContext == null) {
+				mbThread.setCreateDate(now);
 			}
+			else {
+				mbThread.setCreateDate(serviceContext.getCreateDate(now));
+			}
+		}
 
-			if (!mbThreadModelImpl.hasSetModifiedDate()) {
-				if (serviceContext == null) {
-					mbThread.setModifiedDate(now);
-				}
-				else {
-					mbThread.setModifiedDate(serviceContext.getModifiedDate(now));
-				}
+		if (!mbThreadModelImpl.hasSetModifiedDate()) {
+			if (serviceContext == null) {
+				mbThread.setModifiedDate(now);
+			}
+			else {
+				mbThread.setModifiedDate(serviceContext.getModifiedDate(now));
 			}
 		}
 
@@ -12971,7 +12968,7 @@ public class MBThreadPersistenceImpl extends BasePersistenceImpl<MBThread>
 			MBThreadImpl.class, mbThread.getPrimaryKey(), mbThread, false);
 
 		clearUniqueFindersCache(mbThread);
-		cacheUniqueFindersCache(mbThread);
+		cacheUniqueFindersCache(mbThread, isNew);
 
 		mbThread.resetOriginalValues();
 
@@ -13005,6 +13002,7 @@ public class MBThreadPersistenceImpl extends BasePersistenceImpl<MBThread>
 		mbThreadImpl.setLastPostDate(mbThread.getLastPostDate());
 		mbThreadImpl.setPriority(mbThread.getPriority());
 		mbThreadImpl.setQuestion(mbThread.isQuestion());
+		mbThreadImpl.setLastPublishDate(mbThread.getLastPublishDate());
 		mbThreadImpl.setStatus(mbThread.getStatus());
 		mbThreadImpl.setStatusByUserId(mbThread.getStatusByUserId());
 		mbThreadImpl.setStatusByUserName(mbThread.getStatusByUserName());
@@ -13368,6 +13366,11 @@ public class MBThreadPersistenceImpl extends BasePersistenceImpl<MBThread>
 	@Override
 	protected Set<String> getBadColumnNames() {
 		return _badColumnNames;
+	}
+
+	@Override
+	protected Map<String, Integer> getTableColumnsMap() {
+		return MBThreadModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

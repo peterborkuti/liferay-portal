@@ -24,7 +24,6 @@ import com.liferay.portal.kernel.dao.orm.Query;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
-import com.liferay.portal.kernel.lar.ExportImportThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -2269,8 +2268,9 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 		}
 	}
 
-	protected void cacheUniqueFindersCache(RepositoryEntry repositoryEntry) {
-		if (repositoryEntry.isNew()) {
+	protected void cacheUniqueFindersCache(RepositoryEntry repositoryEntry,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					repositoryEntry.getUuid(), repositoryEntry.getGroupId()
 				};
@@ -2479,29 +2479,26 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 			repositoryEntry.setUuid(uuid);
 		}
 
-		if (!ExportImportThreadLocal.isImportInProcess()) {
-			ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
+		ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
 
-			Date now = new Date();
+		Date now = new Date();
 
-			if (isNew && (repositoryEntry.getCreateDate() == null)) {
-				if (serviceContext == null) {
-					repositoryEntry.setCreateDate(now);
-				}
-				else {
-					repositoryEntry.setCreateDate(serviceContext.getCreateDate(
-							now));
-				}
+		if (isNew && (repositoryEntry.getCreateDate() == null)) {
+			if (serviceContext == null) {
+				repositoryEntry.setCreateDate(now);
 			}
+			else {
+				repositoryEntry.setCreateDate(serviceContext.getCreateDate(now));
+			}
+		}
 
-			if (!repositoryEntryModelImpl.hasSetModifiedDate()) {
-				if (serviceContext == null) {
-					repositoryEntry.setModifiedDate(now);
-				}
-				else {
-					repositoryEntry.setModifiedDate(serviceContext.getModifiedDate(
-							now));
-				}
+		if (!repositoryEntryModelImpl.hasSetModifiedDate()) {
+			if (serviceContext == null) {
+				repositoryEntry.setModifiedDate(now);
+			}
+			else {
+				repositoryEntry.setModifiedDate(serviceContext.getModifiedDate(
+						now));
 			}
 		}
 
@@ -2596,7 +2593,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 			repositoryEntry, false);
 
 		clearUniqueFindersCache(repositoryEntry);
-		cacheUniqueFindersCache(repositoryEntry);
+		cacheUniqueFindersCache(repositoryEntry, isNew);
 
 		repositoryEntry.resetOriginalValues();
 
@@ -2625,6 +2622,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 		repositoryEntryImpl.setRepositoryId(repositoryEntry.getRepositoryId());
 		repositoryEntryImpl.setMappedId(repositoryEntry.getMappedId());
 		repositoryEntryImpl.setManualCheckInRequired(repositoryEntry.isManualCheckInRequired());
+		repositoryEntryImpl.setLastPublishDate(repositoryEntry.getLastPublishDate());
 
 		return repositoryEntryImpl;
 	}
@@ -2986,6 +2984,11 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 	@Override
 	protected Set<String> getBadColumnNames() {
 		return _badColumnNames;
+	}
+
+	@Override
+	protected Map<String, Integer> getTableColumnsMap() {
+		return RepositoryEntryModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

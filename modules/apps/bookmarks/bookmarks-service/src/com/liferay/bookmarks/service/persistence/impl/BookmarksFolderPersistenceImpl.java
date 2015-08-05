@@ -29,7 +29,6 @@ import com.liferay.portal.kernel.dao.orm.Query;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
-import com.liferay.portal.kernel.lar.ExportImportThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -6826,8 +6825,9 @@ public class BookmarksFolderPersistenceImpl extends BasePersistenceImpl<Bookmark
 		}
 	}
 
-	protected void cacheUniqueFindersCache(BookmarksFolder bookmarksFolder) {
-		if (bookmarksFolder.isNew()) {
+	protected void cacheUniqueFindersCache(BookmarksFolder bookmarksFolder,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					bookmarksFolder.getUuid(), bookmarksFolder.getGroupId()
 				};
@@ -6994,29 +6994,26 @@ public class BookmarksFolderPersistenceImpl extends BasePersistenceImpl<Bookmark
 			bookmarksFolder.setUuid(uuid);
 		}
 
-		if (!ExportImportThreadLocal.isImportInProcess()) {
-			ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
+		ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
 
-			Date now = new Date();
+		Date now = new Date();
 
-			if (isNew && (bookmarksFolder.getCreateDate() == null)) {
-				if (serviceContext == null) {
-					bookmarksFolder.setCreateDate(now);
-				}
-				else {
-					bookmarksFolder.setCreateDate(serviceContext.getCreateDate(
-							now));
-				}
+		if (isNew && (bookmarksFolder.getCreateDate() == null)) {
+			if (serviceContext == null) {
+				bookmarksFolder.setCreateDate(now);
 			}
+			else {
+				bookmarksFolder.setCreateDate(serviceContext.getCreateDate(now));
+			}
+		}
 
-			if (!bookmarksFolderModelImpl.hasSetModifiedDate()) {
-				if (serviceContext == null) {
-					bookmarksFolder.setModifiedDate(now);
-				}
-				else {
-					bookmarksFolder.setModifiedDate(serviceContext.getModifiedDate(
-							now));
-				}
+		if (!bookmarksFolderModelImpl.hasSetModifiedDate()) {
+			if (serviceContext == null) {
+				bookmarksFolder.setModifiedDate(now);
+			}
+			else {
+				bookmarksFolder.setModifiedDate(serviceContext.getModifiedDate(
+						now));
 			}
 		}
 
@@ -7193,7 +7190,7 @@ public class BookmarksFolderPersistenceImpl extends BasePersistenceImpl<Bookmark
 			bookmarksFolder, false);
 
 		clearUniqueFindersCache(bookmarksFolder);
-		cacheUniqueFindersCache(bookmarksFolder);
+		cacheUniqueFindersCache(bookmarksFolder, isNew);
 
 		bookmarksFolder.resetOriginalValues();
 
@@ -7223,6 +7220,7 @@ public class BookmarksFolderPersistenceImpl extends BasePersistenceImpl<Bookmark
 		bookmarksFolderImpl.setTreePath(bookmarksFolder.getTreePath());
 		bookmarksFolderImpl.setName(bookmarksFolder.getName());
 		bookmarksFolderImpl.setDescription(bookmarksFolder.getDescription());
+		bookmarksFolderImpl.setLastPublishDate(bookmarksFolder.getLastPublishDate());
 		bookmarksFolderImpl.setStatus(bookmarksFolder.getStatus());
 		bookmarksFolderImpl.setStatusByUserId(bookmarksFolder.getStatusByUserId());
 		bookmarksFolderImpl.setStatusByUserName(bookmarksFolder.getStatusByUserName());
@@ -7588,6 +7586,11 @@ public class BookmarksFolderPersistenceImpl extends BasePersistenceImpl<Bookmark
 	@Override
 	protected Set<String> getBadColumnNames() {
 		return _badColumnNames;
+	}
+
+	@Override
+	protected Map<String, Integer> getTableColumnsMap() {
+		return BookmarksFolderModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

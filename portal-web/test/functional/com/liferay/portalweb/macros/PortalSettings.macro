@@ -1,4 +1,10 @@
 <definition>
+	<command name="_saveDisplaySettings">
+		<execute function="AssertClick" locator1="CPPortalsettingsDisplaysettings#SAVE_BUTTON" value1="Save" />
+
+		<execute function="AssertTextEquals" locator1="CPPortalsettingsDisplaysettings#SUCCESS_MESSAGE" value1="Your request completed successfully." />
+	</command>
+
 	<command name="configureContentSharingAcrossSitesCP">
 		<execute function="AssertClick" locator1="CPPortalsettings#MENU_CONFIGURATION_CONTENT_SHARING" value1="Content Sharing" />
 
@@ -91,6 +97,14 @@
 		<execute function="AssertTextEquals" locator1="CPPortalsettingsDisplaysettings#SUCCESS_MESSAGE" value1="Your request completed successfully." />
 	</command>
 
+	<command name="configureTimeZone">
+		<execute function="AssertClick" locator1="CPPortalsettings#MENU_MISCELLANEOUS_DISPLAY_SETTINGS" value1="Display Settings" />
+
+		<execute function="Select" locator1="CPSitesettingsDisplaysettings#TIME_ZONE_SELECT" value1="${timeZone}" />
+
+		<execute macro="PortalSettings#_saveDisplaySettings" />
+	</command>
+
 	<command name="disableLDAPCP">
 		<execute function="AssertClick" locator1="CPPortalsettings#MENU_CONFIGURATION_AUTHENTICATION" value1="Authentication" />
 
@@ -150,6 +164,14 @@
 		<execute function="AssertTextEquals" locator1="CPPortalsettingsAuthentication#SUCCESS_MESSAGE" value1="Your request completed successfully." />
 	</command>
 
+	<command name="editConfigurationAuthenticationGoogle">
+		<execute function="Check" locator1="Checkbox#ENABLE_GOOGLE_AUTHENTICATION" />
+
+		<execute function="Type" locator1="TextInput#GOOGLE_CLIENT_ID" value1="${googleClientID}" />
+
+		<execute function="Type" locator1="TextInput#GOOGLE_CLIENT_SECRET" value1="${googleClientSecret}" />
+	</command>
+
 	<command name="editConfigurationUsersDefaultUserAssociationsOrganizationSitesCP">
 		<execute function="AssertClick" locator1="CPPortalsettings#MENU_CONFIGURATION_USERS" value1="Users" />
 
@@ -202,7 +224,7 @@
 		<execute function="AssertClick" locator1="CPPortalsettings#MENU_CONFIGURATION_EMAIL_NOTIFICATIONS" value1="Email Notifications" />
 
 		<execute function="AssertClick" locator1="CPPortalsettingsEmailNotifications#NAVIGATION_ACCOUNT_CREATED_NOTIFICATION" value1="Account Created Notification" />
-		<execute function="Type#typeFrame" locator1="CPPortalsettingsEmailNotifications#EMAIL_NOTIFICATIONS_ACCOUNT_CREATED_NOTIFICATION_BODY_WITH_PASSWORD" value1="[$USER_PASSWORD$]" />
+		<execute function="Type#typeCKEditor" locator1="CPPortalsettingsEmailNotifications#EMAIL_NOTIFICATIONS_ACCOUNT_CREATED_NOTIFICATION_BODY_WITH_PASSWORD" value1="[$USER_PASSWORD$]" />
 		<execute function="AssertClick" locator1="CPPortalsettingsEmailNotifications#SAVE_BUTTON" value1="Save" />
 		<execute function="AssertTextEquals" locator1="CPPortalsettingsEmailNotifications#SUCCESS_MESSAGE" value1="Your request completed successfully." />
 	</command>
@@ -215,10 +237,10 @@
 		<if>
 			<equals arg1="${emailVerificationURL}" arg2="true" />
 			<then>
-				<execute function="Type#typeFrame" locator1="CPPortalsettingsEmailNotifications#NAVIGATION_EMAIL_VERIFICATiON_NOTIFICATION_BODY" value1="[$EMAIL_VERIFICATION_URL$]" />
+				<execute function="Type#typeCKEditor" locator1="CPPortalsettingsEmailNotifications#NAVIGATION_EMAIL_VERIFICATiON_NOTIFICATION_BODY" value1="[$EMAIL_VERIFICATION_URL$]" />
 			</then>
 			<else>
-				<execute function="Type#typeFrame" locator1="CPPortalsettingsEmailNotifications#NAVIGATION_EMAIL_VERIFICATiON_NOTIFICATION_BODY" value1="[$EMAIL_VERIFICATION_CODE$]" />
+				<execute function="Type#typeCKEditor" locator1="CPPortalsettingsEmailNotifications#NAVIGATION_EMAIL_VERIFICATiON_NOTIFICATION_BODY" value1="[$EMAIL_VERIFICATION_CODE$]" />
 			</else>
 		</if>
 

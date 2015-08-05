@@ -24,6 +24,7 @@ import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.settings.LocalizedValuesMap;
 import com.liferay.portal.kernel.settings.Settings;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.ClassLoaderUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -367,6 +368,23 @@ public class LocalizationImpl implements Localization {
 		PortletPreferences preferences, String preferenceName,
 		String propertyName) {
 
+		String defaultPropertyValue = null;
+
+		if (propertyName != null) {
+			defaultPropertyValue = PropsUtil.get(propertyName);
+		}
+
+		return getLocalizationMap(
+			preferences, preferenceName, propertyName, defaultPropertyValue,
+			getClass().getClassLoader());
+	}
+
+	@Override
+	public Map<Locale, String> getLocalizationMap(
+		PortletPreferences preferences, String preferenceName,
+		String propertyName, String defaultPropertyValue,
+		ClassLoader classLoader) {
+
 		Map<Locale, String> map = new HashMap<>();
 
 		for (Locale locale : LanguageUtil.getAvailableLocales()) {
@@ -390,7 +408,8 @@ public class LocalizationImpl implements Localization {
 			return map;
 		}
 
-		map.put(defaultLocale, ContentUtil.get(PropsUtil.get(propertyName)));
+		map.put(
+			defaultLocale, ContentUtil.get(classLoader, defaultPropertyValue));
 
 		return map;
 	}

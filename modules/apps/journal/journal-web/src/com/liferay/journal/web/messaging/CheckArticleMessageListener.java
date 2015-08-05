@@ -14,15 +14,17 @@
 
 package com.liferay.journal.web.messaging;
 
+import com.liferay.journal.constants.JournalPortletKeys;
+import com.liferay.journal.service.JournalArticleLocalServiceUtil;
+import com.liferay.journal.upgrade.JournalServiceUpgrade;
 import com.liferay.journal.web.configuration.JournalWebConfigurationValues;
-import com.liferay.journal.web.constants.JournalPortletKeys;
-import com.liferay.journal.web.portlet.JournalPortlet;
 import com.liferay.portal.kernel.messaging.BaseSchedulerEntryMessageListener;
 import com.liferay.portal.kernel.messaging.Message;
+import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
 import com.liferay.portal.kernel.scheduler.SchedulerEntry;
 import com.liferay.portal.kernel.scheduler.TimeUnit;
 import com.liferay.portal.kernel.scheduler.TriggerType;
-import com.liferay.portlet.journal.service.JournalArticleLocalServiceUtil;
+import com.liferay.portal.model.Portlet;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -54,7 +56,19 @@ public class CheckArticleMessageListener
 	}
 
 	@Reference
-	protected void setJournalPortlet(JournalPortlet journalPortlet) {
+	protected void setJournalServiceUpgrade(
+		JournalServiceUpgrade journalServiceUpgrade) {
+	}
+
+	@Reference(target = ModuleServiceLifecycle.PORTAL_INITIALIZED, unbind = "-")
+	protected void setModuleServiceLifecycle(
+		ModuleServiceLifecycle moduleServiceLifecycle) {
+	}
+
+	@Reference(
+		target = "(javax.portlet.name=" + JournalPortletKeys.JOURNAL + ")"
+	)
+	protected void setPortlet(Portlet portlet) {
 	}
 
 }

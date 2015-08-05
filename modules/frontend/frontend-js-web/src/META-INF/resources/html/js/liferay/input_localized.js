@@ -7,8 +7,6 @@ AUI.add(
 
 		var AObject = A.Object;
 
-		var REGEX_DELIMITER_NS = /_/g;
-
 		var SELECTOR_LANG_VALUE = '.language-value';
 
 		var STR_BLANK = '';
@@ -69,7 +67,7 @@ AUI.add(
 					},
 
 					itemsError: {
-						validator: Lang.isArray
+						validator: Array.isArray
 					},
 
 					name: {
@@ -84,20 +82,15 @@ AUI.add(
 						valueFn: function() {
 							var instance = this;
 
-							var items = instance.get(STR_ITEMS);
-
 							var itemsError = instance.get(STR_ITEMS_ERROR);
 
-							var selectedIndex;
+							var itemIndex = instance.get('defaultLanguageId');
 
 							if (itemsError.length) {
-								selectedIndex = AArray.indexOf(items, itemsError[0]);
-							}
-							else {
-								selectedIndex = AArray.indexOf(items, instance.get('defaultLanguageId'));
+								itemIndex = itemsError[0];
 							}
 
-							return selectedIndex;
+							return instance.get(STR_ITEMS).indexOf(itemIndex);
 						}
 					},
 
@@ -127,7 +120,7 @@ AUI.add(
 					INPUT_HIDDEN_TEMPLATE: '<input id="{namespace}{id}_{value}" name="{namespace}{fieldNamePrefix}{name}_{value}{fieldNameSuffix}" type="hidden" value="" />',
 
 					ITEM_TEMPLATE: '<li class="palette-item {selectedClassName}" data-column={column} data-index={index} data-row={row} data-value="{value}">' +
-						'<a href="" class="palette-item-inner" onclick="return false;">' +
+						'<a class="palette-item-inner" href="" onclick="return false;">' +
 							'<img class="lfr-input-localized-flag" data-languageId="{value}" src="' + themeDisplay.getPathThemeImages() + '/language/{value}.png" />' +
 							'<div class="lfr-input-localized-state {stateClass}"></div>' +
 						'</a>' +
@@ -235,8 +228,8 @@ AUI.add(
 
 						var selectedLanguageId = instance.getSelectedLanguageId();
 
-						var inputLanguage = instance._getInputLanguage(selectedLanguageId);
 						var defaultInputLanguage = instance._getInputLanguage(defaultLanguageId);
+						var inputLanguage = instance._getInputLanguage(selectedLanguageId);
 
 						instance.activateFlags();
 
@@ -361,7 +354,9 @@ AUI.add(
 									container: boundingBox,
 									formatter: function(title) {
 										var flagNode = this.get('trigger');
+
 										var value = flagNode.getData('value');
+
 										var formattedValue = availableLanguages[value];
 
 										if (value === defaultLanguageId) {
@@ -459,7 +454,7 @@ AUI.add(
 									index: index,
 									row: row,
 									selectedClassName: selected ? 'palette-item-selected' : STR_BLANK,
-									stateClass: AArray.indexOf(itemsError, item) >= 0 ? 'lfr-input-localized-state-error' : STR_BLANK,
+									stateClass: itemsError.indexOf(item) >= 0 ? 'lfr-input-localized-state-error' : STR_BLANK,
 									value: Lang.isObject(item) ? item.value : item
 								}
 							);
@@ -528,12 +523,12 @@ AUI.add(
 						if (languageId) {
 							var items = inputLocalized.get(STR_ITEMS);
 
-							var languageIndex = AArray.indexOf(items, languageId);
+							var languageIndex = items.indexOf(languageId);
 
 							if (languageIndex === -1) {
 								languageId = defaultLanguageId;
 
-								languageIndex = AArray.indexOf(items, languageId);
+								languageIndex = items.indexOf(languageId);
 							}
 
 							inputLocalized.set(STR_SELECTED, languageIndex);
@@ -566,7 +561,7 @@ AUI.add(
 
 					var currentTarget = event.currentTarget;
 
-					InputLocalized._initializeInputLocalized(event, currentTarget, userLanguageId);
+					InputLocalized._initializeInputLocalized(event, currentTarget);
 				},
 
 				_registerConfiguration: function(id, config) {
@@ -594,10 +589,12 @@ AUI.add(
 		Liferay.on(
 			'destroyPortlet',
 			function(event) {
+				var portletNamespace = '_' + event.portletId + '_';
+
 				AObject.each(
 					Liferay.InputLocalized._instances,
 					function(item, index) {
-						if (item.get('namespace').replace(REGEX_DELIMITER_NS, STR_BLANK) === event.portletId) {
+						if (item.get('namespace') === portletNamespace) {
 							item.destroy();
 						}
 					}
@@ -606,7 +603,7 @@ AUI.add(
 				AObject.each(
 					Liferay.InputLocalized._registered,
 					function(item, index) {
-						if (item.namespace.replace(REGEX_DELIMITER_NS, STR_BLANK) === event.portletId) {
+						if (item.namespace === portletNamespace) {
 							Liferay.InputLocalized.unregister(index);
 						}
 					}

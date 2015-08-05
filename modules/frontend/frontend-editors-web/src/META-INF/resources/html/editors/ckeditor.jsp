@@ -17,50 +17,17 @@
 <%@ include file="/html/editors/init.jsp" %>
 
 <%
-LiferayPortletResponse liferayPortletResponse = (LiferayPortletResponse)portletResponse;
-
 String portletId = portletDisplay.getRootPortletId();
 
-String mainPath = themeDisplay.getPathMain();
-
-String doAsUserId = themeDisplay.getDoAsUserId();
-
-if (Validator.isNull(doAsUserId)) {
-	doAsUserId = Encryptor.encrypt(company.getKeyObj(), String.valueOf(themeDisplay.getUserId()));
-}
-
-long doAsGroupId = themeDisplay.getDoAsGroupId();
-
-String ckEditorConfigFileName = ParamUtil.getString(request, "ckEditorConfigFileName");
-
-if (!_ckEditorConfigFileNames.contains(ckEditorConfigFileName)) {
-	ckEditorConfigFileName = "ckconfig.jsp";
-}
-
-boolean useCustomDataProcessor = false;
-
-if (!ckEditorConfigFileName.equals("ckconfig.jsp")) {
-	useCustomDataProcessor = true;
-}
-
-boolean hideImageResizing = ParamUtil.getBoolean(request, "hideImageResizing");
-
-boolean allowBrowseDocuments = GetterUtil.getBoolean((String)request.getAttribute("liferay-ui:input-editor:allowBrowseDocuments"));
 boolean autoCreate = GetterUtil.getBoolean((String)request.getAttribute("liferay-ui:input-editor:autoCreate"));
-Map<String, String> configParamsMap = (Map<String, String>)request.getAttribute("liferay-ui:input-editor:configParams");
-Map<String, String> fileBrowserParamsMap = (Map<String, String>)request.getAttribute("liferay-ui:input-editor:fileBrowserParams");
-
-String configParams = marshallParams(configParamsMap);
-
 String contents = (String)request.getAttribute("liferay-ui:input-editor:contents");
-String contentsLanguageId = (String)request.getAttribute("liferay-ui:input-editor:contentsLanguageId");
 String cssClass = GetterUtil.getString((String)request.getAttribute("liferay-ui:input-editor:cssClass"));
-String cssClasses = GetterUtil.getString((String)request.getAttribute("liferay-ui:input-editor:cssClasses"));
+Map<String, Object> data = (Map<String, Object>)request.getAttribute("liferay-ui:input-editor:data");
 String editorName = (String)request.getAttribute("liferay-ui:input-editor:editorName");
-String name = GetterUtil.getString((String)request.getAttribute("liferay-ui:input-editor:name"));
 String initMethod = (String)request.getAttribute("liferay-ui:input-editor:initMethod");
 boolean inlineEdit = GetterUtil.getBoolean((String)request.getAttribute("liferay-ui:input-editor:inlineEdit"));
 String inlineEditSaveURL = GetterUtil.getString((String)request.getAttribute("liferay-ui:input-editor:inlineEditSaveURL"));
+String name = GetterUtil.getString((String)request.getAttribute("liferay-ui:input-editor:name"));
 
 String onBlurMethod = (String)request.getAttribute("liferay-ui:input-editor:onBlurMethod");
 
@@ -86,29 +53,31 @@ if (Validator.isNotNull(onInitMethod)) {
 	onInitMethod = namespace + onInitMethod;
 }
 
-boolean resizable = GetterUtil.getBoolean((String)request.getAttribute("liferay-ui:input-editor:resizable"));
-boolean showSource = GetterUtil.getBoolean((String)request.getAttribute("liferay-ui:input-editor:showSource"));
 boolean skipEditorLoading = GetterUtil.getBoolean((String)request.getAttribute("liferay-ui:input-editor:skipEditorLoading"));
 String toolbarSet = (String)request.getAttribute("liferay-ui:input-editor:toolbarSet");
 
 if (!inlineEdit) {
 	name = namespace + name;
 }
+
+JSONObject editorConfigJSONObject = null;
+
+if (data != null) {
+	editorConfigJSONObject = (JSONObject)data.get("editorConfig");
+}
+
+EditorOptions editorOptions = null;
+
+if (data != null) {
+	editorOptions = (EditorOptions)data.get("editorOptions");
+}
+
+Map<String, Object> editorOptionsDynamicAttributes = null;
+
+if (editorOptions != null) {
+	editorOptionsDynamicAttributes = editorOptions.getDynamicAttributes();
+}
 %>
-
-<c:if test="<%= hideImageResizing %>">
-	<liferay-util:html-top outputKey="js_editor_ckeditor_hide_image_resizing">
-		<style type="text/css">
-			a.cke_dialog_tab {
-				display: none !important;
-			}
-
-			a.cke_dialog_tab_selected {
-				display: block !important;
-			}
-		</style>
-	</liferay-util:html-top>
-</c:if>
 
 <c:if test="<%= !skipEditorLoading %>">
 	<liferay-util:html-top outputKey="js_editor_ckeditor_skip_editor_loading">
@@ -135,8 +104,7 @@ if (!inlineEdit) {
 				AUI().use(
 					'aui-base',
 					function(A) {
-						scripts = A.Array.filter(
-							scripts,
+						scripts = scripts.filter(
 							function(item) {
 								return !A.one('script[src=' + item + ']');
 							}
@@ -432,72 +400,31 @@ if (inlineEdit && Validator.isNotNull(inlineEditSaveURL)) {
 
 		currentToolbarSet = getToolbarSet(initialToolbarSet);
 
-		var filebrowserBrowseUrl = '';
-		var filebrowserImageBrowseUrl = '';
-		var filebrowserImageBrowseLinkUrl = '';
-		var filebrowserFlashBrowseUrl = '';
+		var defaultConfig = {
+			filebrowserBrowseUrl: '',
+			filebrowserFlashBrowseUrl: '',
+			filebrowserImageBrowseLinkUrl: '',
+			filebrowserImageBrowseUrl: '',
+			filebrowserUploadUrl: null,
+			toolbar: currentToolbarSet
+		};
 
-		<c:if test="<%= allowBrowseDocuments %>">
-			<liferay-portlet:renderURL portletName="<%= PortletKeys.ITEM_SELECTOR %>" varImpl="itemSelectorURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
-				<portlet:param name="mvcPath" value="/view.jsp" />
-				<portlet:param name="groupId" value="<%= String.valueOf(scopeGroupId) %>" />
-				<portlet:param name="eventName" value='<%= name + "selectDocument" %>' />
-				<portlet:param name="showGroupsSelector" value="true" />
-			</liferay-portlet:renderURL>
+		var editorConfig = <%= Validator.isNotNull(editorConfigJSONObject) ? editorConfigJSONObject : "{}" %>;
 
-			<%
-			if (fileBrowserParamsMap != null) {
-				for (Map.Entry<String, String> entry : fileBrowserParamsMap.entrySet()) {
-					itemSelectorURL.setParameter(entry.getKey(), entry.getValue());
-				}
-			}
-			%>
+		var config = A.merge(defaultConfig, editorConfig);
 
-			filebrowserBrowseUrl = '<%= itemSelectorURL %>';
-
-			<%
-			PortletURL imageItemSelectorURL = PortletURLUtil.clone(itemSelectorURL, liferayPortletResponse);
-
-			imageItemSelectorURL.setParameter("type", "image");
-			%>
-
-			filebrowserImageBrowseUrl = '<%= imageItemSelectorURL %>';
-			filebrowserImageBrowseLinkUrl = '<%= imageItemSelectorURL %>';
-
-			<%
-			PortletURL flashItemSelectorURL = PortletURLUtil.clone(itemSelectorURL, liferayPortletResponse);
-
-			flashItemSelectorURL.setParameter("type", "flash");
-			%>
-
-			filebrowserFlashBrowseUrl = '<%= flashItemSelectorURL %>';
-		</c:if>
-
-		CKEDITOR.<%= inlineEdit ? "inline" : "replace" %>(
-			'<%= name %>',
-			{
-				customConfig: '<%= themeDisplay.getPathEditors() %>/editors/ckeditor/<%= HtmlUtil.escapeJS(ckEditorConfigFileName) %>?p_p_id=<%= HttpUtil.encodeURL(portletId) %>&p_main_path=<%= HttpUtil.encodeURL(mainPath) %>&contentsLanguageId=<%= HttpUtil.encodeURL(contentsLanguageId) %>&colorSchemeCssClass=<%= HttpUtil.encodeURL(themeDisplay.getColorScheme().getCssClass()) %>&cssClasses=<%= HttpUtil.encodeURL(cssClasses) %>&cssPath=<%= HttpUtil.encodeURL(themeDisplay.getPathThemeCss()) %>&doAsGroupId=<%= HttpUtil.encodeURL(String.valueOf(doAsGroupId)) %>&doAsUserId=<%= HttpUtil.encodeURL(doAsUserId) %>&imagesPath=<%= HttpUtil.encodeURL(themeDisplay.getPathThemeImages()) %>&inlineEdit=<%= inlineEdit %><%= configParams %>&languageId=<%= HttpUtil.encodeURL(LocaleUtil.toLanguageId(locale)) %>&name=<%= name %>&resizable=<%= resizable %>&showSource=<%= showSource %>',
-				filebrowserBrowseUrl: filebrowserBrowseUrl,
-				filebrowserFlashBrowseUrl: filebrowserFlashBrowseUrl,
-				filebrowserImageBrowseLinkUrl: filebrowserImageBrowseLinkUrl,
-				filebrowserImageBrowseUrl: filebrowserImageBrowseUrl,
-				filebrowserUploadUrl: null,
-				toolbar: currentToolbarSet
-			}
-		);
+		CKEDITOR.<%= inlineEdit ? "inline" : "replace" %>('<%= name %>', config);
 
 		Liferay.on(
-			'<%= name %>selectDocument',
+			'<%= name %>selectItem',
 			function(event) {
-				CKEDITOR.tools.callFunction(event.ckeditorfuncnum, event.url);
+				CKEDITOR.tools.callFunction(event.ckeditorfuncnum, event.value);
 			}
 		);
 
-		if (window['<%= name %>Config']) {
-			window['<%= name %>Config']();
-		}
-
 		var ckEditor = CKEDITOR.instances['<%= name %>'];
+
+		<liferay-util:dynamic-include key='<%= "com.liferay.frontend.editors.web#" + editorName + "#onEditorCreate" %>' />
 
 		<c:if test="<%= inlineEdit && (Validator.isNotNull(inlineEditSaveURL)) %>">
 			inlineEditor = new Liferay.CKEditorInline(
@@ -511,6 +438,10 @@ if (inlineEdit && Validator.isNotNull(inlineEditSaveURL)) {
 		</c:if>
 
 		var customDataProcessorLoaded = false;
+
+		<%
+		boolean useCustomDataProcessor = (editorOptionsDynamicAttributes != null) && GetterUtil.getBoolean(editorOptionsDynamicAttributes.get("useCustomDataProcessor"));
+		%>
 
 		<c:if test="<%= useCustomDataProcessor %>">
 			ckEditor.on(
@@ -603,70 +534,6 @@ if (inlineEdit && Validator.isNotNull(inlineEditSaveURL)) {
 		);
 
 		ckEditor.on('dataReady', window['<%= name %>']._setStyles);
-
-		<%
-		if (toolbarSet.equals("creole")) {
-		%>
-
-		window['<%= name %>creoleDialogHandlers'] = function(event) {
-			var A = AUI();
-
-			var MODIFIED = 'modified';
-
-			var SELECTOR_HBOX_FIRST = '.cke_dialog_ui_hbox_first';
-
-			var dialog = event.data.definition.dialog;
-
-			if (dialog.getName() == 'image') {
-				var lockButton = A.one('.cke_btn_locked');
-
-				if (lockButton) {
-					var imageProperties = lockButton.ancestor(SELECTOR_HBOX_FIRST);
-
-					if (imageProperties) {
-						imageProperties.hide();
-					}
-				}
-
-				var imagePreviewBox = A.one('.ImagePreviewBox');
-
-				if (imagePreviewBox) {
-					imagePreviewBox.setStyle('width', 410);
-				}
-			}
-			else if (dialog.getName() == 'cellProperties') {
-				var containerNode = A.one('#' + dialog.getElement('cellType').$.id);
-
-				if (!containerNode.getData(MODIFIED)) {
-					containerNode.one(SELECTOR_HBOX_FIRST).hide();
-
-					containerNode.one('.cke_dialog_ui_hbox_child').hide();
-
-					var cellTypeWrapper = containerNode.one('.cke_dialog_ui_hbox_last');
-
-					cellTypeWrapper.replaceClass('cke_dialog_ui_hbox_last', 'cke_dialog_ui_hbox_first');
-
-					cellTypeWrapper.setStyle('width', '100%');
-
-					cellTypeWrapper.all('tr').each(
-						function(item, index, collection) {
-							if (index > 0) {
-								item.hide();
-							}
-						}
-					);
-
-					containerNode.setData(MODIFIED, true);
-				}
-			}
-		};
-
-		ckEditor.on('dialogShow', window['<%= name %>creoleDialogHandlers']);
-
-		<%
-		}
-		%>
-
 	};
 
 	<%
@@ -731,6 +598,4 @@ public String marshallParams(Map<String, String> params) {
 
 	return sb.toString();
 }
-
-private static Set<String> _ckEditorConfigFileNames = SetUtil.fromArray(new String[] {"ckconfig.jsp", "ckconfig_bbcode.jsp", "ckconfig_creole.jsp"});
 %>

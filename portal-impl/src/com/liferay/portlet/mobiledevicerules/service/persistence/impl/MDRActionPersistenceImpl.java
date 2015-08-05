@@ -23,7 +23,6 @@ import com.liferay.portal.kernel.dao.orm.Query;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
-import com.liferay.portal.kernel.lar.ExportImportThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -1996,8 +1995,8 @@ public class MDRActionPersistenceImpl extends BasePersistenceImpl<MDRAction>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(MDRAction mdrAction) {
-		if (mdrAction.isNew()) {
+	protected void cacheUniqueFindersCache(MDRAction mdrAction, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					mdrAction.getUuid(), mdrAction.getGroupId()
 				};
@@ -2162,28 +2161,25 @@ public class MDRActionPersistenceImpl extends BasePersistenceImpl<MDRAction>
 			mdrAction.setUuid(uuid);
 		}
 
-		if (!ExportImportThreadLocal.isImportInProcess()) {
-			ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
+		ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
 
-			Date now = new Date();
+		Date now = new Date();
 
-			if (isNew && (mdrAction.getCreateDate() == null)) {
-				if (serviceContext == null) {
-					mdrAction.setCreateDate(now);
-				}
-				else {
-					mdrAction.setCreateDate(serviceContext.getCreateDate(now));
-				}
+		if (isNew && (mdrAction.getCreateDate() == null)) {
+			if (serviceContext == null) {
+				mdrAction.setCreateDate(now);
 			}
+			else {
+				mdrAction.setCreateDate(serviceContext.getCreateDate(now));
+			}
+		}
 
-			if (!mdrActionModelImpl.hasSetModifiedDate()) {
-				if (serviceContext == null) {
-					mdrAction.setModifiedDate(now);
-				}
-				else {
-					mdrAction.setModifiedDate(serviceContext.getModifiedDate(
-							now));
-				}
+		if (!mdrActionModelImpl.hasSetModifiedDate()) {
+			if (serviceContext == null) {
+				mdrAction.setModifiedDate(now);
+			}
+			else {
+				mdrAction.setModifiedDate(serviceContext.getModifiedDate(now));
 			}
 		}
 
@@ -2277,7 +2273,7 @@ public class MDRActionPersistenceImpl extends BasePersistenceImpl<MDRAction>
 			MDRActionImpl.class, mdrAction.getPrimaryKey(), mdrAction, false);
 
 		clearUniqueFindersCache(mdrAction);
-		cacheUniqueFindersCache(mdrAction);
+		cacheUniqueFindersCache(mdrAction, isNew);
 
 		mdrAction.resetOriginalValues();
 
@@ -2309,6 +2305,7 @@ public class MDRActionPersistenceImpl extends BasePersistenceImpl<MDRAction>
 		mdrActionImpl.setDescription(mdrAction.getDescription());
 		mdrActionImpl.setType(mdrAction.getType());
 		mdrActionImpl.setTypeSettings(mdrAction.getTypeSettings());
+		mdrActionImpl.setLastPublishDate(mdrAction.getLastPublishDate());
 
 		return mdrActionImpl;
 	}
@@ -2669,6 +2666,11 @@ public class MDRActionPersistenceImpl extends BasePersistenceImpl<MDRAction>
 	@Override
 	protected Set<String> getBadColumnNames() {
 		return _badColumnNames;
+	}
+
+	@Override
+	protected Map<String, Integer> getTableColumnsMap() {
+		return MDRActionModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

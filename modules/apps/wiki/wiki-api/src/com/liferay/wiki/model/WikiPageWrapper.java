@@ -16,9 +16,10 @@ package com.liferay.wiki.model;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.ModelWrapper;
+
+import com.liferay.portlet.exportimport.lar.StagedModelType;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -72,6 +73,7 @@ public class WikiPageWrapper implements WikiPage, ModelWrapper<WikiPage> {
 		attributes.put("head", getHead());
 		attributes.put("parentTitle", getParentTitle());
 		attributes.put("redirectTitle", getRedirectTitle());
+		attributes.put("lastPublishDate", getLastPublishDate());
 		attributes.put("status", getStatus());
 		attributes.put("statusByUserId", getStatusByUserId());
 		attributes.put("statusByUserName", getStatusByUserName());
@@ -194,6 +196,12 @@ public class WikiPageWrapper implements WikiPage, ModelWrapper<WikiPage> {
 
 		if (redirectTitle != null) {
 			setRedirectTitle(redirectTitle);
+		}
+
+		Date lastPublishDate = (Date)attributes.get("lastPublishDate");
+
+		if (lastPublishDate != null) {
+			setLastPublishDate(lastPublishDate);
 		}
 
 		Integer status = (Integer)attributes.get("status");
@@ -387,6 +395,16 @@ public class WikiPageWrapper implements WikiPage, ModelWrapper<WikiPage> {
 	@Override
 	public boolean getHead() {
 		return _wikiPage.getHead();
+	}
+
+	/**
+	* Returns the last publish date of this wiki page.
+	*
+	* @return the last publish date of this wiki page
+	*/
+	@Override
+	public Date getLastPublishDate() {
+		return _wikiPage.getLastPublishDate();
 	}
 
 	/**
@@ -933,6 +951,16 @@ public class WikiPageWrapper implements WikiPage, ModelWrapper<WikiPage> {
 	@Override
 	public void setHead(boolean head) {
 		_wikiPage.setHead(head);
+	}
+
+	/**
+	* Sets the last publish date of this wiki page.
+	*
+	* @param lastPublishDate the last publish date of this wiki page
+	*/
+	@Override
+	public void setLastPublishDate(Date lastPublishDate) {
+		_wikiPage.setLastPublishDate(lastPublishDate);
 	}
 
 	/**

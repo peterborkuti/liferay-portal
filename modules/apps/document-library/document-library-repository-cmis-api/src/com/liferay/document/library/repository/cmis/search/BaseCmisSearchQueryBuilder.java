@@ -30,6 +30,7 @@ import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.TermQuery;
 import com.liferay.portal.kernel.search.TermRangeQuery;
 import com.liferay.portal.kernel.search.WildcardQuery;
+import com.liferay.portal.kernel.search.generic.MatchQuery;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringBundler;
@@ -259,7 +260,7 @@ public class BaseCmisSearchQueryBuilder implements CMISSearchQueryBuilder {
 		if (query instanceof BooleanQuery) {
 			BooleanQuery booleanQuery = (BooleanQuery)query;
 
-			List<BooleanClause> booleanClauses = booleanQuery.clauses();
+			List<BooleanClause<Query>> booleanClauses = booleanQuery.clauses();
 
 			CMISFullTextConjunction anyCMISConjunction =
 				new CMISFullTextConjunction();
@@ -267,7 +268,7 @@ public class BaseCmisSearchQueryBuilder implements CMISSearchQueryBuilder {
 			CMISFullTextConjunction notCMISConjunction =
 				new CMISFullTextConjunction();
 
-			for (BooleanClause booleanClause : booleanClauses) {
+			for (BooleanClause<Query> booleanClause : booleanClauses) {
 				CMISJunction currentCMISJunction = cmisDisjunction;
 
 				BooleanClauseOccur booleanClauseOccur =
@@ -282,7 +283,7 @@ public class BaseCmisSearchQueryBuilder implements CMISSearchQueryBuilder {
 					currentCMISJunction = notCMISConjunction;
 				}
 
-				Query booleanClauseQuery = booleanClause.getQuery();
+				Query booleanClauseQuery = booleanClause.getClause();
 
 				traverseContentQuery(
 					currentCMISJunction, booleanClauseQuery, queryConfig);
@@ -360,13 +361,13 @@ public class BaseCmisSearchQueryBuilder implements CMISSearchQueryBuilder {
 		if (query instanceof BooleanQuery) {
 			BooleanQuery booleanQuery = (BooleanQuery)query;
 
-			List<BooleanClause> booleanClauses = booleanQuery.clauses();
+			List<BooleanClause<Query>> booleanClauses = booleanQuery.clauses();
 
 			CMISConjunction anyCMISConjunction = new CMISConjunction();
 			CMISDisjunction cmisDisjunction = new CMISDisjunction();
 			CMISConjunction notCMISConjunction = new CMISConjunction();
 
-			for (BooleanClause booleanClause : booleanClauses) {
+			for (BooleanClause<Query> booleanClause : booleanClauses) {
 				CMISJunction currentCMISJunction = cmisDisjunction;
 
 				BooleanClauseOccur booleanClauseOccur =
@@ -381,7 +382,7 @@ public class BaseCmisSearchQueryBuilder implements CMISSearchQueryBuilder {
 					currentCMISJunction = notCMISConjunction;
 				}
 
-				Query booleanClauseQuery = booleanClause.getQuery();
+				Query booleanClauseQuery = booleanClause.getClause();
 
 				traversePropertiesQuery(
 					currentCMISJunction, booleanClauseQuery, queryConfig);
@@ -397,6 +398,21 @@ public class BaseCmisSearchQueryBuilder implements CMISSearchQueryBuilder {
 
 			if (!notCMISConjunction.isEmpty()) {
 				cmisJunction.add(new CMISNotExpression(notCMISConjunction));
+			}
+		}
+		else if (query instanceof MatchQuery) {
+			MatchQuery matchQuery = (MatchQuery)query;
+
+			if (!isSupportedField(matchQuery.getField())) {
+				return;
+			}
+
+			CMISCriterion cmisCriterion = buildFieldExpression(
+				matchQuery.getField(), matchQuery.getValue(),
+				CMISSimpleExpressionOperator.EQ, queryConfig);
+
+			if (cmisCriterion != null) {
+				cmisJunction.add(cmisCriterion);
 			}
 		}
 		else if (query instanceof TermQuery) {

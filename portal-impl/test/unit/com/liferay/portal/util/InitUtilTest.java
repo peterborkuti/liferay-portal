@@ -14,6 +14,7 @@
 
 package com.liferay.portal.util;
 
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.SystemProperties;
@@ -42,6 +43,9 @@ public class InitUtilTest {
 		SystemProperties.set(
 			_RESOURCE_ACTIONS_READ_PORTLET_RESOURCES, StringPool.FALSE);
 
+		ReflectionTestUtil.setFieldValue(
+			PropsValues.class, "SPRING_INFRASTRUCTURE_CONFIGS", new String[0]);
+
 		_fileImpl.deltree(PropsValues.MODULE_FRAMEWORK_STATE_DIR);
 
 		try {
@@ -66,6 +70,8 @@ public class InitUtilTest {
 				SystemProperties.set(
 					_LOG4J_CONFIGURE_ON_STARTUP, log4jConfigureOnStartup);
 			}
+
+			InitUtil.stopRuntime();
 
 			InitUtil.stopModuleFramework();
 		}

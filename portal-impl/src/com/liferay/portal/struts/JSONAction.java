@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.security.access.control.AccessControlUtil;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.servlet.ServletContextPool;
 import com.liferay.portal.kernel.util.ClassUtil;
@@ -28,10 +29,7 @@ import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.security.ac.AccessControlUtil;
 import com.liferay.portal.security.auth.AuthTokenUtil;
-import com.liferay.portal.security.auth.PortalSessionAuthVerifier;
-import com.liferay.portal.security.sso.SSOUtil;
 import com.liferay.portal.servlet.SharedSessionServletRequest;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.PropsValues;
@@ -156,13 +154,13 @@ public abstract class JSONAction extends Action {
 			// The new web service should only check auth tokens when the user
 			// is authenticated using portal session cookies
 
-			if (!authType.equals(PortalSessionAuthVerifier.AUTH_TYPE)) {
+			if (!authType.equals(HttpServletRequest.FORM_AUTH)) {
 				return;
 			}
 		}
 
 		if (PropsValues.JSON_SERVICE_AUTH_TOKEN_ENABLED) {
-			if (!SSOUtil.isAccessAllowed(request, _hostsAllowed)) {
+			if (!AccessControlUtil.isAccessAllowed(request, _hostsAllowed)) {
 				AuthTokenUtil.checkCSRFToken(request, getCSRFOrigin(request));
 			}
 		}

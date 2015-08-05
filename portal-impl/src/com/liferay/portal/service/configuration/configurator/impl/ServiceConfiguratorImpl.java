@@ -33,7 +33,6 @@ import com.liferay.portal.service.configuration.configurator.ServiceConfigurator
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceRegistrar;
-import com.liferay.util.log4j.Log4JUtil;
 
 import java.net.URL;
 import java.util.HashMap;
@@ -68,8 +67,6 @@ public class ServiceConfiguratorImpl implements ServiceConfigurator {
 			ClassLoader classLoader)
 		throws Exception {
 
-		initLog4J(classLoader);
-
 		initServiceComponent(serviceComponentConfiguration, classLoader);
 
 		reconfigureCaches(classLoader);
@@ -103,11 +100,6 @@ public class ServiceConfiguratorImpl implements ServiceConfigurator {
 		}
 
 		return classLoader.getResource(cacheConfigurationLocation);
-	}
-
-	protected void initLog4J(ClassLoader classLoader) {
-		Log4JUtil.configureLog4J(
-			classLoader.getResource("META-INF/portal-log4j.xml"));
 	}
 
 	protected void initServiceComponent(
@@ -217,6 +209,17 @@ public class ServiceConfiguratorImpl implements ServiceConfigurator {
 			return;
 		}
 		
+		String singleVMConfigurationLocation = configuration.get(
+			PropsKeys.EHCACHE_SINGLE_VM_CONFIG_LOCATION);
+		String multiVMConfigurationLocation = configuration.get(
+			PropsKeys.EHCACHE_MULTI_VM_CONFIG_LOCATION);
+
+		if (Validator.isNull(singleVMConfigurationLocation) &&
+			Validator.isNull(multiVMConfigurationLocation)) {
+			
+			return;
+		}
+		
 		if (_serviceRegistrar == null) {
 			Registry registry = RegistryUtil.getRegistry();
 
@@ -224,35 +227,31 @@ public class ServiceConfiguratorImpl implements ServiceConfigurator {
 				PortalCacheConfiguratorSettings.class);
 		}
 
-		Map<String, Object> properties = new HashMap<>();
+		if (Validator.isNotNull(singleVMConfigurationLocation)) {
+			Map<String, Object> properties = new HashMap<>();
 
-		properties.put(
-			"portal.cache.manager.name", PortalCacheManagerNames.SINGLE_VM);
+			properties.put(
+				"portal.cache.manager.name", PortalCacheManagerNames.SINGLE_VM);
 
-		PortalCacheConfiguratorSettings
-			singleVMPortalCacheConfigurationSettings =
-			new PortalCacheConfiguratorSettings(
-				classLoader,
-				configuration.get(
-					PropsKeys.EHCACHE_SINGLE_VM_CONFIG_LOCATION));
+			_serviceRegistrar.registerService(
+				PortalCacheConfiguratorSettings.class,
+				new PortalCacheConfiguratorSettings(
+					classLoader, singleVMConfigurationLocation),
+				properties);
+		}
 
-		_serviceRegistrar.registerService(
-			PortalCacheConfiguratorSettings.class,
-			singleVMPortalCacheConfigurationSettings, properties);
-		
-		properties = new HashMap<>();
+		if (Validator.isNotNull(multiVMConfigurationLocation)) {
+			Map<String, Object> properties = new HashMap<>();
 
-		properties.put(
-			"portal.cache.manager.name", PortalCacheManagerNames.MULTI_VM);
-		
-		PortalCacheConfiguratorSettings multiVMPortalCacheConfiguratorSettings =
-			new PortalCacheConfiguratorSettings(
-				classLoader, configuration.get(
-					PropsKeys.EHCACHE_MULTI_VM_CONFIG_LOCATION));
+			properties.put(
+				"portal.cache.manager.name", PortalCacheManagerNames.MULTI_VM);
 
-		_serviceRegistrar.registerService(
-			PortalCacheConfiguratorSettings.class,
-			multiVMPortalCacheConfiguratorSettings, properties);
+			_serviceRegistrar.registerService(
+				PortalCacheConfiguratorSettings.class,
+				new PortalCacheConfiguratorSettings(
+					classLoader, multiVMConfigurationLocation),
+				properties);
+		}
 	}
 
 	private static Log _log = LogFactoryUtil.getLog(

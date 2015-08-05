@@ -25,11 +25,13 @@ import com.liferay.portal.kernel.repository.capabilities.RepositoryEventTriggerC
 import com.liferay.portal.kernel.repository.event.RepositoryEventTrigger;
 import com.liferay.portal.kernel.repository.registry.RepositoryDefiner;
 import com.liferay.portal.kernel.repository.registry.RepositoryFactoryRegistry;
-import com.liferay.portal.repository.InitializedDocumentRepository;
+import com.liferay.portal.repository.InitializedLocalRepository;
+import com.liferay.portal.repository.InitializedRepository;
 import com.liferay.portal.repository.capabilities.CapabilityLocalRepository;
 import com.liferay.portal.repository.capabilities.CapabilityRepository;
 import com.liferay.portal.repository.capabilities.ConfigurationCapabilityImpl;
 import com.liferay.portal.repository.capabilities.LiferayRepositoryEventTriggerCapability;
+import com.liferay.portal.repository.capabilities.util.RepositoryServiceAdapter;
 
 import java.util.Locale;
 
@@ -61,11 +63,11 @@ public class RepositoryClassDefinition
 	public LocalRepository createLocalRepository(long repositoryId)
 		throws PortalException {
 
-		InitializedDocumentRepository initializedDocumentRepository =
-			new InitializedDocumentRepository();
+		InitializedLocalRepository initializedLocalRepository =
+			new InitializedLocalRepository();
 
 		DefaultCapabilityRegistry defaultCapabilityRegistry =
-			new DefaultCapabilityRegistry(initializedDocumentRepository);
+			new DefaultCapabilityRegistry(initializedLocalRepository);
 
 		_repositoryDefiner.registerCapabilities(defaultCapabilityRegistry);
 
@@ -73,7 +75,7 @@ public class RepositoryClassDefinition
 			new DefaultRepositoryEventRegistry(_rootRepositoryEventTrigger);
 
 		setUpCommonCapabilities(
-			initializedDocumentRepository, defaultCapabilityRegistry,
+			initializedLocalRepository, defaultCapabilityRegistry,
 			defaultRepositoryEventRegistry);
 
 		defaultCapabilityRegistry.registerCapabilityRepositoryEvents(
@@ -90,7 +92,7 @@ public class RepositoryClassDefinition
 				wrappedLocalRepository, defaultCapabilityRegistry,
 				defaultRepositoryEventRegistry);
 
-		initializedDocumentRepository.setDocumentRepository(
+		initializedLocalRepository.setDocumentRepository(
 			capabilityLocalRepository);
 
 		return capabilityLocalRepository;
@@ -100,11 +102,11 @@ public class RepositoryClassDefinition
 	public Repository createRepository(long repositoryId)
 		throws PortalException {
 
-		InitializedDocumentRepository initializedDocumentRepository =
-			new InitializedDocumentRepository();
+		InitializedRepository initializedRepository =
+			new InitializedRepository();
 
 		DefaultCapabilityRegistry defaultCapabilityRegistry =
-			new DefaultCapabilityRegistry(initializedDocumentRepository);
+			new DefaultCapabilityRegistry(initializedRepository);
 
 		_repositoryDefiner.registerCapabilities(defaultCapabilityRegistry);
 
@@ -112,7 +114,7 @@ public class RepositoryClassDefinition
 			new DefaultRepositoryEventRegistry(_rootRepositoryEventTrigger);
 
 		setUpCommonCapabilities(
-			initializedDocumentRepository, defaultCapabilityRegistry,
+			initializedRepository, defaultCapabilityRegistry,
 			defaultRepositoryEventRegistry);
 
 		Repository repository = _repositoryFactory.createRepository(
@@ -128,8 +130,7 @@ public class RepositoryClassDefinition
 			wrappedRepository, defaultCapabilityRegistry,
 			defaultRepositoryEventRegistry);
 
-		initializedDocumentRepository.setDocumentRepository(
-			capabilityRepository);
+		initializedRepository.setDocumentRepository(capabilityRepository);
 
 		return capabilityRepository;
 	}
@@ -180,7 +181,9 @@ public class RepositoryClassDefinition
 
 			capabilityRegistry.addExportedCapability(
 				ConfigurationCapability.class,
-				new ConfigurationCapabilityImpl(documentRepository));
+				new ConfigurationCapabilityImpl(
+					documentRepository,
+					RepositoryServiceAdapter.create(documentRepository)));
 		}
 
 		if (!capabilityRegistry.isCapabilityProvided(

@@ -16,8 +16,9 @@ package com.liferay.portal.model;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.util.Validator;
+
+import com.liferay.portlet.exportimport.lar.StagedModelType;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -71,6 +72,7 @@ public class OrganizationWrapper implements Organization,
 		attributes.put("statusId", getStatusId());
 		attributes.put("comments", getComments());
 		attributes.put("logoId", getLogoId());
+		attributes.put("lastPublishDate", getLastPublishDate());
 
 		return attributes;
 	}
@@ -184,6 +186,12 @@ public class OrganizationWrapper implements Organization,
 		if (logoId != null) {
 			setLogoId(logoId);
 		}
+
+		Date lastPublishDate = (Date)attributes.get("lastPublishDate");
+
+		if (lastPublishDate != null) {
+			setLastPublishDate(lastPublishDate);
+		}
 	}
 
 	@Override
@@ -287,6 +295,16 @@ public class OrganizationWrapper implements Organization,
 	@Override
 	public long getGroupId() {
 		return _organization.getGroupId();
+	}
+
+	/**
+	* Returns the last publish date of this organization.
+	*
+	* @return the last publish date of this organization
+	*/
+	@Override
+	public Date getLastPublishDate() {
+		return _organization.getLastPublishDate();
 	}
 
 	/**
@@ -627,6 +645,16 @@ public class OrganizationWrapper implements Organization,
 	public void setExpandoBridgeAttributes(
 		com.liferay.portal.service.ServiceContext serviceContext) {
 		_organization.setExpandoBridgeAttributes(serviceContext);
+	}
+
+	/**
+	* Sets the last publish date of this organization.
+	*
+	* @param lastPublishDate the last publish date of this organization
+	*/
+	@Override
+	public void setLastPublishDate(Date lastPublishDate) {
+		_organization.setLastPublishDate(lastPublishDate);
 	}
 
 	/**

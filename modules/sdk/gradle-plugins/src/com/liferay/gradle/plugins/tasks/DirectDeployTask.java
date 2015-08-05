@@ -22,21 +22,15 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.InputDirectory;
-import org.gradle.api.tasks.InputFile;
-
 /**
  * @author Andrea Di Giorgi
  */
 public class DirectDeployTask extends BasePortalImplToolsTask {
 
-	@InputDirectory
 	public File getAppServerDeployDir() {
 		return _appServerDeployDir;
 	}
 
-	@Input
 	public String getAppServerType() {
 		return _appServerType;
 	}
@@ -98,7 +92,8 @@ public class DirectDeployTask extends BasePortalImplToolsTask {
 		}
 
 		if (webAppType.equals("portlet")) {
-			jvmArgs.add("-Ddeployer.aui.taglib.dtd=" + tldPath + "/aui.tld");
+			jvmArgs.add(
+				"-Ddeployer.aui.taglib.dtd=" + tldPath + "/liferay-aui.tld");
 			jvmArgs.add(
 				"-Ddeployer.custom.portlet.xml=" + isCustomPortletXml());
 			jvmArgs.add(
@@ -128,27 +123,22 @@ public class DirectDeployTask extends BasePortalImplToolsTask {
 			webAppType = "layout";
 		}
 
-		return
-			"com.liferay.portal.tools.deploy." +
-				StringUtil.capitalize(webAppType) + "Deployer";
+		return "com.liferay.portal.tools.deploy." +
+			StringUtil.capitalize(webAppType) + "Deployer";
 	}
 
-	@InputFile
 	public File getWebAppFile() {
 		return _webAppFile;
 	}
 
-	@Input
 	public String getWebAppType() {
 		return _webAppType;
 	}
 
-	@Input
 	public boolean isCustomPortletXml() {
 		return _customPortletXml;
 	}
 
-	@Input
 	public boolean isUnpackWar() {
 		return _unpackWar;
 	}

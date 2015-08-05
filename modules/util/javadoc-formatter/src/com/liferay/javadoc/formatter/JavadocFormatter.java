@@ -14,7 +14,6 @@
 
 package com.liferay.javadoc.formatter;
 
-import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.util.CharPool;
@@ -25,9 +24,11 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Tuple;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.tools.ArgumentsUtil;
+import com.liferay.portal.tools.JavaImportsFormatter;
+import com.liferay.portal.tools.ToolsUtil;
 import com.liferay.portal.xml.SAXReaderFactory;
 import com.liferay.util.xml.Dom4jDocUtil;
-import com.liferay.util.xml.XMLFormatter;
+import com.liferay.util.xml.Dom4jUtil;
 import com.liferay.util.xml.XMLSafeReader;
 
 import com.thoughtworks.qdox.JavaDocBuilder;
@@ -44,17 +45,17 @@ import com.thoughtworks.qdox.model.Type;
 import com.thoughtworks.qdox.model.annotation.AnnotationValue;
 import com.thoughtworks.qdox.parser.ParseException;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -68,7 +69,6 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.DirectoryScanner;
 
 import org.dom4j.Document;
@@ -243,8 +243,7 @@ public class JavadocFormatter {
 				javadocsXmlDocument);
 
 			if (!oldJavadocsXmlContent.equals(newJavadocsXmlContent)) {
-				FileUtils.writeStringToFile(
-					javadocsXmlFile, newJavadocsXmlContent);
+				_write(javadocsXmlFile, newJavadocsXmlContent);
 
 				_modifiedFileNames.add(javadocsXmlFile.getAbsolutePath());
 			}
@@ -258,8 +257,7 @@ public class JavadocFormatter {
 			String oldJavadocsRuntimeXmlContent = StringPool.BLANK;
 
 			if (javadocsRuntimeXmlFile.exists()) {
-				oldJavadocsRuntimeXmlContent = FileUtils.readFileToString(
-					javadocsRuntimeXmlFile);
+				oldJavadocsRuntimeXmlContent = _read(javadocsRuntimeXmlFile);
 			}
 
 			String newJavadocsRuntimeXmlContent = _compactString(
@@ -268,8 +266,7 @@ public class JavadocFormatter {
 			if (!oldJavadocsRuntimeXmlContent.equals(
 					newJavadocsRuntimeXmlContent)) {
 
-				FileUtils.writeStringToFile(
-					javadocsRuntimeXmlFile, newJavadocsRuntimeXmlContent);
+				_write(javadocsRuntimeXmlFile, newJavadocsRuntimeXmlContent);
 
 				_modifiedFileNames.add(
 					javadocsRuntimeXmlFile.getAbsolutePath());
@@ -333,12 +330,15 @@ public class JavadocFormatter {
 	}
 
 	private String _addDeprecatedTag(
-		String comment, AbstractBaseJavaEntity abstractBaseJavaEntity,
-		String indent) {
+			String comment, AbstractBaseJavaEntity abstractBaseJavaEntity,
+			String indent)
+		throws Exception {
 
 		if (comment == null) {
 			return null;
 		}
+
+		comment = ToolsUtil.stripFullyQualifiedClassNames(comment, _imports);
 
 		if (!comment.contains("* @deprecated ") ||
 			_hasAnnotation(abstractBaseJavaEntity, "Deprecated")) {
@@ -358,6 +358,8 @@ public class JavadocFormatter {
 
 		for (DocletTag docletTag : docletTags) {
 			String value = docletTag.getValue();
+
+			value = ToolsUtil.stripFullyQualifiedClassNames(value, _imports);
 
 			value = _trimMultilineText(value);
 
@@ -615,8 +617,9 @@ public class JavadocFormatter {
 	}
 
 	private void _addParamElement(
-		Element methodElement, JavaParameter javaParameter,
-		DocletTag[] paramDocletTags) {
+			Element methodElement, JavaParameter javaParameter,
+			DocletTag[] paramDocletTags)
+		throws Exception {
 
 		String name = javaParameter.getName();
 
@@ -643,6 +646,8 @@ public class JavadocFormatter {
 			Dom4jDocUtil.add(paramElement, "required", true);
 		}
 
+		value = ToolsUtil.stripFullyQualifiedClassNames(value, _imports);
+
 		value = _trimMultilineText(value);
 
 		Element commentElement = paramElement.addElement("comment");
@@ -650,8 +655,8 @@ public class JavadocFormatter {
 		commentElement.addCDATA(value);
 	}
 
-	private void _addParamElements(
-		Element methodElement, JavaMethod javaMethod) {
+	private void _addParamElements(Element methodElement, JavaMethod javaMethod)
+		throws Exception {
 
 		JavaParameter[] javaParameters = javaMethod.getParameters();
 
@@ -691,6 +696,8 @@ public class JavadocFormatter {
 			Dom4jDocUtil.add(returnElement, "required", true);
 		}
 
+		comment = ToolsUtil.stripFullyQualifiedClassNames(comment, _imports);
+
 		comment = _trimMultilineText(comment);
 
 		Element commentElement = returnElement.addElement("comment");
@@ -699,8 +706,9 @@ public class JavadocFormatter {
 	}
 
 	private void _addThrowsElement(
-		Element methodElement, Type exceptionType,
-		DocletTag[] throwsDocletTags) {
+			Element methodElement, Type exceptionType,
+			DocletTag[] throwsDocletTags)
+		throws Exception {
 
 		JavaClass javaClass = exceptionType.getJavaClass();
 
@@ -732,6 +740,8 @@ public class JavadocFormatter {
 			Dom4jDocUtil.add(throwsElement, "required", true);
 		}
 
+		value = ToolsUtil.stripFullyQualifiedClassNames(value, _imports);
+
 		value = _trimMultilineText(value);
 
 		Element commentElement = throwsElement.addElement("comment");
@@ -740,7 +750,8 @@ public class JavadocFormatter {
 	}
 
 	private void _addThrowsElements(
-		Element methodElement, JavaMethod javaMethod) {
+			Element methodElement, JavaMethod javaMethod)
+		throws Exception {
 
 		Type[] exceptionTypes = javaMethod.getExceptions();
 
@@ -825,9 +836,9 @@ public class JavadocFormatter {
 	}
 
 	private void _format(String fileName) throws Exception {
-		String originalContent = new String(
-			Files.readAllBytes(Paths.get(_inputDirName + fileName)),
-			StringPool.UTF8);
+		File file = new File(_inputDirName, fileName);
+
+		String originalContent = _read(file);
 
 		if (fileName.contains("modules/third-party") ||
 			fileName.endsWith("Application.java") ||
@@ -839,6 +850,8 @@ public class JavadocFormatter {
 			return;
 		}
 
+		_imports = JavaImportsFormatter.getImports(originalContent);
+
 		JavaClass javaClass = _getJavaClass(
 			fileName, new UnsyncStringReader(originalContent));
 
@@ -849,8 +862,16 @@ public class JavadocFormatter {
 
 		_updateJavadocsXmlFile(fileName, javaClass, document);
 
-		_updateJavaFromDocument(
-			fileName, originalContent, javadocLessContent, document);
+		String newContent = _getUpdateJavaFromDocument(
+			fileName, javadocLessContent, document);
+
+		if (!originalContent.equals(newContent)) {
+			_write(file, newContent);
+
+			_modifiedFileNames.add(file.getAbsolutePath());
+
+			System.out.println("Writing " + file);
+		}
 	}
 
 	private String _formatCDATA(String cdata) {
@@ -901,7 +922,7 @@ public class JavadocFormatter {
 	}
 
 	private String _formattedString(Node node) throws IOException {
-		return XMLFormatter.toString(node);
+		return Dom4jUtil.toString(node);
 	}
 
 	private String _getCDATA(AbstractJavaEntity abstractJavaEntity) {
@@ -1101,7 +1122,8 @@ public class JavadocFormatter {
 	}
 
 	private String _getJavaClassComment(
-		Element rootElement, JavaClass javaClass) {
+			Element rootElement, JavaClass javaClass)
+		throws Exception {
 
 		StringBundler sb = new StringBundler();
 
@@ -1112,6 +1134,9 @@ public class JavadocFormatter {
 		String comment = rootElement.elementText("comment");
 
 		if (Validator.isNotNull(comment)) {
+			comment = ToolsUtil.stripFullyQualifiedClassNames(
+				comment, _imports);
+
 			sb.append(_wrapText(comment, indent + " * "));
 		}
 
@@ -1252,18 +1277,27 @@ public class JavadocFormatter {
 			return tuple;
 		}
 
+		File metaInfDir = new File(srcDirName, "META-INF");
+
+		if (!metaInfDir.exists()) {
+			metaInfDir.mkdir();
+		}
+
 		File javadocsXmlFile = new File(
-			srcDirName, "META-INF/" + _outputFilePrefix + "-all.xml");
+			metaInfDir, _outputFilePrefix + "-all.xml");
+
+		String javadocsXmlContent = null;
 
 		if (!javadocsXmlFile.exists()) {
-			FileUtils.writeStringToFile(
-				javadocsXmlFile,
-				"<?xml version=\"1.0\"?>\n\n<javadocs>\n</javadocs>");
+			javadocsXmlContent =
+				"<?xml version=\"1.0\"?>\n\n<javadocs>\n</javadocs>";
+
+			_write(javadocsXmlFile, javadocsXmlContent);
 
 			_modifiedFileNames.add(javadocsXmlFile.getAbsolutePath());
 		}
 
-		String javadocsXmlContent = FileUtils.readFileToString(javadocsXmlFile);
+		javadocsXmlContent = _read(javadocsXmlFile);
 
 		SAXReader saxReader = _getSAXReader();
 
@@ -1280,8 +1314,9 @@ public class JavadocFormatter {
 	}
 
 	private String _getJavaFieldComment(
-		Map<String, Element> fieldElementsMap, JavaField javaField,
-		String indent) {
+			Map<String, Element> fieldElementsMap, JavaField javaField,
+			String indent)
+		throws Exception {
 
 		String fieldKey = _getFieldKey(javaField);
 
@@ -1299,6 +1334,9 @@ public class JavadocFormatter {
 		String comment = fieldElement.elementText("comment");
 
 		if (Validator.isNotNull(comment)) {
+			comment = ToolsUtil.stripFullyQualifiedClassNames(
+				comment, _imports);
+
 			sb.append(_wrapText(comment, indent + " * "));
 		}
 
@@ -1335,8 +1373,9 @@ public class JavadocFormatter {
 	}
 
 	private String _getJavaMethodComment(
-		Map<String, Element> methodElementsMap, JavaMethod javaMethod,
-		String indent) {
+			Map<String, Element> methodElementsMap, JavaMethod javaMethod,
+			String indent)
+		throws Exception {
 
 		String methodKey = _getMethodKey(javaMethod);
 
@@ -1354,6 +1393,9 @@ public class JavadocFormatter {
 		String comment = methodElement.elementText("comment");
 
 		if (Validator.isNotNull(comment)) {
+			comment = ToolsUtil.stripFullyQualifiedClassNames(
+				comment, _imports);
+
 			sb.append(_wrapText(comment, indent + " * "));
 		}
 
@@ -1456,6 +1498,126 @@ public class JavadocFormatter {
 		}
 
 		return typeValue;
+	}
+
+	private String _getUpdateJavaFromDocument(
+			String fileName, String javadocLessContent, Document document)
+		throws Exception {
+
+		String[] lines = StringUtil.splitLines(javadocLessContent);
+
+		JavaClass javaClass = _getJavaClass(
+			fileName, new UnsyncStringReader(javadocLessContent));
+
+		_updateLanguageProperties(document, javaClass.getName());
+
+		List<Tuple> ancestorJavaClassTuples = new ArrayList<>();
+
+		ancestorJavaClassTuples = _addAncestorJavaClassTuples(
+			javaClass, ancestorJavaClassTuples);
+
+		Element rootElement = document.getRootElement();
+
+		Map<Integer, String> commentsMap = new TreeMap<>();
+
+		String javaClassComment = _getJavaClassComment(rootElement, javaClass);
+
+		javaClassComment = _addDeprecatedTag(
+			javaClassComment, javaClass, StringPool.BLANK);
+
+		commentsMap.put(_getJavaClassLineNumber(javaClass), javaClassComment);
+
+		Map<String, Element> methodElementsMap = new HashMap<>();
+
+		List<Element> methodElements = rootElement.elements("method");
+
+		for (Element methodElement : methodElements) {
+			String methodKey = _getMethodKey(methodElement);
+
+			methodElementsMap.put(methodKey, methodElement);
+		}
+
+		JavaMethod[] javaMethods = javaClass.getMethods();
+
+		for (JavaMethod javaMethod : javaMethods) {
+			if (commentsMap.containsKey(javaMethod.getLineNumber())) {
+				continue;
+			}
+
+			String indent = _getIndent(lines, javaMethod);
+
+			String javaMethodComment = _getJavaMethodComment(
+				methodElementsMap, javaMethod, indent);
+
+			javaMethodComment = _addDeprecatedTag(
+				javaMethodComment, javaMethod, indent);
+
+			// Handle override tag insertion
+
+			if (!_hasAnnotation(javaMethod, "Override")) {
+				if (_isOverrideMethod(
+						javaClass, javaMethod, ancestorJavaClassTuples)) {
+
+					String overrideLine = indent + "@Override\n";
+
+					if (Validator.isNotNull(javaMethodComment)) {
+						javaMethodComment = javaMethodComment + overrideLine;
+					}
+					else {
+						javaMethodComment = overrideLine;
+					}
+				}
+			}
+
+			commentsMap.put(javaMethod.getLineNumber(), javaMethodComment);
+		}
+
+		Map<String, Element> fieldElementsMap = new HashMap<>();
+
+		List<Element> fieldElements = rootElement.elements("field");
+
+		for (Element fieldElement : fieldElements) {
+			String fieldKey = _getFieldKey(fieldElement);
+
+			fieldElementsMap.put(fieldKey, fieldElement);
+		}
+
+		JavaField[] javaFields = javaClass.getFields();
+
+		for (JavaField javaField : javaFields) {
+			if (commentsMap.containsKey(javaField.getLineNumber())) {
+				continue;
+			}
+
+			String indent = _getIndent(lines, javaField);
+
+			String javaFieldComment = _getJavaFieldComment(
+				fieldElementsMap, javaField, indent);
+
+			javaFieldComment = _addDeprecatedTag(
+				javaFieldComment, javaField, indent);
+
+			commentsMap.put(javaField.getLineNumber(), javaFieldComment);
+		}
+
+		StringBundler sb = new StringBundler(javadocLessContent.length());
+
+		for (int lineNumber = 1; lineNumber <= lines.length; lineNumber++) {
+			String line = lines[lineNumber - 1];
+
+			String comments = commentsMap.get(lineNumber);
+
+			if (comments != null) {
+				sb.append(comments);
+			}
+
+			sb.append(line);
+			sb.append("\n");
+		}
+
+		String formattedContent = sb.toString();
+
+		return formattedContent.trim();
 	}
 
 	private boolean _hasAnnotation(
@@ -1646,6 +1808,14 @@ public class JavadocFormatter {
 		}
 
 		return false;
+	}
+
+	private String _read(File file) throws IOException {
+		String s = new String(
+			Files.readAllBytes(file.toPath()), StringPool.UTF8);
+
+		return StringUtil.replace(
+			s, StringPool.RETURN_NEW_LINE, StringPool.NEW_LINE);
 	}
 
 	private String _removeJavadocFromJava(JavaClass javaClass, String content) {
@@ -1843,138 +2013,6 @@ public class JavadocFormatter {
 		javadocsXmlRootElement.add(javaClassDocument.getRootElement());
 	}
 
-	private void _updateJavaFromDocument(
-			String fileName, String originalContent, String javadocLessContent,
-			Document document)
-		throws Exception {
-
-		String[] lines = StringUtil.splitLines(javadocLessContent);
-
-		JavaClass javaClass = _getJavaClass(
-			fileName, new UnsyncStringReader(javadocLessContent));
-
-		_updateLanguageProperties(document, javaClass.getName());
-
-		List<Tuple> ancestorJavaClassTuples = new ArrayList<>();
-
-		ancestorJavaClassTuples = _addAncestorJavaClassTuples(
-			javaClass, ancestorJavaClassTuples);
-
-		Element rootElement = document.getRootElement();
-
-		Map<Integer, String> commentsMap = new TreeMap<>();
-
-		String javaClassComment = _getJavaClassComment(rootElement, javaClass);
-
-		javaClassComment = _addDeprecatedTag(
-			javaClassComment, javaClass, StringPool.BLANK);
-
-		commentsMap.put(_getJavaClassLineNumber(javaClass), javaClassComment);
-
-		Map<String, Element> methodElementsMap = new HashMap<>();
-
-		List<Element> methodElements = rootElement.elements("method");
-
-		for (Element methodElement : methodElements) {
-			String methodKey = _getMethodKey(methodElement);
-
-			methodElementsMap.put(methodKey, methodElement);
-		}
-
-		JavaMethod[] javaMethods = javaClass.getMethods();
-
-		for (JavaMethod javaMethod : javaMethods) {
-			if (commentsMap.containsKey(javaMethod.getLineNumber())) {
-				continue;
-			}
-
-			String indent = _getIndent(lines, javaMethod);
-
-			String javaMethodComment = _getJavaMethodComment(
-				methodElementsMap, javaMethod, indent);
-
-			javaMethodComment = _addDeprecatedTag(
-				javaMethodComment, javaMethod, indent);
-
-			// Handle override tag insertion
-
-			if (!_hasAnnotation(javaMethod, "Override")) {
-				if (_isOverrideMethod(
-						javaClass, javaMethod, ancestorJavaClassTuples)) {
-
-					String overrideLine = indent + "@Override\n";
-
-					if (Validator.isNotNull(javaMethodComment)) {
-						javaMethodComment = javaMethodComment + overrideLine;
-					}
-					else {
-						javaMethodComment = overrideLine;
-					}
-				}
-			}
-
-			commentsMap.put(javaMethod.getLineNumber(), javaMethodComment);
-		}
-
-		Map<String, Element> fieldElementsMap = new HashMap<>();
-
-		List<Element> fieldElements = rootElement.elements("field");
-
-		for (Element fieldElement : fieldElements) {
-			String fieldKey = _getFieldKey(fieldElement);
-
-			fieldElementsMap.put(fieldKey, fieldElement);
-		}
-
-		JavaField[] javaFields = javaClass.getFields();
-
-		for (JavaField javaField : javaFields) {
-			if (commentsMap.containsKey(javaField.getLineNumber())) {
-				continue;
-			}
-
-			String indent = _getIndent(lines, javaField);
-
-			String javaFieldComment = _getJavaFieldComment(
-				fieldElementsMap, javaField, indent);
-
-			javaFieldComment = _addDeprecatedTag(
-				javaFieldComment, javaField, indent);
-
-			commentsMap.put(javaField.getLineNumber(), javaFieldComment);
-		}
-
-		StringBundler sb = new StringBundler(javadocLessContent.length());
-
-		for (int lineNumber = 1; lineNumber <= lines.length; lineNumber++) {
-			String line = lines[lineNumber - 1];
-
-			String comments = commentsMap.get(lineNumber);
-
-			if (comments != null) {
-				sb.append(comments);
-			}
-
-			sb.append(line);
-			sb.append("\n");
-		}
-
-		String formattedContent = sb.toString();
-
-		formattedContent = formattedContent.trim();
-
-		if (!originalContent.equals(formattedContent)) {
-			File file = new File(_inputDirName + fileName);
-
-			FileUtils.writeByteArrayToFile(
-				file, formattedContent.getBytes(StringPool.UTF8));
-
-			_modifiedFileNames.add(file.getAbsolutePath());
-
-			System.out.println("Writing " + file);
-		}
-	}
-
 	private void _updateLanguageProperties(Document document, String className)
 		throws IOException {
 
@@ -2044,9 +2082,8 @@ public class JavadocFormatter {
 
 		StringBundler sb = new StringBundler();
 
-		try (UnsyncBufferedReader unsyncBufferedReader =
-				new UnsyncBufferedReader(
-					new FileReader(_languagePropertiesFile))) {
+		try (BufferedReader bufferedReader = Files.newBufferedReader(
+				_languagePropertiesFile.toPath(), StandardCharsets.UTF_8)) {
 
 			boolean begin = false;
 			boolean firstLine = true;
@@ -2054,7 +2091,7 @@ public class JavadocFormatter {
 
 			String line = null;
 
-			while ((line = unsyncBufferedReader.readLine()) != null) {
+			while ((line = bufferedReader.readLine()) != null) {
 				if (line.equals(StringPool.BLANK)) {
 					begin = !begin;
 				}
@@ -2078,7 +2115,7 @@ public class JavadocFormatter {
 
 		try (Writer writer = new OutputStreamWriter(
 				new FileOutputStream(_languagePropertiesFile, false),
-				StringPool.UTF8)) {
+				StandardCharsets.UTF_8)) {
 
 			sb.writeTo(writer);
 		}
@@ -2134,7 +2171,12 @@ public class JavadocFormatter {
 		return text;
 	}
 
+	private void _write(File file, String s) throws IOException {
+		Files.write(file.toPath(), s.getBytes(StandardCharsets.UTF_8));
+	}
+
 	private final String _author;
+	private String _imports;
 	private final boolean _initializeMissingJavadocs;
 	private final String _inputDirName;
 	private final Map<String, Tuple> _javadocxXmlTuples = new HashMap<>();

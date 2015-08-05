@@ -18,10 +18,10 @@ import com.liferay.polls.constants.PollsPortletKeys;
 import com.liferay.polls.model.PollsQuestion;
 import com.liferay.polls.service.PollsQuestionLocalServiceUtil;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.staging.permission.StagingPermissionUtil;
 import com.liferay.portal.security.auth.PrincipalException;
 import com.liferay.portal.security.permission.BaseModelPermissionChecker;
 import com.liferay.portal.security.permission.PermissionChecker;
+import com.liferay.portlet.exportimport.staging.permission.StagingPermissionUtil;
 
 import org.osgi.service.component.annotations.Component;
 
@@ -41,7 +41,9 @@ public class PollsQuestionPermissionChecker
 		throws PortalException {
 
 		if (!contains(permissionChecker, questionId, actionId)) {
-			throw new PrincipalException();
+			throw new PrincipalException.MustHavePermission(
+				permissionChecker, PollsQuestion.class.getName(), questionId,
+				actionId);
 		}
 	}
 
@@ -51,7 +53,9 @@ public class PollsQuestionPermissionChecker
 		throws PortalException {
 
 		if (!contains(permissionChecker, question, actionId)) {
-			throw new PrincipalException();
+			throw new PrincipalException.MustHavePermission(
+				permissionChecker, PollsQuestion.class.getName(),
+				question.getQuestionId(), actionId);
 		}
 	}
 

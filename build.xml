@@ -26,7 +26,6 @@
 >
 	<classpath>
 		<dir name="${basedir}/portal-impl/classes" />
-		<dir name="${basedir}/portal-pacl/classes" />
 		<dir name="${basedir}/util-java/classes" />
 		<dir name="${basedir}/util-bridges/classes" />
 		<dir name="${basedir}/util-taglib/classes" />
@@ -70,13 +69,6 @@
 		<antcall target="deploy" />
 	</target>
 
-	<target name="check-sdk-uptodate">
-		<uptodate property="sdk.uptodate">
-			<mapper to="${project.dir}/tools/sdk" type="merge" />
-			<srcfiles dir="${project.dir}/tools" includes="liferay-plugins-sdk-7.0.0.zip*" />
-		</uptodate>
-	</target>
-
 	<target name="clean">
 		<parallel failonany="true" threadcount="${parallel.thread.count}">
 			<ant dir="benchmarks" target="clean" inheritAll="false" />
@@ -91,21 +83,17 @@
 			<ant dir="util-taglib" target="clean" inheritAll="false" />
 
 			<ant dir="portal-impl" target="clean" inheritAll="false" />
-			<ant dir="portal-pacl" target="clean" inheritAll="false" />
 			<ant dir="portal-test" target="clean" inheritAll="false" />
 			<ant dir="portal-test-internal" target="clean" inheritAll="false" />
 
 			<ant dir="sql" target="clean" inheritAll="false" />
 
 			<sequential>
-				<delete dir="tools/sdk" />
+				<delete dir="${sdk.dir}" />
 
-				<antcall target="setup-sdk" />
+				<setup-sdk />
 
-				<ant-execute
-					ant.dir="${project.dir}/modules"
-					ant.target="clean"
-				/>
+				<ant dir="${project.dir}/modules" target="clean" inheritAll="false" />
 			</sequential>
 
 			<delete dir="${doc.dir}" />
@@ -130,7 +118,7 @@
 				/>
 			</delete>
 
-			<delete dir="${liferay.home}/osgi" />
+			<delete dir="${liferay.home}/osgi" failonerror="false" />
 
 			<delete dir="test-coverage" />
 			<delete dir="test-results" />
@@ -178,8 +166,8 @@
 					</and>
 				</not>
 				<then>
-					<delete dir="${app.server.portal.dir}" />
-					<delete file="${app.server.portal.dir}" />
+					<delete dir="${app.server.portal.dir}" failonerror="false" />
+					<delete file="${app.server.portal.dir}" failonerror="false" />
 				</then>
 				<else>
 					<delete failonerror="false">
@@ -211,7 +199,9 @@
 		<print-current-time />
 	</target>
 
-	<target name="compile" depends="setup-sdk">
+	<target name="compile">
+		<setup-sdk />
+
 		<delete file="javac.output.txt" />
 
 		<ant dir="modules/core/registry-api" target="compile" inheritAll="false" />
@@ -234,7 +224,6 @@
 		<ant dir="portal-impl" target="compile" inheritAll="false" />
 
 		<parallel failonany="true" threadcount="${parallel.thread.count}">
-			<ant dir="portal-pacl" target="compile" inheritAll="false" />
 			<ant dir="portal-test-internal" target="compile" inheritAll="false" />
 
 			<sequential>
@@ -260,7 +249,9 @@
 		<ant dir="util-java" target="compile-test" inheritAll="false" />
 	</target>
 
-	<target name="deploy" depends="setup-sdk">
+	<target name="deploy">
+		<setup-sdk />
+
 		<if>
 			<equals arg1="${app.server.type}" arg2="glassfish" />
 			<then>
@@ -295,7 +286,6 @@
 		<ant dir="util-taglib" target="deploy" inheritAll="false" />
 
 		<ant dir="portal-impl" target="deploy" inheritAll="false" />
-		<ant dir="portal-pacl" target="deploy" inheritAll="false" />
 		<ant dir="portal-test" target="deploy" inheritAll="false" />
 		<ant dir="portal-test-internal" target="deploy" inheritAll="false" />
 
@@ -308,7 +298,7 @@
 			</fileset>
 		</copy>
 
-		<antcall target="deploy-properties" />
+		<deploy-properties />
 
 		<antcall target="deploy-additional-jars" />
 
@@ -334,15 +324,13 @@
 			</then>
 		</if>
 
-		<ant-execute
-			ant.dir="${project.dir}/modules/core/registry-api"
-			ant.target="deploy"
-		/>
+		<stopwatch name="modules.stopwatch" />
 
-		<ant-execute
-			ant.dir="${project.dir}/modules"
-			ant.target="deploy"
-		/>
+		<ant dir="${project.dir}/modules/core/registry-api" target="deploy" inheritAll="false" />
+
+		<ant dir="${project.dir}/modules" target="deploy" inheritAll="false" />
+
+		<stopwatch action="elapsed" name="modules.stopwatch" />
 
 		<if>
 			<and>
@@ -397,43 +385,6 @@
 				<delete dir="${app.server.portal.dir}" />
 
 				<move file="${tstamp.value}" tofile="${app.server.glassfish.portal.war.dir}" />
-			</then>
-		</if>
-
-		<if>
-			<equals arg1="${app.server.type}" arg2="jboss" />
-			<then>
-				<if>
-					<equals arg1="${app.server.jboss.major.version}" arg2="5" />
-					<then>
-						<move
-							failonerror="false"
-							file="${app.server.dir}/common/lib/hibernate-validator.jar"
-							tofile="${app.server.dir}/common/lib/hibernate-validator.jar.bak"
-						/>
-
-						<move
-							failonerror="false"
-							file="${app.server.dir}/common/lib/slf4j-jboss-logging.jar"
-							tofile="${app.server.dir}/common/lib/slf4j-jboss-logging.jar.bak"
-						/>
-
-						<delete>
-							<fileset
-								dir="${app.server.lib.portal.dir}"
-								includes="jaxrpc.jar,log4j.jar,stax.jar,xercesImpl.jar,xml-apis.jar"
-							/>
-						</delete>
-					</then>
-					<else>
-						<delete>
-							<fileset
-								dir="${app.server.lib.portal.dir}"
-								includes="eclipselink.jar"
-							/>
-						</delete>
-					</else>
-				</if>
 			</then>
 		</if>
 
@@ -558,25 +509,6 @@
 		</if>
 	</target>
 
-	<target name="deploy-properties">
-		<if>
-			<and>
-				<equals arg1="${app.server.bundled}" arg2="true" />
-				<equals arg1="${app.server.type}" arg2="glassfish" />
-			</and>
-			<then>
-				<war destfile="${app.server.glassfish.portal.war.dir}" update="true">
-					<classes dir="portal-impl/src" includes="portal-*.properties,system-*.properties" />
-				</war>
-			</then>
-			<else>
-				<copy todir="${app.server.classes.portal.dir}" overwrite="true">
-					<fileset dir="portal-impl/src" includes="portal-*.properties,system-*.properties" />
-				</copy>
-			</else>
-		</if>
-	</target>
-
 	<target name="dist">
 		<ant antfile="build-dist.xml" target="dist" inheritAll="false" />
 	</target>
@@ -618,7 +550,6 @@
 		<ant dir="util-taglib" target="jar" inheritAll="false" />
 
 		<ant dir="portal-impl" target="jar" inheritAll="false" />
-		<ant dir="portal-pacl" target="jar" inheritAll="false" />
 		<ant dir="portal-test" target="jar" inheritAll="false" />
 		<ant dir="portal-test-internal" target="jar" inheritAll="false" />
 
@@ -782,232 +713,17 @@
 		</java>
 	</target>
 
-	<target name="record-git-commit-plugins">
-		<script classpathref="project.classpath" language="beanshell">
-			<![CDATA[
-				File pluginsDir = null;
-
-				String lpPluginsDirName = project.getProperty("lp.plugins.dir");
-
-				if ((lpPluginsDirName == null) || lpPluginsDirName.equals("")) {
-					File projectDir = new File(project.getProperty("project.dir"));
-
-					String projectDirName = projectDir.getName();
-
-					String pluginsDirName = "liferay-plugins" + projectDirName.substring("liferay-portal".length());
-
-					pluginsDir = new File(projectDir.getParent(), pluginsDirName);
-				}
-				else {
-					if (lpPluginsDirName.contains("${basedir.name}")) {
-						lpPluginsDirName = lpPluginsDirName.substring(0, lpPluginsDirName.lastIndexOf("/"));
-					}
-
-					pluginsDir = new File(lpPluginsDirName);
-				}
-
-				project.setProperty("git.plugins.dir", pluginsDir.toString());
-			]]>
-		</script>
-
-		<exec dir="${git.plugins.dir}" executable="git" outputproperty="git.commit.plugins.rev.parse">
-			<arg line="rev-parse HEAD" />
-		</exec>
-
-		<echo>Recording ${git.plugins.dir} with ${git.commit.plugins.rev.parse}.</echo>
-
-		<var name="git.plugins.dir" unset="true" />
-
-		<echo file="git-commit-plugins">${git.commit.plugins.rev.parse}</echo>
-
-		<if>
-			<isset property="env.JENKINS_HOME" />
-			<then>
-				<copy
-					file="git-commit-plugins"
-					todir="${env.JENKINS_HOME}/userContent/jobs/${env.JOB_NAME}/builds/${env.BUILD_NUMBER}"
-				/>
-			</then>
-		</if>
-	</target>
-
-	<target name="record-git-commit-portal">
-		<exec dir="${project.dir}" executable="git" outputproperty="git.commit.portal.rev.parse">
-			<arg line="rev-parse HEAD" />
-		</exec>
-
-		<echo file="git-commit-portal">${git.commit.portal.rev.parse}</echo>
-
-		<if>
-			<isset property="env.JENKINS_HOME" />
-			<then>
-				<copy
-					file="git-commit-portal"
-					todir="${env.JENKINS_HOME}/userContent/jobs/${env.JOB_NAME}/builds/${env.BUILD_NUMBER}"
-				/>
-			</then>
-		</if>
-	</target>
-
 	<target name="setup-jrebel">
 		<setup-jrebel />
 	</target>
 
-	<target name="setup-sdk" depends="check-sdk-uptodate" unless="sdk.uptodate">
-		<delete dir="${project.dir}/tools/sdk" />
-
-		<unzip
-			dest="${project.dir}/tools"
-			src="${project.dir}/tools/liferay-plugins-sdk-7.0.0.zip"
-		>
-			<mapper
-				type="glob"
-				from="liferay-plugins-sdk-7.0.0/*"
-				to="sdk/*"
-			/>
-		</unzip>
-
-		<propertyselector
-			casesensitive="false"
-			delimiter=","
-			distinct="true"
-			match="app\.(server\.(glassfish|jboss|jetty|jonas|resin|tcat|tcserver|tomcat|weblogic|websphere).+)\.dir"
-			override="true"
-			property="app.server.dir.property.list"
-			select="\1"
-		/>
-
-		<sortlist
-			delimiter=","
-			override="true"
-			property="app.server.dir.property.list"
-			value="${app.server.dir.property.list}"
-		/>
-
-		<for list="${app.server.dir.property.list}" param="app.server.dir.property">
-			<sequential>
-				<propertycopy
-					from="app.@{app.server.dir.property}.dir"
-					name="temp.app.server.dir"
-				/>
-
-				<echo
-					append="true"
-					file="${project.dir}/tools/sdk/build.${env.COMPUTERNAME}.properties"
-				>
-					app.@{app.server.dir.property}.dir=${temp.app.server.dir}
-				</echo>
-
-				<var name="temp.app.server.dir" unset="true" />
-			</sequential>
-		</for>
-
-		<propertyselector
-			casesensitive="false"
-			delimiter="," match="ivy.pom.(.+)"
-			property="ivy.pom.property.list"
-			select="\1"
-		/>
-
-		<sortlist
-			delimiter=","
-			override="true"
-			property="ivy.pom.property.list"
-			value="${ivy.pom.property.list}"
-		/>
-
-		<if>
-			<not>
-				<equals arg1="${ivy.pom.property.list}" arg2="$${ivy.pom.property.list}" />
-			</not>
-			<then>
-				<for list="${ivy.pom.property.list}" param="ivy.pom.property">
-					<sequential>
-						<propertycopy
-							from="ivy.pom.@{ivy.pom.property}"
-							name="temp.ivy.pom"
-						/>
-
-						<echo
-							append="true"
-							file="${project.dir}/tools/sdk/build.${env.COMPUTERNAME}.properties"
-						>
-							ivy.pom.@{ivy.pom.property}=${temp.ivy.pom}
-						</echo>
-
-						<var name="temp.ivy.pom" unset="true" />
-					</sequential>
-				</for>
-			</then>
-		</if>
-
-		<propertyselector
-			casesensitive="false"
-			delimiter="," match="sonatype.(.+)"
-			property="sonatype.property.list"
-			select="\1"
-		/>
-
-		<sortlist
-			delimiter=","
-			override="true"
-			property="sonatype.property.list"
-			value="${sonatype.property.list}"
-		/>
-
-		<if>
-			<not>
-				<equals arg1="${sonatype.property.list}" arg2="$${sonatype.property.list}" />
-			</not>
-			<then>
-				<for list="${sonatype.property.list}" param="sonatype.property">
-					<sequential>
-						<propertycopy
-							from="sonatype.@{sonatype.property}"
-							name="temp.sonatype"
-						/>
-
-						<echo
-							append="true"
-							file="${project.dir}/tools/sdk/build.${env.COMPUTERNAME}.properties"
-						>
-							sonatype.@{sonatype.property}=${temp.sonatype}
-						</echo>
-
-						<var name="temp.sonatype" unset="true" />
-					</sequential>
-				</for>
-			</then>
-		</if>
-
-		<echo
-			append="true"
-			file="${project.dir}/tools/sdk/build.${env.COMPUTERNAME}.properties"
-		>
-			app.server.type=${app.server.type}
-			auto.deploy.dir=${liferay.home}/osgi/apps
-			clean.delete.ivy.md5=true
-			clean.delete.lib=true
-			ivy.home=${ivy.home}
-			junit.test.excludes=${junit.test.excludes}
-			liferay.home=${liferay.home}
-			lp.portal.project.dir=${project.dir}
-			microsoft.translator.client.id=${microsoft.translator.client.id}
-			microsoft.translator.client.secret=${microsoft.translator.client.secret}
-			module.framework.base.dir=${liferay.home}/osgi
-			-baselinerepo=${-baselinerepo}
-			-metatype=${-metatype}
-			-plugin=${-plugin}
-			-releaserepo=${-releaserepo}
-		</echo>
-
-		<copy file="${project.dir}/tools/sdk/build.${env.COMPUTERNAME}.properties" tofile="${project.dir}/tools/sdk/build.${env.HOST}.properties" />
-		<copy file="${project.dir}/tools/sdk/build.${env.COMPUTERNAME}.properties" tofile="${project.dir}/tools/sdk/build.${env.HOSTNAME}.properties" />
+	<target name="setup-sdk">
+		<setup-sdk />
 	</target>
 
 	<target name="sort-xml-attributes">
 		<path id="source.formatter.classpath">
-			<fileset dir="${project.dir}/tools/sdk/dependencies/com.liferay.source.formatter/lib" includes="*.jar" />
+			<fileset dir="${sdk.dir}/dependencies/com.liferay.source.formatter/lib" includes="*.jar" />
 		</path>
 
 		<java
@@ -1028,10 +744,6 @@
 		<echo>The "start" target is now deprecated. Please use the "compile" target instead.</echo>
 	</target>
 
-	<target name="test-class-group">
-		<ant antfile="build-test.xml" target="test-class-group" inheritAll="false" />
-	</target>
-
 	<target name="test-integration">
 		<ant antfile="build-test.xml" target="test-integration" inheritAll="false" />
 	</target>
@@ -1049,58 +761,15 @@
 			<equals arg1="${app.server.type}" arg2="jboss" />
 			<then>
 				<if>
-					<equals arg1="${app.server.jboss.major.version}" arg2="5" />
+					<not>
+						<available file="${app.server.lib.global.dir}/module.xml" />
+					</not>
 					<then>
-						<loadfile property="run.conf.content" srcfile="${app.server.bin.dir}/run.conf" />
-
-						<antelope:stringutil string="${run.conf.content}" property="run.conf.content.index">
-							<indexof string="-Dfile.encoding=UTF-8" fromindex="0" />
-						</antelope:stringutil>
-
-						<if>
-							<equals arg1="${run.conf.content.index}" arg2="-1" />
-							<then>
-								<echo file="${app.server.bin.dir}/run.conf" append="true">
-		JAVA_OPTS="$JAVA_OPTS -Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true -Djboss.vfs.forceVfsJar=true -Dorg.jboss.logging.Log4jService.catchSystemOut=false -Duser.timezone=GMT -Xmx1024m -XX:MaxPermSize=384m"</echo>
-							</then>
-						</if>
-
-						<loadfile property="run.conf.bat.content" srcfile="${app.server.bin.dir}/run.conf.bat" />
-
-						<antelope:stringutil string="${run.conf.bat.content}" property="run.conf.bat.content.index">
-							<indexof string="-Dfile.encoding=UTF-8" fromindex="0" />
-						</antelope:stringutil>
-
-						<if>
-							<equals arg1="${run.conf.bat.content.index}" arg2="-1" />
-							<then>
-								<replace file="${app.server.bin.dir}/run.conf.bat">
-									<replacetoken><![CDATA[:JAVA_OPTS_SET]]></replacetoken>
-									<replacevalue><![CDATA[set "JAVA_OPTS=%JAVA_OPTS% -Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true -Djboss.vfs.forceVfsJar=true -Dorg.jboss.logging.Log4jService.catchSystemOut=false -Duser.timezone=GMT -Xmx1024m -XX:MaxPermSize=384m"
-
-		:JAVA_OPTS_SET]]></replacevalue>
-								</replace>
-							</then>
-						</if>
-
-						<replace file="${app.server.deploy.dir}/jbossweb.sar/server.xml">
-							<replacetoken><![CDATA[redirectPort="8443" />]]></replacetoken>
-							<replacevalue><![CDATA[redirectPort="8443" URIEncoding="UTF-8" />]]></replacevalue>
-						</replace>
+						<copy
+							file="tools/servers/jboss/modules/module.xml"
+							tofile="${app.server.lib.global.dir}/module.xml"
+						/>
 					</then>
-					<else>
-						<if>
-							<not>
-								<available file="${app.server.lib.global.dir}/module.xml" />
-							</not>
-							<then>
-								<copy
-									file="tools/servers/jboss/modules/module.xml"
-									tofile="${app.server.lib.global.dir}/module.xml"
-								/>
-							</then>
-						</if>
-					</else>
 				</if>
 			</then>
 		</if>
@@ -1218,6 +887,8 @@ print AdminControl.invoke(appManager, 'startApplication', 'liferay-portal')
 			ant -f modules/apps/build.xml clean
 			ant -f modules/core/build.xml clean
 			ant -f modules/portal/build.xml clean
+			ant -f modules/portal-security/build.xml clean
+			ant -f modules/portal-store/build.xml clean
 			ant -f modules/sdk/build.xml clean
 			ant -f modules/test/build.xml clean
 			ant -f modules/third-party/build.xml clean
@@ -1229,6 +900,8 @@ print AdminControl.invoke(appManager, 'startApplication', 'liferay-portal')
 			ant -f modules/apps/build.xml compile-test
 			ant -f modules/core/build.xml compile-test
 			ant -f modules/portal/build.xml compile-test
+			ant -f modules/portal-security/build.xml compile-test
+			ant -f modules/portal-store/build.xml compile-test
 			ant -f modules/sdk/build.xml compile-test
 			ant -f modules/test/build.xml compile-test
 			ant -f modules/third-party/build.xml compile-test

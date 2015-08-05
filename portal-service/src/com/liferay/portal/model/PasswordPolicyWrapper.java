@@ -16,8 +16,9 @@ package com.liferay.portal.model;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.util.Validator;
+
+import com.liferay.portlet.exportimport.lar.StagedModelType;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -88,6 +89,7 @@ public class PasswordPolicyWrapper implements PasswordPolicy,
 		attributes.put("requireUnlock", getRequireUnlock());
 		attributes.put("resetFailureCount", getResetFailureCount());
 		attributes.put("resetTicketMaxAge", getResetTicketMaxAge());
+		attributes.put("lastPublishDate", getLastPublishDate());
 
 		return attributes;
 	}
@@ -304,6 +306,12 @@ public class PasswordPolicyWrapper implements PasswordPolicy,
 		if (resetTicketMaxAge != null) {
 			setResetTicketMaxAge(resetTicketMaxAge);
 		}
+
+		Date lastPublishDate = (Date)attributes.get("lastPublishDate");
+
+		if (lastPublishDate != null) {
+			setLastPublishDate(lastPublishDate);
+		}
 	}
 
 	@Override
@@ -439,6 +447,16 @@ public class PasswordPolicyWrapper implements PasswordPolicy,
 	@Override
 	public int getHistoryCount() {
 		return _passwordPolicy.getHistoryCount();
+	}
+
+	/**
+	* Returns the last publish date of this password policy.
+	*
+	* @return the last publish date of this password policy
+	*/
+	@Override
+	public Date getLastPublishDate() {
+		return _passwordPolicy.getLastPublishDate();
 	}
 
 	/**
@@ -951,6 +969,16 @@ public class PasswordPolicyWrapper implements PasswordPolicy,
 	@Override
 	public void setHistoryCount(int historyCount) {
 		_passwordPolicy.setHistoryCount(historyCount);
+	}
+
+	/**
+	* Sets the last publish date of this password policy.
+	*
+	* @param lastPublishDate the last publish date of this password policy
+	*/
+	@Override
+	public void setLastPublishDate(Date lastPublishDate) {
+		_passwordPolicy.setLastPublishDate(lastPublishDate);
 	}
 
 	/**

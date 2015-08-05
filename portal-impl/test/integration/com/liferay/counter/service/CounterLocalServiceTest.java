@@ -150,6 +150,8 @@ public class CounterLocalServiceTest {
 
 			System.setProperty("catalina.base", ".");
 			System.setProperty("external-properties", "portal-test.properties");
+			System.setProperty("portal:jdbc.default.maxPoolSize", "3");
+			System.setProperty("portal:jdbc.default.minPoolSize", "1");
 
 			CacheKeyGeneratorUtil cacheKeyGeneratorUtil =
 				new CacheKeyGeneratorUtil();
@@ -159,9 +161,7 @@ public class CounterLocalServiceTest {
 
 			InitUtil.initWithSpring(
 				Arrays.asList(
-					"META-INF/base-spring.xml", "META-INF/hibernate-spring.xml",
-					"META-INF/infrastructure-spring.xml",
-					"META-INF/counter-spring.xml"),
+					"META-INF/base-spring.xml", "META-INF/counter-spring.xml"),
 				false);
 
 			List<Long> ids = new ArrayList<>();

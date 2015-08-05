@@ -16,8 +16,9 @@ package com.liferay.portal.model;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.util.Validator;
+
+import com.liferay.portlet.exportimport.lar.StagedModelType;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -65,6 +66,7 @@ public class WebsiteWrapper implements Website, ModelWrapper<Website> {
 		attributes.put("url", getUrl());
 		attributes.put("typeId", getTypeId());
 		attributes.put("primary", getPrimary());
+		attributes.put("lastPublishDate", getLastPublishDate());
 
 		return attributes;
 	}
@@ -148,6 +150,12 @@ public class WebsiteWrapper implements Website, ModelWrapper<Website> {
 		if (primary != null) {
 			setPrimary(primary);
 		}
+
+		Date lastPublishDate = (Date)attributes.get("lastPublishDate");
+
+		if (lastPublishDate != null) {
+			setLastPublishDate(lastPublishDate);
+		}
 	}
 
 	@Override
@@ -213,6 +221,16 @@ public class WebsiteWrapper implements Website, ModelWrapper<Website> {
 	@Override
 	public com.liferay.portlet.expando.model.ExpandoBridge getExpandoBridge() {
 		return _website.getExpandoBridge();
+	}
+
+	/**
+	* Returns the last publish date of this website.
+	*
+	* @return the last publish date of this website
+	*/
+	@Override
+	public Date getLastPublishDate() {
+		return _website.getLastPublishDate();
 	}
 
 	/**
@@ -436,6 +454,16 @@ public class WebsiteWrapper implements Website, ModelWrapper<Website> {
 	public void setExpandoBridgeAttributes(
 		com.liferay.portal.service.ServiceContext serviceContext) {
 		_website.setExpandoBridgeAttributes(serviceContext);
+	}
+
+	/**
+	* Sets the last publish date of this website.
+	*
+	* @param lastPublishDate the last publish date of this website
+	*/
+	@Override
+	public void setLastPublishDate(Date lastPublishDate) {
+		_website.setLastPublishDate(lastPublishDate);
 	}
 
 	/**

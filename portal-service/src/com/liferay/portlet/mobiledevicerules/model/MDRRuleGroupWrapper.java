@@ -16,9 +16,10 @@ package com.liferay.portlet.mobiledevicerules.model;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.ModelWrapper;
+
+import com.liferay.portlet.exportimport.lar.StagedModelType;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -64,6 +65,7 @@ public class MDRRuleGroupWrapper implements MDRRuleGroup,
 		attributes.put("modifiedDate", getModifiedDate());
 		attributes.put("name", getName());
 		attributes.put("description", getDescription());
+		attributes.put("lastPublishDate", getLastPublishDate());
 
 		return attributes;
 	}
@@ -128,6 +130,12 @@ public class MDRRuleGroupWrapper implements MDRRuleGroup,
 
 		if (description != null) {
 			setDescription(description);
+		}
+
+		Date lastPublishDate = (Date)attributes.get("lastPublishDate");
+
+		if (lastPublishDate != null) {
+			setLastPublishDate(lastPublishDate);
 		}
 	}
 
@@ -263,6 +271,16 @@ public class MDRRuleGroupWrapper implements MDRRuleGroup,
 	@Override
 	public long getGroupId() {
 		return _mdrRuleGroup.getGroupId();
+	}
+
+	/**
+	* Returns the last publish date of this m d r rule group.
+	*
+	* @return the last publish date of this m d r rule group
+	*/
+	@Override
+	public Date getLastPublishDate() {
+		return _mdrRuleGroup.getLastPublishDate();
 	}
 
 	/**
@@ -575,6 +593,16 @@ public class MDRRuleGroupWrapper implements MDRRuleGroup,
 	@Override
 	public void setGroupId(long groupId) {
 		_mdrRuleGroup.setGroupId(groupId);
+	}
+
+	/**
+	* Sets the last publish date of this m d r rule group.
+	*
+	* @param lastPublishDate the last publish date of this m d r rule group
+	*/
+	@Override
+	public void setLastPublishDate(Date lastPublishDate) {
+		_mdrRuleGroup.setLastPublishDate(lastPublishDate);
 	}
 
 	/**

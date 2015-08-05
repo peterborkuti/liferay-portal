@@ -17,6 +17,7 @@ package com.liferay.iframe.web.portlet;
 import aQute.bnd.annotation.metatype.Configurable;
 
 import com.liferay.iframe.web.configuration.IFrameConfiguration;
+import com.liferay.iframe.web.configuration.IFramePortletInstanceConfiguration;
 import com.liferay.iframe.web.constants.IFrameWebKeys;
 import com.liferay.iframe.web.display.context.IFrameDisplayContext;
 import com.liferay.iframe.web.upgrade.IFrameWebUpgrade;
@@ -64,7 +65,6 @@ import org.osgi.service.component.annotations.Reference;
 		"com.liferay.portlet.render-weight=50",
 		"com.liferay.portlet.use-default-template=true",
 		"javax.portlet.display-name=IFrame", "javax.portlet.expiration-cache=0",
-		"javax.portlet.init-param.config-template=/configuration.jsp",
 		"javax.portlet.init-param.template-path=/",
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.resource-bundle=content.Language",
@@ -121,10 +121,13 @@ public class IFramePortlet extends MVCPortlet {
 		IFrameDisplayContext iFrameDisplayContext = new IFrameDisplayContext(
 			_iFrameConfiguration, renderRequest);
 
-		String src = ParamUtil.getString(
-			renderRequest, "src", iFrameDisplayContext.getSrc());
+		IFramePortletInstanceConfiguration iFramePortletInstanceConfiguration =
+			iFrameDisplayContext.getIFramePortletInstanceConfiguration();
 
-		if (!iFrameDisplayContext.isAuth()) {
+		String src = ParamUtil.getString(
+			renderRequest, "src", iFramePortletInstanceConfiguration.src());
+
+		if (!iFramePortletInstanceConfiguration.auth()) {
 			return src;
 		}
 
@@ -132,9 +135,11 @@ public class IFramePortlet extends MVCPortlet {
 
 		if (authType.equals("basic")) {
 			String userName = IFrameUtil.getUserName(
-				renderRequest, iFrameDisplayContext.getBasicUserName());
+				renderRequest,
+				iFramePortletInstanceConfiguration.basicUserName());
 			String password = IFrameUtil.getPassword(
-				renderRequest, iFrameDisplayContext.getBasicPassword());
+				renderRequest,
+				iFramePortletInstanceConfiguration.basicPassword());
 
 			int pos = src.indexOf("://");
 

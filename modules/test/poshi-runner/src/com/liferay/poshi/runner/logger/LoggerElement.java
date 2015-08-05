@@ -40,7 +40,7 @@ public class LoggerElement {
 		long time = System.currentTimeMillis();
 
 		while (true) {
-			String id = simpleDateFormat.format(new Date(time++));
+			String id = "id" + simpleDateFormat.format(new Date(time++));
 
 			if (!_usedIds.contains(id)) {
 				_usedIds.add(id);
@@ -170,10 +170,12 @@ public class LoggerElement {
 	}
 
 	public void setID(String id) {
+		String oldID = _id;
+
 		_id = id;
 
 		if (_writtenToLogger) {
-			LoggerUtil.setID(this);
+			LoggerUtil.setID(oldID, id);
 		}
 	}
 

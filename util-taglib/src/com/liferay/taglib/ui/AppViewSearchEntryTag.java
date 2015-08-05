@@ -14,12 +14,12 @@
 
 package com.liferay.taglib.ui;
 
+import com.liferay.portal.kernel.comment.Comment;
+import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.search.RelatedSearchResult;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.kernel.util.Tuple;
-import com.liferay.portlet.messageboards.model.MBMessage;
 import com.liferay.taglib.util.IncludeTag;
 
 import java.util.List;
@@ -48,6 +48,12 @@ public class AppViewSearchEntryTag extends IncludeTag {
 		_actionJspServletContext = actionJspServletContext;
 	}
 
+	public void setCommentRelatedSearchResults(
+		List<RelatedSearchResult<Comment>> commentRelatedSearchResults) {
+
+		_commentRelatedSearchResults = commentRelatedSearchResults;
+	}
+
 	public void setContainerName(String containerName) {
 		_containerName = containerName;
 	}
@@ -61,11 +67,13 @@ public class AppViewSearchEntryTag extends IncludeTag {
 	}
 
 	public void setDescription(String description) {
-		_description = HtmlUtil.unescape(description);
+		_description = description;
 	}
 
-	public void setFileEntryTuples(List<Tuple> fileEntryTuples) {
-		_fileEntryTuples = fileEntryTuples;
+	public void setFileEntryRelatedSearchResults(
+		List<RelatedSearchResult<FileEntry>> fileEntryRelatedSearchResults) {
+
+		_fileEntryRelatedSearchResults = fileEntryRelatedSearchResults;
 	}
 
 	public void setHighlightEnabled(boolean highlightEnabled) {
@@ -74,10 +82,6 @@ public class AppViewSearchEntryTag extends IncludeTag {
 
 	public void setLocked(boolean locked) {
 		_locked = locked;
-	}
-
-	public void setMbMessages(List<MBMessage> mbMessages) {
-		_mbMessages = mbMessages;
 	}
 
 	public void setQueryTerms(String[] queryTerms) {
@@ -105,7 +109,7 @@ public class AppViewSearchEntryTag extends IncludeTag {
 	}
 
 	public void setTitle(String title) {
-		_title = HtmlUtil.unescape(title);
+		_title = title;
 	}
 
 	public void setUrl(String url) {
@@ -119,14 +123,14 @@ public class AppViewSearchEntryTag extends IncludeTag {
 	@Override
 	protected void cleanUp() {
 		_actionJsp = null;
+		_commentRelatedSearchResults = null;
 		_containerName = null;
 		_containerType = null;
 		_cssClass = null;
 		_description = null;
-		_fileEntryTuples = null;
+		_fileEntryRelatedSearchResults = null;
 		_highlightEnabled = _HIGHLIGHT_ENABLED;
 		_locked = false;
-		_mbMessages = null;
 		_queryTerms = null;
 		_rowCheckerId = null;
 		_rowCheckerName = null;
@@ -164,6 +168,9 @@ public class AppViewSearchEntryTag extends IncludeTag {
 			"liferay-ui:app-view-entry:actionJspServletContext",
 			getActionJspServletContext());
 		request.setAttribute(
+			"liferay-ui:app-view-search-entry:commentRelatedSearchResults",
+			_commentRelatedSearchResults);
+		request.setAttribute(
 			"liferay-ui:app-view-search-entry:containerName", _containerName);
 		request.setAttribute(
 			"liferay-ui:app-view-search-entry:containerType", _containerType);
@@ -172,15 +179,13 @@ public class AppViewSearchEntryTag extends IncludeTag {
 		request.setAttribute(
 			"liferay-ui:app-view-search-entry:description", _description);
 		request.setAttribute(
-			"liferay-ui:app-view-search-entry:fileEntryTuples",
-			_fileEntryTuples);
+			"liferay-ui:app-view-search-entry:fileEntryRelatedSearchResults",
+			_fileEntryRelatedSearchResults);
 		request.setAttribute(
 			"liferay-ui:app-view-search-entry:highlightEnabled",
 			_highlightEnabled);
 		request.setAttribute(
 			"liferay-ui:app-view-search-entry:locked", _locked);
-		request.setAttribute(
-			"liferay-ui:app-view-search-entry:mbMessages", _mbMessages);
 		request.setAttribute(
 			"liferay-ui:app-view-search-entry:queryTerms", _queryTerms);
 		request.setAttribute(
@@ -209,14 +214,14 @@ public class AppViewSearchEntryTag extends IncludeTag {
 
 	private String _actionJsp;
 	private ServletContext _actionJspServletContext;
+	private List<RelatedSearchResult<Comment>> _commentRelatedSearchResults;
 	private String _containerName;
 	private String _containerType;
 	private String _cssClass;
 	private String _description;
-	private List<Tuple> _fileEntryTuples;
+	private List<RelatedSearchResult<FileEntry>> _fileEntryRelatedSearchResults;
 	private boolean _highlightEnabled = _HIGHLIGHT_ENABLED;
 	private boolean _locked;
-	private List<MBMessage> _mbMessages;
 	private String[] _queryTerms;
 	private String _rowCheckerId;
 	private String _rowCheckerName;

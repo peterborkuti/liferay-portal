@@ -84,11 +84,11 @@ else {
 
 <aui:fieldset>
 
-	<!-- LPS-38289 -->
+	<!-- Begin LPS-38289 and LPS-55993 -->
 
-	<input class="hide" />
+	<input class="hide" type="password" />
 
-	<!-- /LPS-38289 -->
+	<!-- End LPS-38289 and LPS-55993 -->
 
 	<c:if test="<%= portletName.equals(PortletKeys.MY_ACCOUNT) %>">
 		<aui:input autocomplete="off" label="current-password" name="password0" size="30" type="password" />
@@ -103,7 +103,7 @@ else {
 	</aui:input>
 
 	<c:if test="<%= (selUser == null) || (user.getUserId() != selUser.getUserId()) %>">
-		<aui:input disabled="<%= passwordResetDisabled %>" label="password-reset-required" name="passwordReset" type="checkbox" value="<%= passwordReset %>" />
+		<aui:input disabled="<%= passwordResetDisabled %>" label="require-password-reset" name="passwordReset" type="checkbox" value="<%= passwordReset %>" />
 	</c:if>
 </aui:fieldset>
 
@@ -132,7 +132,7 @@ else {
 		$('#<portlet:namespace />reminderQueryQuestion').on(
 			'change',
 			function(event) {
-				var customQuestion = ($(event.currentTarget).val() == '<%= UsersAdmin.CUSTOM_QUESTION %>');
+				var customQuestion = $(event.currentTarget).val() == '<%= UsersAdmin.CUSTOM_QUESTION %>';
 
 				var focusInput;
 

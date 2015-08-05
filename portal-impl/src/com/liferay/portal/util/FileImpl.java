@@ -28,6 +28,7 @@ import com.liferay.portal.kernel.process.ProcessExecutorUtil;
 import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.portal.kernel.util.ClassLoaderUtil;
 import com.liferay.portal.kernel.util.Digester;
 import com.liferay.portal.kernel.util.DigesterUtil;
 import com.liferay.portal.kernel.util.FileComparator;
@@ -83,6 +84,25 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 
 	public static FileImpl getInstance() {
 		return _instance;
+	}
+
+	@Override
+	public String appendParentheticalSuffix(String fileName, String suffix) {
+		StringBundler sb = new StringBundler(3);
+
+		String fileNameWithoutExtension = stripExtension(fileName);
+
+		sb.append(
+			StringUtil.appendParentheticalSuffix(
+				fileNameWithoutExtension, suffix));
+
+		sb.append(StringPool.PERIOD);
+
+		String extension = getExtension(fileName);
+
+		sb.append(extension);
+
+		return sb.toString();
 	}
 
 	@Override
@@ -841,6 +861,24 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 		else {
 			return fileName;
 		}
+	}
+
+	@Override
+	public String stripParentheticalSuffix(String fileName) {
+		StringBundler sb = new StringBundler(3);
+
+		String fileNameWithoutExtension = stripExtension(fileName);
+
+		sb.append(
+			StringUtil.stripParentheticalSuffix(fileNameWithoutExtension));
+
+		sb.append(StringPool.PERIOD);
+
+		String extension = getExtension(fileName);
+
+		sb.append(extension);
+
+		return sb.toString();
 	}
 
 	@Override
