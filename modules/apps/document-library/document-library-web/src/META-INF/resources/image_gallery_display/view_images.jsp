@@ -116,12 +116,18 @@ DLPortletInstanceSettingsHelper dlPortletInstanceSettingsHelper = new DLPortletI
 							}
 						}
 					}
+
+					String title = fileEntry.getTitle();
+
+					if (Validator.isNotNull(fileEntry.getDescription())) {
+						title += " - " + fileEntry.getDescription();
+					}
 					%>
 
 					<div class="image-icon">
-						<a class="image-link preview" <%= (hasAudio || hasVideo) ? "data-options=\"height=" + playerHeight + "&thumbnailURL=" + HtmlUtil.escapeURL(DLUtil.getPreviewURL(fileEntry, fileVersion, themeDisplay, "&videoThumbnail=1")) + "&width=640" + dataOptions + "\"" : StringPool.BLANK %> href="<%= href %>" thumbnailId="<%= thumbnailId %>" title="<%= HtmlUtil.escape(fileEntry.getTitle()) + " - " + HtmlUtil.escape(fileEntry.getDescription()) %>">
+						<a class="image-link preview" <%= (hasAudio || hasVideo) ? "data-options=\"height=" + playerHeight + "&thumbnailURL=" + HtmlUtil.escapeURL(DLUtil.getPreviewURL(fileEntry, fileVersion, themeDisplay, "&videoThumbnail=1")) + "&width=640" + dataOptions + "\"" : StringPool.BLANK %> href="<%= href %>" thumbnailId="<%= thumbnailId %>" title="<%= HtmlUtil.escape(title) %>">
 							<span class="image-thumbnail">
-								<img alt="<%= HtmlUtil.escapeAttribute(fileEntry.getTitle()) + " - " + HtmlUtil.escapeAttribute(fileEntry.getDescription()) %>" src="<%= src %>" style="<%= DLUtil.getThumbnailStyle(true, 0) %>" />
+								<img alt="<%= HtmlUtil.escapeAttribute(title) %>" src="<%= src %>" style="<%= DLUtil.getThumbnailStyle(true, 0) %>" />
 
 								<c:if test="<%= fileShortcut != null %>">
 									<img alt="<liferay-ui:message escapeAttribute="<%= true %>" key="shortcut" />" class="shortcut-icon" src="<%= themeDisplay.getPathThemeImages() %>/file_system/large/overlay_link.png" />
