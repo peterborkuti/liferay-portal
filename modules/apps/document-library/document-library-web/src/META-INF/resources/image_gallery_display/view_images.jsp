@@ -177,6 +177,14 @@ DLPortletInstanceSettingsHelper dlPortletInstanceSettingsHelper = new DLPortletI
 					<portlet:param name="folderId" value="<%= String.valueOf(curFolder.getFolderId()) %>" />
 				</portlet:renderURL>
 
+				<%
+				String curFolderTitle = curFolder.getName();
+
+				if (Validator.isNotNull(curFolder.getDescription())) {
+					curFolderTitle += " - " + curFolder.getDescription();
+				}
+				%>
+
 				<c:choose>
 					<c:when test="<%= curFolder.isMountPoint() %>">
 
@@ -188,7 +196,7 @@ DLPortletInstanceSettingsHelper dlPortletInstanceSettingsHelper = new DLPortletI
 						%>
 
 							<div class="image-icon">
-								<a class="image-link" href="<%= viewFolderURL.toString() %>" title="<%= HtmlUtil.escape(curFolder.getName()) + " - " + HtmlUtil.escape(curFolder.getDescription()) %>">
+								<a class="image-link" href="<%= viewFolderURL.toString() %>" title="<%= HtmlUtil.escape(curFolderTitle) %>">
 									<span class="image-thumbnail">
 										<img alt="<liferay-ui:message escapeAttribute="<%= true %>" key="repository" />" src="<%= folderImageSrc %>" style="<%= DLUtil.getThumbnailStyle(true, 0, 128, 128) %>" />
 									</span>
@@ -218,7 +226,7 @@ DLPortletInstanceSettingsHelper dlPortletInstanceSettingsHelper = new DLPortletI
 					</c:when>
 					<c:otherwise>
 						<div class="image-icon">
-							<a class="image-link" href="<%= viewFolderURL.toString() %>" title="<%= HtmlUtil.escape(curFolder.getName()) + " - " + HtmlUtil.escape(curFolder.getDescription()) %>">
+							<a class="image-link" href="<%= viewFolderURL.toString() %>" title="<%= HtmlUtil.escape(curFolderTitle) %>">
 
 								<%
 								String folderImageSrc = themeDisplay.getPathThemeImages() + "/file_system/large/folder_empty.png";
