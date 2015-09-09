@@ -200,6 +200,28 @@ public class ComboServletTest extends PowerMockito {
 	}
 
 	@Test
+	public void testGetResourceRequestDispatcherWithoutPortletIdButContext()
+		throws Exception {
+
+		_comboServlet.getResourceRequestDispatcher(
+			_mockHttpServletRequest, _mockHttpServletResponse,
+			_CONTEXT + _PATH);
+
+		verify(_portalServletContext).getRequestDispatcher(_PATH);
+	}
+
+	@Test
+	public void testGetResourceRequestDispatcherWithPortletIdAndContext()
+		throws Exception {
+
+		_comboServlet.getResourceRequestDispatcher(
+			_mockHttpServletRequest, _mockHttpServletResponse,
+			PortletKeys.PORTAL + ":" + _CONTEXT + _PATH);
+
+		verify(_portalServletContext).getRequestDispatcher(_PATH);
+	}
+
+	@Test
 	public void testGetResourceWithPortletId() throws Exception {
 		_comboServlet.getResourceRequestDispatcher(
 			_mockHttpServletRequest, _mockHttpServletResponse,
