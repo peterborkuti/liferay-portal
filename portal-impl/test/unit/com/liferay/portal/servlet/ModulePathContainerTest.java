@@ -35,22 +35,20 @@ public class ModulePathContainerTest {
 
 	@Test
 	public void testModulePathWithNoContextPath() {
-		String modulePath = "/js/javascript.js";
-
 		Assert.assertEquals(
-			PortletKeys.PORTAL, ComboServlet.getModulePortletId(modulePath));
+			PortletKeys.PORTAL, ComboServlet.getModulePortletId(_PATH));
 		Assert.assertEquals(
-			"/js/javascript.js", ComboServlet.getResourcePath(modulePath));
+			_PATH, ComboServlet.getResourcePath(_PATH, StringPool.BLANK));
 	}
 
 	@Test
 	public void testModulePathWithPortletId() {
-		String modulePath = PortletKeys.PORTAL + ":/js/javascript.js";
+		String modulePath = PortletKeys.PORTAL + ":" + _PATH;
 
 		Assert.assertEquals(
 			PortletKeys.PORTAL, ComboServlet.getModulePortletId(modulePath));
 		Assert.assertEquals(
-			"/js/javascript.js", ComboServlet.getResourcePath(modulePath));
+			_PATH, ComboServlet.getResourcePath(modulePath, StringPool.BLANK));
 	}
 
 	@Test
@@ -60,7 +58,10 @@ public class ModulePathContainerTest {
 		Assert.assertEquals(
 			PortletKeys.PORTAL, ComboServlet.getModulePortletId(modulePath));
 		Assert.assertEquals(
-			StringPool.BLANK, ComboServlet.getResourcePath(modulePath));
+			StringPool.BLANK,
+			ComboServlet.getResourcePath(modulePath, StringPool.BLANK));
 	}
+
+	private static final String _PATH = "/js/javascript.js";
 
 }
