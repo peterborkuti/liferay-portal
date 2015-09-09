@@ -15,6 +15,7 @@
 package com.liferay.portal.servlet;
 
 import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.tools.ToolDependencies;
 import com.liferay.portal.util.PortletKeys;
 
@@ -31,6 +32,15 @@ public class ModulePathContainerTest {
 	@BeforeClass
 	public static void setUpClass() throws Exception {
 		ToolDependencies.wireCaches();
+	}
+
+	@Test
+	public void testModulePathWithContextPath() {
+		String modulePath = _CONTEXT + _PATH;
+		Assert.assertEquals(
+			PortletKeys.PORTAL, ComboServlet.getModulePortletId(modulePath));
+		Assert.assertEquals(
+			_PATH, ComboServlet.getResourcePath(modulePath, _CONTEXT));
 	}
 
 	@Test
@@ -52,6 +62,16 @@ public class ModulePathContainerTest {
 	}
 
 	@Test
+	public void testModulePathWithPortletIdAndContext() {
+		String modulePath = PortletKeys.PORTAL + ":" + _CONTEXT + _PATH;
+
+		Assert.assertEquals(
+			PortletKeys.PORTAL, ComboServlet.getModulePortletId(modulePath));
+		Assert.assertEquals(
+			_PATH, ComboServlet.getResourcePath(modulePath, _CONTEXT));
+	}
+
+	@Test
 	public void testModulePathWithPortletIdAndNoResourcePath() {
 		String modulePath = PortletKeys.PORTAL + ":";
 
@@ -61,6 +81,19 @@ public class ModulePathContainerTest {
 			StringPool.BLANK,
 			ComboServlet.getResourcePath(modulePath, StringPool.BLANK));
 	}
+
+	@Test
+	public void testModulePathWithPortletIdAndNoResourcePathButContext() {
+		String modulePath = PortletKeys.PORTAL + ":" + _CONTEXT;
+
+		Assert.assertEquals(
+			PortletKeys.PORTAL, ComboServlet.getModulePortletId(modulePath));
+		Assert.assertEquals(
+			StringPool.BLANK,
+			ComboServlet.getResourcePath(modulePath, _CONTEXT));
+	}
+
+	private static final String _CONTEXT = "/" + StringUtil.randomString();
 
 	private static final String _PATH = "/js/javascript.js";
 
