@@ -113,10 +113,10 @@ portletURL.setParameter("keywords", keywords);
 				commentRelatedSearchResults="<%= searchResult.getCommentRelatedSearchResults() %>"
 				containerName="<%= curNode.getName() %>"
 				cssClass='<%= MathUtil.isEven(index) ? "search" : "search alt" %>'
-				description="<%= (summary != null) ? summary.getContent() : wikiPage.getSummary() %>"
+				description="<%= ((summary != null) && Validator.isNotNull(summary.getContent())) ? summary.getContent() : wikiPage.getSummary() %>"
 				fileEntryRelatedSearchResults="<%= searchResult.getFileEntryRelatedSearchResults() %>"
 				queryTerms="<%= hits.getQueryTerms() %>"
-				title="<%= (summary != null) ? summary.getTitle() : wikiPage.getTitle() %>"
+				title="<%= ((summary != null) && Validator.isNotNull(summary.getTitle())) ? summary.getTitle() : wikiPage.getTitle() %>"
 				url="<%= rowURL %>"
 			/>
 		</liferay-ui:search-container-row>
