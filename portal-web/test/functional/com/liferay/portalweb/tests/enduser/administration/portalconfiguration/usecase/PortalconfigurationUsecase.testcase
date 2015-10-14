@@ -12,8 +12,8 @@
 	</tear-down>
 
 	<command name="AddPortalInstance" priority="5">
-		<execute macro="Page#gotoCP">
-			<var name="portletName" value="Portal Instances" />
+		<execute macro="ProductMenu#gotoControlPanelSystem">
+			<var name="portlet" value="Portal Instances" />
 		</execute>
 
 		<execute macro="PortalInstances#addCP">
@@ -57,8 +57,8 @@
 	</command>
 
 	<command name="DeletePortalInstance" priority="5">
-		<execute macro="Page#gotoCP">
-			<var name="portletName" value="Portal Instances" />
+		<execute macro="ProductMenu#gotoControlPanelSystem">
+			<var name="portlet" value="Portal Instances" />
 		</execute>
 
 		<execute macro="PortalInstances#addCP">
@@ -73,8 +73,8 @@
 	</command>
 
 	<command name="PermissionCheckPortalInstances" priority="4">
-		<execute macro="Page#gotoCP">
-			<var name="portletName" value="Portal Instances" />
+		<execute macro="ProductMenu#gotoControlPanelSystem">
+			<var name="portlet" value="Portal Instances" />
 		</execute>
 
 		<execute macro="PortalInstances#addCP">
@@ -128,12 +128,12 @@
 			<var name="virtualHostsURL" value="${otherInstanceAccessAttempt}" />
 		</execute>
 
-		<execute function="AssertTextEquals" locator1="Home#ERROR_MESSAGE" value1="You do not have the required permissions." />
+		<execute function="AssertTextEquals" locator1="Message#ERROR" value1="You do not have the required permissions." />
 	</command>
 
 	<command name="ViewDeactivatedPortalInstance" priority="5">
-		<execute macro="Page#gotoCP">
-			<var name="portletName" value="Portal Instances" />
+		<execute macro="ProductMenu#gotoControlPanelSystem">
+			<var name="portlet" value="Portal Instances" />
 		</execute>
 
 		<execute macro="PortalInstances#addCP">
@@ -227,12 +227,8 @@
 
 		<execute macro="User#loginPG" />
 
-		<execute macro="Page#gotoCP">
-			<var name="portletName" value="Portal Instances" />
-		</execute>
-
-		<execute macro="Page#gotoCP">
-			<var name="portletName" value="Portal Instances" />
+		<execute macro="ProductMenu#gotoControlPanelSystem">
+			<var name="portlet" value="Portal Instances" />
 		</execute>
 
 		<execute macro="PortalInstances#deactivatePortalInstance">

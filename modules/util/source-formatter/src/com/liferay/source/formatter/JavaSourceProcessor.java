@@ -911,6 +911,17 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 					"ResourceBundle.getBundle: " + fileName);
 		}
 
+		// LPS-59076
+
+		if (_checkModulesServiceUtil && isModulesFile(absolutePath) &&
+			newContent.contains("@Component") &&
+			newContent.contains("ServiceUtil.")) {
+
+			processErrorMessage(
+				fileName,
+				"OSGI Component should not call ServiceUtil: " + fileName);
+		}
+
 		newContent = getCombinedLinesContent(
 			newContent, _combinedLinesPattern1);
 		newContent = getCombinedLinesContent(
@@ -949,6 +960,9 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 		if (portalSource) {
 			fileNames = getPortalJavaFiles();
 
+			_checkModulesServiceUtil = GetterUtil.getBoolean(
+				System.getProperty(
+					"source.formatter.check.modules.service.util"));
 			_checkUnprocessedExceptions = GetterUtil.getBoolean(
 				System.getProperty(
 					"source.formatter.check.unprocessed.exceptions"));
@@ -1643,19 +1657,45 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 				if (!trimmedLine.startsWith(StringPool.DOUBLE_SLASH) &&
 					!trimmedLine.startsWith(StringPool.STAR)) {
 
-					if ((line.contains(" && ") || line.contains(" || ")) &&
-						line.endsWith(StringPool.OPEN_PARENTHESIS)) {
-
-						processErrorMessage(
-							fileName,
-							"line break: " + fileName + " " + lineCount);
-					}
-
 					String strippedQuotesLine = stripQuotes(
 						trimmedLine, CharPool.QUOTE);
 
 					strippedQuotesLine = stripQuotes(
 						strippedQuotesLine, CharPool.APOSTROPHE);
+
+					if (line.endsWith(StringPool.OPEN_PARENTHESIS)) {
+						if (line.contains(" && ") || line.contains(" || ")) {
+							processErrorMessage(
+								fileName,
+								"line break: " + fileName + " " + lineCount);
+						}
+
+						int pos = strippedQuotesLine.indexOf(" + ");
+
+						if (pos != -1) {
+							String linePart = strippedQuotesLine.substring(
+								0, pos);
+
+							int closeBracketCount = StringUtil.count(
+								linePart, StringPool.CLOSE_BRACKET);
+							int closeParenthesisCount = StringUtil.count(
+								linePart, StringPool.CLOSE_PARENTHESIS);
+							int openBracketCount = StringUtil.count(
+								linePart, StringPool.OPEN_BRACKET);
+							int openParenthesisCount = StringUtil.count(
+								linePart, StringPool.OPEN_PARENTHESIS);
+
+							if ((openBracketCount == closeBracketCount) &&
+								(openParenthesisCount ==
+									closeParenthesisCount)) {
+
+								processErrorMessage(
+									fileName,
+									"line break: " + fileName + " " +
+										lineCount);
+							}
+						}
+					}
 
 					if (!trimmedLine.startsWith(StringPool.CLOSE_CURLY_BRACE) &&
 						strippedQuotesLine.contains(
@@ -3221,6 +3261,7 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 	private Pattern _catchExceptionPattern = Pattern.compile(
 		"\n(\t+)catch \\((.+Exception) (.+)\\) \\{\n");
 	private List<String> _checkJavaFieldTypesExclusionFiles;
+	private boolean _checkModulesServiceUtil;
 	private boolean _checkUnprocessedExceptions;
 	private Pattern _combinedLinesPattern1 = Pattern.compile(
 		"\n(\t*).+(=|\\]) (\\{)\n");

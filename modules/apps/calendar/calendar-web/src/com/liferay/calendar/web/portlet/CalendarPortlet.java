@@ -69,6 +69,7 @@ import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.upload.UploadPortletRequest;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
@@ -105,6 +106,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -933,11 +935,15 @@ public class CalendarPortlet extends MVCPortlet {
 			resourceRequest, "statuses");
 
 		List<CalendarBooking> calendarBookings =
-			CalendarBookingServiceUtil.search(
+			Collections.<CalendarBooking>emptyList();
+
+		if (!ArrayUtil.isEmpty(calendarIds)) {
+			calendarBookings = CalendarBookingServiceUtil.search(
 				themeDisplay.getCompanyId(), new long[0], calendarIds,
 				new long[0], -1, null, startTimeJCalendar.getTimeInMillis(),
 				endTimeJCalendar.getTimeInMillis(), true, statuses,
 				QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+		}
 
 		JSONArray jsonArray = CalendarUtil.toCalendarBookingsJSONArray(
 			themeDisplay, calendarBookings, getTimeZone(resourceRequest));
@@ -1100,7 +1106,7 @@ public class CalendarPortlet extends MVCPortlet {
 
 		long calendarId = ParamUtil.getLong(resourceRequest, "calendarId");
 
-		Calendar calendar = CalendarLocalServiceUtil.getCalendar(calendarId);
+		Calendar calendar = CalendarServiceUtil.getCalendar(calendarId);
 
 		String fileName =
 			calendar.getName(themeDisplay.getLocale()) + CharPool.PERIOD +

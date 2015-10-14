@@ -29,8 +29,8 @@ import org.osgi.service.component.annotations.Reference;
 @Component(
 	immediate = true,
 	property = {
-		"panel.category.key=" + PanelCategoryKeys.CONTROL_PANEL_CONFIGURATION,
-		"service.ranking:Integer=400"
+		"panel.category.key=" + PanelCategoryKeys.CONTROL_PANEL_SYSTEM,
+		"service.ranking:Integer=200"
 	},
 	service = PanelApp.class
 )
@@ -45,7 +45,7 @@ public class PortalInstancesPanelApp extends BaseControlPanelEntryPanelApp {
 		target = "(javax.portlet.name=" + PortalInstancesPortletKeys.PORTAL_INSTANCES + ")",
 		unbind = "-"
 	)
-	protected void setPortlet(Portlet portlet) {
+	public void setPortlet(Portlet portlet) {
 		super.setPortlet(portlet);
 	}
 

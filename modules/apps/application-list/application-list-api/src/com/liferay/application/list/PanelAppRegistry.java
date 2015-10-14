@@ -169,10 +169,13 @@ public class PanelAppRegistry {
 			String panelCategoryKey, PanelApp panelApp,
 			List<PanelApp> panelApps) {
 
-			Portlet portlet = panelApp.getPortlet();
+			Portlet portlet = portletLocalService.getPortletById(
+				panelApp.getPortletId());
 
 			if (portlet != null) {
 				portlet.setControlPanelEntryCategory(panelCategoryKey);
+
+				panelApp.setPortlet(portlet);
 			}
 			else if (_log.isDebugEnabled()) {
 				_log.debug("Unable to get portlet " + panelApp.getPortletId());

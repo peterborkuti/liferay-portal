@@ -30,7 +30,7 @@
 		<execute macro="ServerAdministration#tearDownDMFileUploadSettings" />
 	</tear-down>
 
-	<command name="AddMBCategories" priority="4">
+	<command name="AddMBCategories" priority="5">
 		<var name="categoryNameList" value="MB Category1 Name,MB Category2 Name,MB Category3 Name" />
 
 		<for list="${categoryNameList}" param="categoryName" >
@@ -48,7 +48,7 @@
 		</for>
 	</command>
 
-	<command name="AddMBCategory" priority="4">
+	<command name="AddMBCategory" priority="5">
 		<var name="categoryName" value="MB Category Name" />
 
 		<execute macro="Page#gotoPG">
@@ -330,7 +330,7 @@
 		</execute>
 	</command>
 
-	<command name="AddMBThread" priority="4">
+	<command name="AddMBThread" priority="5">
 		<var name="threadBody" value="MB Thread Message Body" />
 		<var name="threadSubject" value="MB Thread Message Subject" />
 
@@ -457,7 +457,7 @@
 		</execute>
 	</command>
 
-	<command name="AddMBThreadReply" priority="4">
+	<command name="AddMBThreadReply" priority="5">
 		<var name="threadBody" value="MB Thread Message Body" />
 		<var name="threadReplyBody" value="MB Thread Reply Body" />
 		<var name="threadSubject" value="MB Thread Message Subject" />
@@ -600,7 +600,7 @@
 		</execute>
 	</command>
 
-	<command name="EditMBThreadBody" priority="4">
+	<command name="EditMBThreadBody" priority="5">
 		<execute macro="Page#gotoPG">
 			<var name="pageName" value="${pageName}" />
 		</execute>
@@ -632,7 +632,7 @@
 		</execute>
 	</command>
 
-	<command name="EditMBThreadSubject" priority="4">
+	<command name="EditMBThreadSubject" priority="5">
 		<execute macro="Page#gotoPG">
 			<var name="pageName" value="${pageName}" />
 		</execute>
@@ -767,7 +767,7 @@
 		</execute>
 	</command>
 
-	<command name="MoveMBCategory1ThreadWithExplanationPostToCategory2" priority="4">
+	<command name="MoveMBCategory1ThreadWithExplanationPostToCategory2" priority="3">
 		<var name="categoryName1" value="MB Category1 Name" />
 		<var name="categoryName2" value="MB Category2 Name" />
 		<var name="explanationBody" value="MB Explanation Post Body" />
@@ -844,8 +844,8 @@
 	</command>
 
 	<command name="ViewDefaultEmailFromConfigurationAndSubscriptionEmail" priority="4">
-		<execute macro="Page#gotoCP">
-			<var name="portletName" value="Server Administration" />
+		<execute macro="ProductMenu#gotoControlPanelSystem">
+			<var name="portlet" value="Server Administration" />
 		</execute>
 
 		<execute macro="ServerAdministration#configureMailServerSettings">
@@ -853,8 +853,8 @@
 			<var method="TestPropsUtil#get('email.password.1')" name="userPassword" />
 		</execute>
 
-		<execute macro="Page#gotoCP">
-			<var name="portletName" value="Portal Instances" />
+		<execute macro="ProductMenu#gotoControlPanelSystem">
+			<var name="portlet" value="Portal Instances" />
 		</execute>
 
 		<execute macro="PortalInstances#editCP">
@@ -972,8 +972,8 @@
 	<command name="ViewMBThreadAndReplyThreadInGmail" priority="4">
 		<property name="custom.properties" value="pop.server.notifications.enabled=true{line.separator}pop.server.subdomain=" />
 
-		<execute macro="Page#gotoCP">
-			<var name="portletName" value="Server Administration" />
+		<execute macro="ProductMenu#gotoControlPanelSystem">
+			<var name="portlet" value="Server Administration" />
 		</execute>
 
 		<execute macro="ServerAdministration#configureMailServerSettings">
@@ -981,8 +981,8 @@
 			<var method="TestPropsUtil#get('email.password.1')" name="userPassword" />
 		</execute>
 
-		<execute macro="Page#gotoCP">
-			<var name="portletName" value="Portal Instances" />
+		<execute macro="ProductMenu#gotoControlPanelSystem">
+			<var name="portlet" value="Portal Instances" />
 		</execute>
 
 		<execute macro="PortalInstances#editCP">

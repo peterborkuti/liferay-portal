@@ -16,25 +16,27 @@ package com.liferay.journal.content.web.exportimport.portlet.preferences.process
 
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
-import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalServiceUtil;
+import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalService;
 import com.liferay.exportimport.portlet.preferences.processor.Capability;
 import com.liferay.exportimport.portlet.preferences.processor.ExportImportPortletPreferencesProcessor;
+import com.liferay.exportimport.portlet.preferences.processor.capability.ReferencedStagedModelImporterCapability;
 import com.liferay.journal.content.web.constants.JournalContentPortletKeys;
 import com.liferay.journal.model.JournalArticle;
-import com.liferay.journal.service.JournalArticleLocalServiceUtil;
-import com.liferay.journal.service.JournalContentSearchLocalServiceUtil;
+import com.liferay.journal.service.JournalArticleLocalService;
+import com.liferay.journal.service.JournalContentSearchLocalService;
 import com.liferay.journal.service.permission.JournalPermission;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.model.Layout;
-import com.liferay.portal.service.LayoutLocalServiceUtil;
+import com.liferay.portal.service.LayoutLocalService;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portlet.exportimport.lar.PortletDataContext;
 import com.liferay.portlet.exportimport.lar.PortletDataException;
@@ -47,6 +49,7 @@ import javax.portlet.PortletPreferences;
 import javax.portlet.ReadOnlyException;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Mate Thurzo
@@ -68,7 +71,8 @@ public class JournalContentExportImportPortletPreferencesProcessor
 
 	@Override
 	public List<Capability> getImportCapabilities() {
-		return null;
+		return ListUtil.toList(
+			new Capability[] {_referencedStagedModelImporterCapability});
 	}
 
 	@Override
@@ -120,11 +124,11 @@ public class JournalContentExportImportPortletPreferencesProcessor
 
 		JournalArticle article = null;
 
-		article = JournalArticleLocalServiceUtil.fetchLatestArticle(
+		article = _journalArticleLocalService.fetchLatestArticle(
 			articleGroupId, articleId, WorkflowConstants.STATUS_APPROVED);
 
 		if (article == null) {
-			article = JournalArticleLocalServiceUtil.fetchLatestArticle(
+			article = _journalArticleLocalService.fetchLatestArticle(
 				articleGroupId, articleId, WorkflowConstants.STATUS_EXPIRED);
 		}
 
@@ -152,11 +156,10 @@ public class JournalContentExportImportPortletPreferencesProcessor
 			!defaultDDMTemplateKey.equals(preferenceDDMTemplateKey)) {
 
 			try {
-				DDMTemplate ddmTemplate =
-					DDMTemplateLocalServiceUtil.getTemplate(
-						article.getGroupId(),
-						PortalUtil.getClassNameId(DDMStructure.class),
-						preferenceDDMTemplateKey, true);
+				DDMTemplate ddmTemplate = _ddmTemplateLocalService.getTemplate(
+					article.getGroupId(),
+					PortalUtil.getClassNameId(DDMStructure.class),
+					preferenceDDMTemplateKey, true);
 
 				StagedModelDataHandlerUtil.exportReferenceStagedModel(
 					portletDataContext, article, ddmTemplate,
@@ -201,15 +204,6 @@ public class JournalContentExportImportPortletPreferencesProcessor
 
 		portletDataContext.setScopeGroupId(groupId);
 
-		StagedModelDataHandlerUtil.importReferenceStagedModels(
-			portletDataContext, DDMStructure.class);
-
-		StagedModelDataHandlerUtil.importReferenceStagedModels(
-			portletDataContext, DDMTemplate.class);
-
-		StagedModelDataHandlerUtil.importReferenceStagedModels(
-			portletDataContext, JournalArticle.class);
-
 		String articleId = portletPreferences.getValue("articleId", null);
 
 		try {
@@ -225,10 +219,10 @@ public class JournalContentExportImportPortletPreferencesProcessor
 
 				portletPreferences.setValue("groupId", String.valueOf(groupId));
 
-				Layout layout = LayoutLocalServiceUtil.fetchLayout(
+				Layout layout = _layoutLocalService.fetchLayout(
 					portletDataContext.getPlid());
 
-				JournalContentSearchLocalServiceUtil.updateContentSearch(
+				_journalContentSearchLocalService.updateContentSearch(
 					layout.getGroupId(), layout.isPrivateLayout(),
 					layout.getLayoutId(), portletDataContext.getPortletId(),
 					articleId, true);
@@ -271,7 +265,51 @@ public class JournalContentExportImportPortletPreferencesProcessor
 		return portletPreferences;
 	}
 
+	@Reference(unbind = "-")
+	protected void setDDMTemplateLocalService(
+		DDMTemplateLocalService ddmTemplateLocalService) {
+
+		_ddmTemplateLocalService = ddmTemplateLocalService;
+	}
+
+	@Reference(unbind = "-")
+	protected void setJournalArticleLocalService(
+		JournalArticleLocalService journalArticleLocalService) {
+
+		_journalArticleLocalService = journalArticleLocalService;
+	}
+
+	@Reference(unbind = "-")
+	protected void setJournalContentSearchLocalService(
+		JournalContentSearchLocalService journalContentSearchLocalService) {
+
+		_journalContentSearchLocalService = journalContentSearchLocalService;
+	}
+
+	@Reference(unbind = "-")
+	protected void setLayoutLocalService(
+		LayoutLocalService layoutLocalService) {
+
+		_layoutLocalService = layoutLocalService;
+	}
+
+	@Reference(unbind = "-")
+	protected void setReferencedStagedModelImporterCapability(
+		ReferencedStagedModelImporterCapability
+			referencedStagedModelImporterCapability) {
+
+		_referencedStagedModelImporterCapability =
+			referencedStagedModelImporterCapability;
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		JournalContentExportImportPortletPreferencesProcessor.class);
+
+	private DDMTemplateLocalService _ddmTemplateLocalService;
+	private JournalArticleLocalService _journalArticleLocalService;
+	private JournalContentSearchLocalService _journalContentSearchLocalService;
+	private LayoutLocalService _layoutLocalService;
+	private ReferencedStagedModelImporterCapability
+		_referencedStagedModelImporterCapability;
 
 }

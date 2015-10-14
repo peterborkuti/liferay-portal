@@ -40,7 +40,12 @@
 				</then>
 			</elseif>
 			<else>
-				<execute function="UploadCommonFile" locator1="TextInput#FILE" value1="${dmDocumentFile}" />
+				<if>
+					<isset var="dmDocumentFile" />
+					<then>
+						<execute function="UploadCommonFile" locator1="TextInput#FILE" value1="${dmDocumentFile}" />
+					</then>
+				</if>
 			</else>
 		</if>
 
@@ -238,6 +243,18 @@
 
 		<execute function="AssertClick" locator1="Button#SUBMIT_FOR_PUBLICATION" value1="Submit for Publication" />
 		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+	</command>
+
+	<command name="addGoogleDoc">
+		<execute function="AssertClick#waitForDMHomeAssertTextEqualsClick" locator1="Toolbar#ADD" value1="Add" />
+
+		<execute function="AssertClick" locator1="MenuItem#GOOGLE_DOCS" value1="Google Docs" />
+
+		<execute macro="GoogleDoc#selectDocument">
+			<var name="googleDocName" value="${googleDocName}" />
+		</execute>
+
+		<execute macro="GoogleDoc#publish" />
 	</command>
 
 	<command name="addMultiplePG">
@@ -730,11 +747,11 @@
 		<var name="key_assetType" value="${assetType}" />
 		<var name="key_mgDocumentTitle" value="${mgDocumentTitle}" />
 
-		<execute function="AssertClick" locator1="MediaGallery#ENTRY_TITLE" value1="${mgDocumentTitle}" />
+		<execute function="AssertClick" locator1="MediaGallery#IMAGE_TITLE" value1="${mgDocumentTitle}" />
 
 		<execute function="AssertClick" locator1="MediaGallery#ENTRY_RECYCLE_BIN_ICON" value1="Move to the Recycle Bin" />
 		<execute function="AssertTextEquals#assertPartialText" locator1="Message#RECYCLE_BIN_SUCCESS" value1="moved to the Recycle Bin. Undo" />
-		<execute function="AssertElementNotPresent" locator1="MediaGallery#ENTRY_TITLE" value1="${mgDocumentTitle}" />
+		<execute function="AssertElementNotPresent" locator1="MediaGallery#IMAGE_TITLE" value1="${mgDocumentTitle}" />
 	</command>
 
 	<command name="deleteViaActionsPG">
@@ -975,7 +992,7 @@
 	<command name="editPGViaMG">
 		<var name="key_mgDocumentTitle" value="${mgDocumentTitle}" />
 
-		<execute function="AssertClick" locator1="MediaGallery#ENTRY_TITLE" value1="${mgDocumentTitle}" />
+		<execute function="AssertClick" locator1="MediaGallery#IMAGE_TITLE" value1="${mgDocumentTitle}" />
 
 		<execute function="AssertTextEquals" locator1="MediaGallery#MEDIA_CAPTION" value1="${mgDocumentTitle} - ${mgDocumentDescription}" />
 		<execute function="Click" locator1="MediaGallery#ENTRY_EDIT_ICON" />
@@ -985,7 +1002,7 @@
 		<execute function="AssertClick" locator1="Button#PUBLISH" value1="Publish" />
 
 		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
-		<execute function="AssertTextEquals" locator1="MediaGallery#ENTRY_TITLE" value1="${mgDocumentTitleEdit}" />
+		<execute function="AssertTextEquals" locator1="MediaGallery#IMAGE_TITLE" value1="${mgDocumentTitleEdit}" />
 	</command>
 
 	<command name="editPublishPG">
@@ -1693,7 +1710,7 @@
 			<then>
 				<execute function="Click" locator1="DocumentsAndMedia#TOOLBAR_DISPLAY_STYLE_BUTTON" />
 				<execute function="AssertClick" locator1="MenuItem#DISPLAY_STYLE_LIST" value1="List" />
-				<execute function="AssertTextEquals" locator1="DocumentsAndMedia#ICON_DOCUMENT_WORKFLOW_STATUS" value1="Approved" />
+				<execute function="AssertTextEquals" locator1="DocumentsAndMedia#LIST_DOCUMENT_WORKFLOW_STATUS" value1="Approved" />
 			</then>
 			<else>
 				<execute function="Click" locator1="DocumentsAndMedia#TOOLBAR_DISPLAY_STYLE_BUTTON" />
@@ -2233,7 +2250,7 @@
 		<var name="key_mgDocumentTitle" value="${mgDocumentTitle}" />
 
 		<execute function="AssertElementPresent" locator1="MediaGallery#ENTRY_THUMBNAIL" />
-		<execute function="AssertElementPresent" locator1="MediaGallery#ENTRY_TITLE" value1="${mgDocumentTitle}" />
+		<execute function="AssertElementPresent" locator1="MediaGallery#IMAGE_TITLE" value1="${mgDocumentTitle}" />
 	</command>
 
 	<command name="viewPGViaSearch">
