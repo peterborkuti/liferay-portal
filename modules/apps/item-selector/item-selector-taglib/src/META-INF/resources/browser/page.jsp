@@ -47,8 +47,8 @@ if (Validator.isNotNull(keywords)) {
 	<liferay-frontend:management-bar>
 		<liferay-frontend:management-bar-buttons>
 			<liferay-frontend:management-bar-display-buttons
-				displayStyleURL="<%= PortletURLUtil.clone(portletURL, liferayPortletResponse) %>"
 				displayViews="<%= BrowserTag.DISPLAY_STYLES %>"
+				portletURL="<%= PortletURLUtil.clone(portletURL, liferayPortletResponse) %>"
 				selectedDisplayStyle="<%= displayStyle %>"
 			/>
 		</liferay-frontend:management-bar-buttons>
@@ -309,12 +309,11 @@ if (Validator.isNotNull(keywords)) {
 								%>
 
 									<liferay-ui:search-container-column-text colspan="<%= 3 %>">
-										<liferay-frontend:card
-											horizontal="<%= true %>"
+										<liferay-frontend:horizontal-card
+											icon="icon-folder-close-alt"
 											imageCSSClass="icon-monospaced"
-											imageUrl="icon-folder-close-alt"
 											resultRow="<%= row %>"
-											title="<%= HtmlUtil.escape(folder.getName()) %>"
+											text="<%= HtmlUtil.escape(folder.getName()) %>"
 											url="<%= viewFolderURL.toString() %>"
 										/>
 									</liferay-ui:search-container-column-text>
@@ -342,7 +341,7 @@ if (Validator.isNotNull(keywords)) {
 								%>
 
 									<liferay-ui:search-container-column-text>
-										<liferay-frontend:card
+										<liferay-frontend:vertical-card
 											cssClass="item-preview"
 											data="<%= data %>"
 											imageUrl="<%= DLUtil.getThumbnailSrc(fileEntry, themeDisplay) %>"
