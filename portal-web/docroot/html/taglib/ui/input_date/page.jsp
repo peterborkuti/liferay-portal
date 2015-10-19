@@ -45,26 +45,20 @@ String yearParamId = namespace + HtmlUtil.getAUICompatibleId(yearParam);
 Calendar calendar = CalendarFactoryUtil.getCalendar(yearValue, monthValue, dayValue);
 
 String mask = _MASK_MDY;
-String simpleDateFormatPattern = _SIMPLE_DATE_FORMAT_PATTERN_MDY;
+String simpleDateFormatPattern = _SIMPLE_DATE_FORMAT_PATTERN_HTML5;
 
-if (BrowserSnifferUtil.isMobile(request)) {
-	simpleDateFormatPattern = _SIMPLE_DATE_FORMAT_PATTERN_HTML5;
-}
-else {
+if (!BrowserSnifferUtil.isMobile(request)) {
 	DateFormat shortDateFormat = DateFormat.getDateInstance(DateFormat.SHORT, locale);
 
 	SimpleDateFormat shortDateFormatSimpleDateFormat = (SimpleDateFormat)shortDateFormat;
 
 	String shortDateFormatSimpleDateFormatPattern = shortDateFormatSimpleDateFormat.toPattern();
 
-	if (shortDateFormatSimpleDateFormatPattern.indexOf("y") == 0) {
-		mask = _MASK_YMD;
-		simpleDateFormatPattern = _SIMPLE_DATE_FORMAT_PATTERN_YMD;
-	}
-	else if (shortDateFormatSimpleDateFormatPattern.indexOf("d") == 0) {
-		mask = _MASK_DMY;
-		simpleDateFormatPattern = _SIMPLE_DATE_FORMAT_PATTERN_DMY;
-	}
+	simpleDateFormatPattern = shortDateFormatSimpleDateFormatPattern.replaceFirst("y+", "yyyy");
+
+	mask = simpleDateFormatPattern.replaceFirst("M+", "%m");
+	mask = mask.replaceFirst("yyyy", "%Y");
+	mask = mask.replaceFirst("d+", "%d");
 }
 
 Format format = FastDateFormatFactoryUtil.getSimpleDateFormat(simpleDateFormatPattern, locale);
@@ -211,17 +205,7 @@ Format format = FastDateFormatFactoryUtil.getSimpleDateFormat(simpleDateFormatPa
 </aui:script>
 
 <%!
-private static final String _SIMPLE_DATE_FORMAT_PATTERN_DMY = "dd/MM/yyyy";
-
 private static final String _SIMPLE_DATE_FORMAT_PATTERN_HTML5 = "yyyy-MM-dd";
 
-private static final String _SIMPLE_DATE_FORMAT_PATTERN_MDY = "MM/dd/yyyy";
-
-private static final String _SIMPLE_DATE_FORMAT_PATTERN_YMD = "yyyy/MM/dd";
-
-private static final String _MASK_DMY = "%d/%m/%Y";
-
 private static final String _MASK_MDY = "%m/%d/%Y";
-
-private static final String _MASK_YMD = "%Y/%m/%d";
 %>
