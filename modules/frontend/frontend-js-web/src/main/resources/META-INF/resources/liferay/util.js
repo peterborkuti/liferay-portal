@@ -434,7 +434,11 @@
 						break;
 					}
 
-					parentThemeDisplay = parentWindow.themeDisplay;
+					try {
+						parentThemeDisplay = parentWindow.themeDisplay;
+					}
+					catch (e) {
+					}
 
 					if (!parentThemeDisplay || window.name === 'devicePreviewIframe') {
 						break;
