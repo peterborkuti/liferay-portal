@@ -265,9 +265,27 @@ public abstract class PortletResponseImpl implements LiferayPortletResponse {
 		long plid, String portletName, String lifecycle,
 		boolean includeLinkToLayoutUuid) {
 
+		return createLiferayPortletURL(
+			plid, portletName, lifecycle, includeLinkToLayoutUuid, null);
+	}
+
+	@Override
+	public LiferayPortletURL createLiferayPortletURL(
+		long plid, String portletName, String lifecycle,
+		boolean includeLinkToLayoutUuid, String portletMode) {
+
 		return DoPrivilegedUtil.wrap(
 			new LiferayPortletURLPrivilegedAction(
-				plid, portletName, lifecycle, includeLinkToLayoutUuid));
+				plid, portletMode, portletName, lifecycle,
+				includeLinkToLayoutUuid));
+	}
+
+	@Override
+	public LiferayPortletURL createLiferayPortletURL(
+		long plid, String portletName, String lifecycle, String portletMode) {
+
+		return createLiferayPortletURL(
+			plid, portletName, lifecycle, true, portletMode);
 	}
 
 	@Override
@@ -570,7 +588,7 @@ public abstract class PortletResponseImpl implements LiferayPortletResponse {
 
 	protected LiferayPortletURL doCreateLiferayPortletURL(
 		long plid, String portletName, String lifecycle,
-		boolean includeLinkToLayoutUuid) {
+		boolean includeLinkToLayoutUuid, String portletMode) {
 
 		try {
 			Layout layout = (Layout)_portletRequestImpl.getAttribute(
@@ -712,7 +730,13 @@ public abstract class PortletResponseImpl implements LiferayPortletResponse {
 		}
 
 		try {
-			portletURLImpl.setPortletMode(_portletRequestImpl.getPortletMode());
+			if (Validator.isNull(portletMode)) {
+				portletURLImpl.setPortletMode(
+					_portletRequestImpl.getPortletMode());
+			}
+			else {
+				portletURLImpl.setPortletMode(portletMode);
+			}
 		}
 		catch (PortletModeException pme) {
 			_log.error(pme.getMessage());
@@ -762,10 +786,11 @@ public abstract class PortletResponseImpl implements LiferayPortletResponse {
 		implements PrivilegedAction<LiferayPortletURL> {
 
 		public LiferayPortletURLPrivilegedAction(
-			long plid, String portletName, String lifecycle,
+			long plid, String portletMode, String portletName, String lifecycle,
 			boolean includeLinkToLayoutUuid) {
 
 			_plid = plid;
+			_portletMode = portletMode;
 			_portletName = portletName;
 			_lifecycle = lifecycle;
 			_includeLinkToLayoutUuid = includeLinkToLayoutUuid;
@@ -774,12 +799,14 @@ public abstract class PortletResponseImpl implements LiferayPortletResponse {
 		@Override
 		public LiferayPortletURL run() {
 			return doCreateLiferayPortletURL(
-				_plid, _portletName, _lifecycle, _includeLinkToLayoutUuid);
+				_plid, _portletName, _lifecycle, _includeLinkToLayoutUuid,
+				_portletMode);
 		}
 
 		private final boolean _includeLinkToLayoutUuid;
 		private final String _lifecycle;
 		private long _plid;
+		private final String _portletMode;
 		private String _portletName;
 
 	}

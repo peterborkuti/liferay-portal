@@ -64,7 +64,7 @@ public class ActionURLTag extends ParamAndPropertyAncestorTagImpl {
 		}
 
 		LiferayPortletURL liferayPortletURL = _getLiferayPortletURL(
-			request, plid, portletName, lifecycle);
+			request, plid, portletName, lifecycle, portletMode);
 
 		if (liferayPortletURL == null) {
 			_log.error(
@@ -308,7 +308,7 @@ public class ActionURLTag extends ParamAndPropertyAncestorTagImpl {
 
 	private static LiferayPortletURL _getLiferayPortletURL(
 		HttpServletRequest request, long plid, String portletName,
-		String lifecycle) {
+		String lifecycle, String portletMode) {
 
 		PortletRequest portletRequest = (PortletRequest)request.getAttribute(
 			JavaConstants.JAVAX_PORTLET_REQUEST);
@@ -324,7 +324,7 @@ public class ActionURLTag extends ParamAndPropertyAncestorTagImpl {
 			PortalUtil.getLiferayPortletResponse(portletResponse);
 
 		return liferayPortletResponse.createLiferayPortletURL(
-			plid, portletName, lifecycle);
+			plid, portletName, lifecycle, portletMode);
 	}
 
 	private static String _getPortletName(HttpServletRequest request) {

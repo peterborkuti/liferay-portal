@@ -46,6 +46,13 @@ public interface LiferayPortletResponse extends PortletResponse {
 		long plid, String portletName, String lifecycle,
 		boolean includeLinkToLayoutUuid);
 
+	public LiferayPortletURL createLiferayPortletURL(
+		long plid, String portletName, String lifecycle,
+		boolean includeLinkToLayoutUuid, String portletMode);
+
+	public LiferayPortletURL createLiferayPortletURL(
+		long plid, String portletName, String lifecycle, String portletMode);
+
 	public LiferayPortletURL createLiferayPortletURL(String lifecycle);
 
 	public LiferayPortletURL createLiferayPortletURL(
