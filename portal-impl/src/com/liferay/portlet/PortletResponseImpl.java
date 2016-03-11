@@ -446,6 +446,7 @@ public abstract class PortletResponseImpl implements LiferayPortletResponse {
 		}
 	}
 
+	@Override
 	public void setPlid(long plid) {
 		_plid = plid;
 
