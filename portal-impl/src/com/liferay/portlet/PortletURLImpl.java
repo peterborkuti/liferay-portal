@@ -1280,8 +1280,14 @@ public class PortletURLImpl
 
 		Layout layout = getLayout();
 
+		long plid = 0;
+
+		if (layout != null) {
+			plid = layout.getPlid();
+		}
+
 		Map<String, String[]> renderParameters = RenderParametersPool.get(
-			_request, layout.getPlid(), getPortlet().getPortletId());
+			_request, plid, getPortlet().getPortletId());
 
 		if (renderParameters == null) {
 			return;
