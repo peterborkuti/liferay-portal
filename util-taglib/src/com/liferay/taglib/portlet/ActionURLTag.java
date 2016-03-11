@@ -331,6 +331,8 @@ public class ActionURLTag extends ParamAndPropertyAncestorTagImpl {
 
 		LiferayPortletURL liferayPortletURL = null;
 
+		liferayPortletResponse.setPlid(plid);
+
 		if (lifecycle.equals(PortletRequest.ACTION_PHASE)) {
 			liferayPortletURL =
 				(LiferayPortletURL)liferayPortletResponse.createActionURL();
@@ -344,7 +346,6 @@ public class ActionURLTag extends ParamAndPropertyAncestorTagImpl {
 				(LiferayPortletURL)liferayPortletResponse.createResourceURL();
 		}
 
-		liferayPortletURL.setPlid(plid);
 		liferayPortletURL.setPortletId(portletName);
 		liferayPortletURL.setLifecycle(lifecycle);
 
