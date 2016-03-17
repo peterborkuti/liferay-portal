@@ -72,7 +72,7 @@ public class JSONFactoryTest {
 
 		Assert.assertTrue(object instanceof Map);
 
-		Map<String, long[]> deserializedMap = (Map)object;
+		Map<String, long[]> deserializedMap = (Map<String, long[]>)object;
 
 		Object values = deserializedMap.get("key");
 

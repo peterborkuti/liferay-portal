@@ -15,8 +15,6 @@
 package com.liferay.portal.kernel.tree;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.TreeModel;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
@@ -115,8 +113,6 @@ public class TreePathUtil {
 	private static final boolean _VERIFY_DATABASE_TRANSACTIONS_DISABLED =
 		GetterUtil.getBoolean(
 			PropsUtil.get(PropsKeys.VERIFY_DATABASE_TRANSACTIONS_DISABLED));
-
-	private static final Log _log = LogFactoryUtil.getLog(TreePathUtil.class);
 
 	private static class RecursiveRebuildTreeTask extends RecursiveAction {
 

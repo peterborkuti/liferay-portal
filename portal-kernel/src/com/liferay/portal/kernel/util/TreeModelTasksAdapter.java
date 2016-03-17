@@ -44,6 +44,9 @@ public class TreeModelTasksAdapter<T extends TreeModel>
 		throws PortalException {
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public void reindexTreeModels(List<TreeModel> treeModels)
 		throws PortalException {

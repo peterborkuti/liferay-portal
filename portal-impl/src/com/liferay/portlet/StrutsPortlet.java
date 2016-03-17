@@ -268,6 +268,7 @@ public class StrutsPortlet extends LiferayPortlet {
 		}
 	}
 
+	@Override
 	protected void checkPath(String path) throws PortletException {
 		super.checkPath(path);
 	}
