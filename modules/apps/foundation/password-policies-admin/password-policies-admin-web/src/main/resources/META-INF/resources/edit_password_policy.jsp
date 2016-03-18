@@ -25,12 +25,18 @@ long passwordPolicyId = ParamUtil.getLong(request, "passwordPolicyId");
 
 PasswordPolicy passwordPolicy = PasswordPolicyLocalServiceUtil.fetchPasswordPolicy(passwordPolicyId);
 
+if (passwordPolicy == null) {
+	passwordPolicy = new PasswordPolicyImpl();
+
+	passwordPolicy.setNew(true);
+}
+
 boolean defaultPolicy = BeanParamUtil.getBoolean(passwordPolicy, request, "defaultPolicy");
 
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(backURL.toString());
 
-renderResponse.setTitle((passwordPolicy == null) ? LanguageUtil.get(request, "new-password-policy") : passwordPolicy.getName());
+renderResponse.setTitle(passwordPolicy.isNew() ? LanguageUtil.get(request, "new-password-policy") : passwordPolicy.getName());
 %>
 
 <portlet:actionURL name="editPasswordPolicy" var="editPasswordPolicyURL" />

@@ -2580,6 +2580,15 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 					fileName);
 		}
 
+		// LPS-64238
+
+		if (content.contains("import com.liferay.util.dao.orm.CustomSQLUtil")) {
+			processErrorMessage(
+				fileName,
+				"Do not use com.liferay.util.dao.orm.CustomSQLUtil in " +
+					"modules: " + fileName);
+		}
+
 		return content;
 	}
 
@@ -3204,6 +3213,38 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 							content, fileName, line, trimmedLine, lineLength,
 							lineCount, previousLine, null, tabDiff, false, true,
 							0);
+					}
+				}
+			}
+		}
+
+		if (trimmedPreviousLine.matches("^[^<].*[\\w>]$") &&
+			(previousLineTabCount == (lineTabCount - 1)) &&
+			(getLevel(previousLine, "<", ">") == 0)) {
+
+			int x = trimmedLine.indexOf(" = ");
+
+			if ((x != -1) && !ToolsUtil.isInsideQuotes(trimmedLine, x) &&
+				((previousLineLength + 2 + x) < _MAX_LINE_LENGTH)) {
+
+				String linePart = trimmedLine.substring(0, x + 3);
+
+				return getCombinedLinesContent(
+					content, fileName, line, trimmedLine, lineLength,
+					lineCount, previousLine, linePart, tabDiff, true, true, 0);
+			}
+			else if (trimmedLine.endsWith(" =") &&
+					 ((trimmedLine.length() + previousLineLength) <
+						_MAX_LINE_LENGTH)) {
+
+				for (int i = 0;; i++) {
+					String nextLine = getNextLine(content, lineCount + i);
+
+					if (nextLine.endsWith(StringPool.SEMICOLON)) {
+						return getCombinedLinesContent(
+							content, fileName, line, trimmedLine, lineLength,
+							lineCount, previousLine, null, tabDiff, false, true,
+							i + 1);
 					}
 				}
 			}

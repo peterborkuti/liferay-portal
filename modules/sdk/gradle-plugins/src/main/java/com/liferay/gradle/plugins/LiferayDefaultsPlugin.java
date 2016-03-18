@@ -89,6 +89,7 @@ import org.gradle.api.artifacts.maven.Conf2ScopeMapping;
 import org.gradle.api.artifacts.maven.Conf2ScopeMappingContainer;
 import org.gradle.api.artifacts.maven.MavenDeployer;
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository;
+import org.gradle.api.execution.TaskExecutionGraph;
 import org.gradle.api.file.CopySpec;
 import org.gradle.api.file.DuplicatesStrategy;
 import org.gradle.api.file.FileTree;
@@ -611,6 +612,18 @@ public class LiferayDefaultsPlugin extends BaseDefaultsPlugin<LiferayPlugin> {
 							_getPublishCommands(
 								gradleRelativePath, gradleDaemon, true));
 					}
+
+					// Change log
+
+					commands.add(
+						_getGradleCommand(
+							gradleRelativePath,
+							ChangeLogBuilderPlugin.BUILD_CHANGE_LOG_TASK_NAME,
+							gradleDaemon));
+
+					commands.add("git add --all");
+
+					commands.add(_getGitCommitCommand("change log", false));
 
 					// Baseline
 
@@ -1274,8 +1287,28 @@ public class LiferayDefaultsPlugin extends BaseDefaultsPlugin<LiferayPlugin> {
 						project, recordArtifactTask, updateFileVersionsTask);
 
 					if (hasPlugin(project, BundlePlugin.class)) {
-						configureBundleInstructions(project);
 						configureProjectBndProperties(project);
+					}
+				}
+
+			});
+
+		Gradle gradle = project.getGradle();
+
+		TaskExecutionGraph taskExecutionGraph = gradle.getTaskGraph();
+
+		taskExecutionGraph.whenReady(
+			new Closure<Void>(null) {
+
+				@SuppressWarnings("unused")
+				public void doCall(TaskExecutionGraph taskExecutionGraph) {
+					Task jarTask = GradleUtil.getTask(
+						project, JavaPlugin.JAR_TASK_NAME);
+
+					if (hasPlugin(project, BundlePlugin.class) &&
+						taskExecutionGraph.hasTask(jarTask)) {
+
+						configureBundleInstructions(project);
 					}
 				}
 
