@@ -699,8 +699,14 @@ public class ImageToolImpl implements ImageTool {
 
 		BufferedImage originalBufferedImage = getBufferedImage(renderedImage);
 
+		int imgType =  originalBufferedImage.getType();
+
+		if (imgType == BufferedImage.TYPE_CUSTOM) {
+			imgType = BufferedImage.TYPE_INT_ARGB;
+		}
+
 		BufferedImage scaledBufferedImage = new BufferedImage(
-			scaledWidth, scaledHeight, originalBufferedImage.getType());
+			scaledWidth, scaledHeight, imgType);
 
 		Graphics2D scaledGraphics2D = scaledBufferedImage.createGraphics();
 
