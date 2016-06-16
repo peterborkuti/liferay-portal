@@ -699,14 +699,18 @@ public class ImageToolImpl implements ImageTool {
 
 		BufferedImage originalBufferedImage = getBufferedImage(renderedImage);
 
-		ColorModel originalColorModel = originalBufferedImage.getColorModel();
+		int imgType =  originalBufferedImage.getType();
 
-		ColorSpace colorSpace = originalColorModel.getColorSpace();
+		if (imgType == BufferedImage.TYPE_CUSTOM) {
+			imgType = BufferedImage.TYPE_INT_ARGB;
+		}
 
 		BufferedImage scaledBufferedImage = new BufferedImage(
-			scaledWidth, scaledHeight, colorSpace.getType());
+			scaledWidth, scaledHeight, imgType);
 
 		Graphics2D scaledGraphics2D = scaledBufferedImage.createGraphics();
+
+		ColorModel originalColorModel = originalBufferedImage.getColorModel();
 
 		if (originalColorModel.hasAlpha()) {
 			scaledGraphics2D.setComposite(AlphaComposite.Src);
