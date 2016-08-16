@@ -155,7 +155,7 @@ public class DDLImpl implements DDL {
 
 				jsonObject.put(fieldName, (JSONArray)fieldValue);
 			}
-			else {
+			else if (Validator.isNotNull(fieldValue)) {
 				jsonObject.put(fieldName, String.valueOf(fieldValue));
 			}
 		}
