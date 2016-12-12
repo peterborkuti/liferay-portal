@@ -18,12 +18,20 @@
 		<execute function="SelectFrame" value1="relative=top" />
 	</command>
 
+	<command name="selectCategoryFrame">
+		<execute function="SelectFrame" locator1="IFrame#SELECT_CATEGORY" />
+	</command>
+
 	<command name="selectConfigurationFrame">
-		<execute function="SelectFrame" locator1="Configuration#CONFIGURATION_IFRAME" />
+		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
 	</command>
 
 	<command name="selectEditAssetFrame">
 		<execute function="SelectFrame" locator1="IFrame#EDIT_ASSET" />
+	</command>
+
+	<command name="selectModalFrame">
+		<execute function="SelectFrame" locator1="IFrame#MODAL_IFRAME" />
 	</command>
 
 	<command name="selectPermissionsFrame">
@@ -31,7 +39,7 @@
 
 		<execute function="AssertElementPresent" locator1="IFrame#IFRAME_TITLE" value1="Permissions" />
 
-		<execute function="SelectFrame" locator1="Permissions#PERMISSIONS_IFRAME" />
+		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
 	</command>
 
 	<command name="selectTopFrame">

@@ -21,6 +21,8 @@ String redirect = ParamUtil.getString(request, "redirect");
 
 boolean allowUserPersonalSites = PrefsPropsUtil.getBoolean(themeDisplay.getCompanyId(), SyncServiceConfigurationKeys.SYNC_ALLOW_USER_PERSONAL_SITES, SyncServiceConfigurationValues.SYNC_ALLOW_USER_PERSONAL_SITES);
 boolean enabled = PrefsPropsUtil.getBoolean(themeDisplay.getCompanyId(), SyncServiceConfigurationKeys.SYNC_SERVICES_ENABLED, SyncServiceConfigurationValues.SYNC_SERVICES_ENABLED);
+boolean forceSecurityMode = PrefsPropsUtil.getBoolean(themeDisplay.getCompanyId(), SyncServiceConfigurationKeys.SYNC_CLIENT_FORCE_SECURITY_MODE, SyncServiceConfigurationValues.SYNC_CLIENT_FORCE_SECURITY_MODE);
+boolean lanEnabled = PrefsPropsUtil.getBoolean(themeDisplay.getCompanyId(), SyncServiceConfigurationKeys.SYNC_LAN_ENABLED, SyncServiceConfigurationValues.SYNC_LAN_ENABLED);
 int maxConnections = PrefsPropsUtil.getInteger(themeDisplay.getCompanyId(), SyncServiceConfigurationKeys.SYNC_CLIENT_MAX_CONNECTIONS, SyncServiceConfigurationValues.SYNC_CLIENT_MAX_CONNECTIONS);
 int maxDownloadRate = PrefsPropsUtil.getInteger(themeDisplay.getCompanyId(), SyncServiceConfigurationKeys.SYNC_CLIENT_MAX_DOWNLOAD_RATE, SyncServiceConfigurationValues.SYNC_CLIENT_MAX_DOWNLOAD_RATE);
 int maxUploadRate = PrefsPropsUtil.getInteger(themeDisplay.getCompanyId(), SyncServiceConfigurationKeys.SYNC_CLIENT_MAX_UPLOAD_RATE, SyncServiceConfigurationValues.SYNC_CLIENT_MAX_UPLOAD_RATE);
@@ -69,13 +71,15 @@ if (deployed && oAuthEnabled) {
 		<aui:input label="allow-users-to-sync-their-personal-sites" name="allowUserPersonalSites" type="toggle-switch" value="<%= allowUserPersonalSites %>" />
 	</aui:fieldset>
 
-	<h4><liferay-ui:message key="advanced" /></h4>
-
 	<c:if test="<%= deployed %>">
 		<aui:fieldset>
 			<aui:input helpMessage="oauth-enabled-help" label="oauth-enabled" name="oAuthEnabled" type="toggle-switch" value="<%= oAuthEnabled %>" />
 		</aui:fieldset>
 	</c:if>
+
+	<h4><liferay-ui:message key="desktop" /></h4>
+
+	<aui:input helpMessage="allow-lan-syncing-help" label="allow-lan-syncing" name="lanEnabled" type="toggle-switch" value="<%= lanEnabled %>" />
 
 	<aui:input helpMessage="max-connections-help" label="max-connections" name="maxConnections" type="text" value="<%= maxConnections %>" wrapperCssClass="lfr-input-text-container">
 		<aui:validator name="digits" />
@@ -94,6 +98,12 @@ if (deployed && oAuthEnabled) {
 	<aui:input helpMessage="max-upload-rate-help" label="max-upload-rate" name="maxUploadRate" type="text" value="<%= maxUploadRate %>" wrapperCssClass="lfr-input-text-container">
 		<aui:validator name="digits" />
 	</aui:input>
+
+	<h4><liferay-ui:message key="mobile" /></h4>
+
+	<aui:fieldset>
+		<aui:input helpMessage="force-security-mode-help" label="force-security-mode" name="forceSecurityMode" type="toggle-switch" value="<%= forceSecurityMode %>" />
+	</aui:fieldset>
 
 	<aui:button-row>
 		<aui:button type="submit" />

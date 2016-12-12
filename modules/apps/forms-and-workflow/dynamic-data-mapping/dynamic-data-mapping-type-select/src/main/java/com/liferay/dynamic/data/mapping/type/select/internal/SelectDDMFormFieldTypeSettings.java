@@ -29,7 +29,7 @@ import com.liferay.dynamic.data.mapping.model.DDMFormFieldValidation;
  */
 @DDMForm
 @DDMFormLayout(
-	paginationMode = com.liferay.dynamic.data.mapping.model.DDMFormLayout.SETTINGS_MODE,
+	paginationMode = com.liferay.dynamic.data.mapping.model.DDMFormLayout.TABBED_MODE,
 	value = {
 		@DDMFormLayoutPage(
 			title = "basic",
@@ -48,7 +48,7 @@ import com.liferay.dynamic.data.mapping.model.DDMFormFieldValidation;
 			}
 		),
 		@DDMFormLayoutPage(
-			title = "advanced",
+			title = "properties",
 			value = {
 				@DDMFormLayoutRow(
 					{
@@ -79,7 +79,7 @@ public interface SelectDDMFormFieldTypeSettings
 	public String dataSourceType();
 
 	@DDMFormField(
-		label = "%choose-a-data-provider", type = "select",
+		label = "%choose-a-data-provider", required = true, type = "select",
 		visibilityExpression = "equals(dataSourceType, \"data-provider\")"
 	)
 	public long ddmDataProviderInstanceId();

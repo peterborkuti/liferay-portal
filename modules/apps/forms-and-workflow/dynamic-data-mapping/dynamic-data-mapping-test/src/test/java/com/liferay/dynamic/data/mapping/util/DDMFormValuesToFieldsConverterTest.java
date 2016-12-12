@@ -49,7 +49,7 @@ import org.powermock.core.classloader.annotations.SuppressStaticInitializationFo
 /**
  * @author Marcellus Tavares
  */
-@PrepareForTest({DDMStructureLocalServiceUtil.class})
+@PrepareForTest(DDMStructureLocalServiceUtil.class)
 @SuppressStaticInitializationFor(
 	"com.liferay.dynamic.data.mapping.service.DDMStructureLocalServiceUtil"
 )
@@ -109,6 +109,7 @@ public class DDMFormValuesToFieldsConverterTest extends BaseDDMTestCase {
 		Class<?> clazz = value.getClass();
 
 		Assert.assertEquals(true, clazz.isAssignableFrom(Boolean.class));
+
 		Assert.assertEquals(true, value);
 
 		Field fieldsDisplayField = fields.get(DDMImpl.FIELDS_DISPLAY_NAME);

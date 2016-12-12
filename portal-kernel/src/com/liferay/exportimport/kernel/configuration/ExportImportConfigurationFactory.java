@@ -14,6 +14,8 @@
 
 package com.liferay.exportimport.kernel.configuration;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.exportimport.kernel.lar.ExportImportDateUtil;
 import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
@@ -35,6 +37,7 @@ import javax.portlet.PortletRequest;
 /**
  * @author Levente Hudák
  */
+@ProviderType
 public class ExportImportConfigurationFactory {
 
 	public static ExportImportConfiguration
@@ -197,6 +200,9 @@ public class ExportImportConfigurationFactory {
 		parameterMap.put(
 			ExportImportDateUtil.RANGE,
 			new String[] {ExportImportDateUtil.RANGE_FROM_LAST_PUBLISH_DATE});
+		parameterMap.put(
+			PortletDataHandlerKeys.THEME_REFERENCE,
+			new String[] {Boolean.TRUE.toString()});
 
 		return parameterMap;
 	}

@@ -18,13 +18,17 @@
 	</command>
 
 	<command name="gotoDeleteField">
+		<execute macro="FormsAdminNavigator#gotoEditField">
+			<var name="fieldName" value="${fieldName}" />
+		</execute>
+
 		<var name="key_fieldName" value="${fieldName}" />
 
-		<execute function="MouseOver" locator1="Form#FIELD_LABEL" />
+		<execute function="Click" locator1="Form#SIDEBAR_ELLIPSIS" />
 
-		<execute function="Click" locator1="Form#FIELD_ELLIPSIS" />
+		<execute function="Click" locator1="Form#SIDEBAR_MENUITEM_REMOVE_FIELD" />
 
-		<execute function="Click" locator1="Form#FIELD_DELETE_BUTTON" />
+		<execute function="AssertElementNotPresent#assertNotVisible" locator1="Form#SIDEBAR_CLOSE" />
 	</command>
 
 	<command name="gotoEdit">
@@ -38,17 +42,21 @@
 	<command name="gotoEditField">
 		<var name="key_fieldName" value="${fieldName}" />
 
-		<execute function="MouseOver" locator1="Form#FIELD_LABEL" />
+		<execute function="Click" locator1="Form#FIELD_BODY" />
 
-		<execute function="Click" locator1="Form#FIELD_ELLIPSIS" />
-
-		<execute function="Click" locator1="Form#FIELD_EDIT_BUTTON" />
+		<execute function="AssertElementPresent" locator1="Form#SIDEBAR_BASIC_TAB" />
 	</command>
 
 	<command name="gotoEditFormByName">
 		<var name="key_formName" value="${formName}" />
 
 		<execute function="AssertClick" locator1="FormsAdmin#FORMS_TABLE_NAME" value1="${formName}" />
+	</command>
+
+	<command name="gotoFormBuilder">
+		<var name="key_assetTitle" value="Builder" />
+
+		<execute function="AssertClick" locator1="NavBar#ASSET_TITLE" value1="Builder" />
 	</command>
 
 	<command name="gotoPreviewForm">
@@ -61,6 +69,12 @@
 		<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
 
 		<execute function="AssertClick" locator1="MenuItem#PUBLISH" value1="Publish" />
+	</command>
+
+	<command name="gotoRules">
+		<var name="key_assetTitle" value="Rules" />
+
+		<execute function="AssertClick" locator1="NavBar#ASSET_TITLE" value1="Rules" />
 	</command>
 
 	<command name="gotoSettings">

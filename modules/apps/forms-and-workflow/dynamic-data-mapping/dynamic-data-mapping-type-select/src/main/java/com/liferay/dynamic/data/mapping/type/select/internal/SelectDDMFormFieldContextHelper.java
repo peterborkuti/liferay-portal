@@ -19,9 +19,10 @@ import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactory;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -43,8 +44,6 @@ public class SelectDDMFormFieldContextHelper {
 
 		_jsonFactory = jsonFactory;
 		_ddmFormFieldOptions = ddmFormFieldOptions;
-		_values = toStringArray(value);
-		_predefinedValues = toStringArray(predefinedValue.getString(locale));
 		_locale = locale;
 	}
 
@@ -58,27 +57,13 @@ public class SelectDDMFormFieldContextHelper {
 				optionValue);
 
 			optionMap.put("label", optionLabel.getString(_locale));
-			optionMap.put(
-				"status",
-				isSelected(optionValue) ? "selected" : StringPool.BLANK);
+
 			optionMap.put("value", optionValue);
 
 			options.add(optionMap);
 		}
 
 		return options;
-	}
-
-	protected boolean isSelected(String optionValue) {
-		if (ArrayUtil.isEmpty(_values)) {
-			return ArrayUtil.contains(_predefinedValues, optionValue);
-		}
-
-		if (ArrayUtil.contains(_values, optionValue)) {
-			return true;
-		}
-
-		return false;
 	}
 
 	protected String[] toStringArray(String value) {
@@ -92,14 +77,22 @@ public class SelectDDMFormFieldContextHelper {
 			return ArrayUtil.toStringArray(jsonArray);
 		}
 		catch (JSONException jsone) {
+
+			// LPS-52675
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(jsone, jsone);
+			}
+
 			return StringUtil.split(value);
 		}
 	}
 
+	private static final Log _log = LogFactoryUtil.getLog(
+		SelectDDMFormFieldContextHelper.class);
+
 	private final DDMFormFieldOptions _ddmFormFieldOptions;
 	private final JSONFactory _jsonFactory;
 	private final Locale _locale;
-	private final String[] _predefinedValues;
-	private final String[] _values;
 
 }

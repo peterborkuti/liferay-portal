@@ -15,7 +15,7 @@
 package com.liferay.document.library.web.internal.portlet.configuration.icon;
 
 import com.liferay.document.library.kernel.util.DLUtil;
-import com.liferay.document.library.web.internal.constants.DLPortletKeys;
+import com.liferay.document.library.web.constants.DLPortletKeys;
 import com.liferay.document.library.web.internal.display.context.logic.FileEntryDisplayContextHelper;
 import com.liferay.document.library.web.internal.portlet.action.ActionUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -69,6 +69,7 @@ public class DownloadFileEntryPortletConfigurationIcon
 
 		try {
 			fileEntry = ActionUtil.getFileEntry(portletRequest);
+
 			fileVersion = ActionUtil.getFileVersion(portletRequest, fileEntry);
 		}
 		catch (Exception e) {
@@ -104,6 +105,7 @@ public class DownloadFileEntryPortletConfigurationIcon
 		return false;
 	}
 
+	@Override
 	public boolean isToolTip() {
 		return false;
 	}

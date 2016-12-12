@@ -15,7 +15,7 @@
 package com.liferay.portal.kernel.backgroundtask;
 
 import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-import com.liferay.portal.kernel.util.ProxyFactory;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 /**
  * @author Michael C. Han
@@ -25,12 +25,37 @@ public class BackgroundTaskStatusRegistryUtil {
 	public static BackgroundTaskStatus getBackgroundTaskStatus(
 		long backgroundTaskId) {
 
-		return getBackgroundTaskStatusRegistry().getBackgroundTaskStatus(
+		return _getBackgroundTaskStatusRegistry().getBackgroundTaskStatus(
 			backgroundTaskId);
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             #_getBackgroundTaskStatusRegistry()}
+	 */
+	@Deprecated
 	public static BackgroundTaskStatusRegistry
 		getBackgroundTaskStatusRegistry() {
+
+		return _getBackgroundTaskStatusRegistry();
+	}
+
+	public static BackgroundTaskStatus registerBackgroundTaskStatus(
+		long backgroundTaskId) {
+
+		return _getBackgroundTaskStatusRegistry().registerBackgroundTaskStatus(
+			backgroundTaskId);
+	}
+
+	public static BackgroundTaskStatus unregisterBackgroundTaskStatus(
+		long backgroundTaskId) {
+
+		return _getBackgroundTaskStatusRegistry().
+			unregisterBackgroundTaskStatus(backgroundTaskId);
+	}
+
+	private static BackgroundTaskStatusRegistry
+		_getBackgroundTaskStatusRegistry() {
 
 		PortalRuntimePermission.checkGetBeanProperty(
 			BackgroundTaskStatusRegistryUtil.class);
@@ -38,24 +63,11 @@ public class BackgroundTaskStatusRegistryUtil {
 		return _backgroundTaskStatusRegistry;
 	}
 
-	public static BackgroundTaskStatus registerBackgroundTaskStatus(
-		long backgroundTaskId) {
-
-		return getBackgroundTaskStatusRegistry().registerBackgroundTaskStatus(
-			backgroundTaskId);
-	}
-
-	public static BackgroundTaskStatus unregisterBackgroundTaskStatus(
-		long backgroundTaskId) {
-
-		return getBackgroundTaskStatusRegistry().unregisterBackgroundTaskStatus(
-			backgroundTaskId);
-	}
-
 	private static volatile BackgroundTaskStatusRegistry
-		_backgroundTaskStatusRegistry = ProxyFactory.newServiceTrackedInstance(
-			BackgroundTaskStatusRegistry.class,
-			BackgroundTaskStatusRegistryUtil.class,
-			"_backgroundTaskStatusRegistry");
+		_backgroundTaskStatusRegistry =
+			ServiceProxyFactory.newServiceTrackedInstance(
+				BackgroundTaskStatusRegistry.class,
+				BackgroundTaskStatusRegistryUtil.class,
+				"_backgroundTaskStatusRegistry", false);
 
 }

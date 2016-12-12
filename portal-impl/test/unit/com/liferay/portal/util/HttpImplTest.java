@@ -38,8 +38,8 @@ import org.powermock.modules.junit4.PowerMockRunner;
 /**
  * @author Miguel Pastor
  */
-@PowerMockIgnore("javax.xml.datatype.*")
-@PrepareForTest({PortalUtil.class})
+@PowerMockIgnore({"javax.net.ssl.*", "javax.xml.datatype.*"})
+@PrepareForTest(PortalUtil.class)
 @RunWith(PowerMockRunner.class)
 public class HttpImplTest extends PowerMockito {
 
@@ -161,6 +161,7 @@ public class HttpImplTest extends PowerMockito {
 
 	@Test
 	public void testNormalizePath() {
+		Assert.assertEquals("/api/axis", _httpImpl.normalizePath("/api/axis?"));
 		Assert.assertEquals("/", _httpImpl.normalizePath("/.."));
 		Assert.assertEquals(
 			"/api/axis", _httpImpl.normalizePath("/api/%61xis"));
@@ -237,9 +238,59 @@ public class HttpImplTest extends PowerMockito {
 		Assert.assertEquals(
 			"/TestServlet/one/two",
 			_httpImpl.removePathParameters(
-				"/TestServlet/one;test=$one@two/two;jsessionid=ae01b0f2af" +
-					";test2=123,456"));
+				"/TestServlet/one;test=$one@two/two;jsessionid=ae01b0f2af;" +
+					"test2=123,456"));
 		Assert.assertEquals("/", _httpImpl.removePathParameters("/;?"));
+		Assert.assertEquals("/", _httpImpl.removePathParameters("//;/;?"));
+		Assert.assertEquals("//", _httpImpl.removePathParameters("///;?"));
+		Assert.assertEquals(
+			"/TestServlet/one",
+			_httpImpl.removePathParameters("/TestServlet/;x=y/one"));
+		Assert.assertEquals(
+			"/TestServlet/one",
+			_httpImpl.removePathParameters("/;x=y/TestServlet/one/;x=y"));
+
+		try {
+			_httpImpl.removePathParameters(";x=y");
+
+			Assert.fail();
+		}
+		catch (IllegalArgumentException iae) {
+			Assert.assertEquals("Unable to handle URI: ;x=y", iae.getMessage());
+		}
+	}
+
+	@Test
+	public void testRemoveProtocol() {
+		Assert.assertEquals(
+			"#^&://abc.com", _httpImpl.removeProtocol("#^&://abc.com"));
+		Assert.assertEquals(
+			"^&://abc.com", _httpImpl.removeProtocol("/^&://abc.com"));
+		Assert.assertEquals(
+			"ftp.foo.com", _httpImpl.removeProtocol("ftp://ftp.foo.com"));
+		Assert.assertEquals(
+			"foo.com", _httpImpl.removeProtocol("http://///foo.com"));
+		Assert.assertEquals("foo.com", _httpImpl.removeProtocol("////foo.com"));
+		Assert.assertEquals(
+			"foo.com", _httpImpl.removeProtocol("http://http://foo.com"));
+		Assert.assertEquals(
+			"www.google.com", _httpImpl.removeProtocol("/\\www.google.com"));
+		Assert.assertEquals(
+			"www.google.com",
+			_httpImpl.removeProtocol("/\\//\\/www.google.com"));
+		Assert.assertEquals(
+			"/path/name", _httpImpl.removeProtocol("/path/name"));
+		Assert.assertEquals(
+			"./path/name", _httpImpl.removeProtocol("./path/name"));
+		Assert.assertEquals(
+			"../path/name", _httpImpl.removeProtocol("../path/name"));
+		Assert.assertEquals(
+			"foo.com?redirect=http%3A%2F%2Ffoo2.com",
+			_httpImpl.removeProtocol(
+				"http://foo.com?redirect=http%3A%2F%2Ffoo2.com"));
+		Assert.assertEquals(
+			"www.google.com/://localhost",
+			_httpImpl.removeProtocol("http://www.google.com/://localhost"));
 	}
 
 	protected void testDecodeURLWithInvalidURLEncoding(String url) {

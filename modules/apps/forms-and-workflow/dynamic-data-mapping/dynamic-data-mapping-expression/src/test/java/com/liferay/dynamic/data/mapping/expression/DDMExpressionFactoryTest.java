@@ -61,7 +61,7 @@ public class DDMExpressionFactoryTest {
 		DDMExpression<Long> ddmExpression =
 			_ddmExpressionFactory.createLongDDMExpression("10000000000");
 
-		Assert.assertEquals(10000000000l, (long)ddmExpression.evaluate());
+		Assert.assertEquals(10000000000L, (long)ddmExpression.evaluate());
 	}
 
 	@Test
@@ -78,9 +78,17 @@ public class DDMExpressionFactoryTest {
 	}
 
 	@Test
-	public void testCreateStringExpression() throws Exception {
+	public void testCreateStringExpression1() throws Exception {
 		DDMExpression<String> ddmExpression =
 			_ddmExpressionFactory.createStringDDMExpression("\"Test\"");
+
+		Assert.assertEquals("Test", ddmExpression.evaluate());
+	}
+
+	@Test
+	public void testCreateStringExpression2() throws Exception {
+		DDMExpression<String> ddmExpression =
+			_ddmExpressionFactory.createStringDDMExpression("'Test'");
 
 		Assert.assertEquals("Test", ddmExpression.evaluate());
 	}

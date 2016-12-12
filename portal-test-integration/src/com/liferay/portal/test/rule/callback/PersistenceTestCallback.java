@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.model.ModelListener;
 import com.liferay.portal.kernel.model.ModelListenerRegistrationUtil;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
+import com.liferay.portal.kernel.test.rule.ArquillianUtil;
 import com.liferay.portal.kernel.test.rule.callback.BaseTestCallback;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.service.test.ServiceTestUtil;
@@ -50,10 +51,29 @@ public class PersistenceTestCallback extends BaseTestCallback<Object, Object> {
 	}
 
 	@Override
+	public Object beforeClass(Description description) {
+		if (_initialized || ArquillianUtil.isArquillianTest(description)) {
+			return null;
+		}
+
+		try {
+			DBUpgrader.upgrade();
+		}
+		catch (Throwable t) {
+			throw new ExceptionInInitializerError(t);
+		}
+		finally {
+			CacheRegistryUtil.setActive(true);
+		}
+
+		_initialized = true;
+
+		return null;
+	}
+
+	@Override
 	public Object beforeMethod(Description description, Object target)
 		throws Exception {
-
-		_initialize();
 
 		Object instance = ReflectionTestUtil.getFieldValue(
 			ModelListenerRegistrationUtil.class, "_instance");
@@ -70,24 +90,6 @@ public class PersistenceTestCallback extends BaseTestCallback<Object, Object> {
 		ServiceTestUtil.setUser(TestPropsValues.getUser());
 
 		return modelListeners;
-	}
-
-	private static void _initialize() {
-		if (_initialized) {
-			return;
-		}
-
-		try {
-			DBUpgrader.upgrade();
-		}
-		catch (Throwable t) {
-			throw new ExceptionInInitializerError(t);
-		}
-		finally {
-			CacheRegistryUtil.setActive(true);
-		}
-
-		_initialized = true;
 	}
 
 	private PersistenceTestCallback() {

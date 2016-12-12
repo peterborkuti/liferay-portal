@@ -24,9 +24,13 @@
 			<var name="fieldValue" value="Text Field" />
 		</execute>
 
-		<execute macro="FormFields#save" />
+		<execute macro="Form#closeSidebar" />
 
 		<execute macro="Form#save" />
+
+		<execute macro="ProductMenu#gotoSitesContent">
+			<var name="portlet" value="Forms" />
+		</execute>
 
 		<execute macro="FormsAdmin#viewForm">
 			<var name="formDescription" value="Form Description" />
@@ -108,6 +112,8 @@
 		<execute macro="ProductMenu#gotoSitesContent">
 			<var name="portlet" value="Web Content" />
 		</execute>
+
+		<execute macro="WebContentNavigator#gotoManageTemplates" />
 
 		<execute macro="WebContentTemplates#addCP">
 			<var name="templateDescription" value="WC Template Description" />
@@ -353,7 +359,7 @@
 
 	<command name="publishStagedSite">
 		<execute macro="Navigator#openSiteURL">
-			<var name="siteName" value="Staging Site" />
+			<var name="siteName" value="Staging Site Staging" />
 		</execute>
 
 		<execute function="AssertElementNotPresent" locator1="Home#PORTLET" />
@@ -413,7 +419,7 @@
 		</execute>
 	</command>
 
-	<command name="searchForAssetsAfterUpgrade">
+	<command name="reindexSearches">
 		<execute macro="Navigator#openURL" />
 
 		<execute macro="ProductMenu#gotoControlPanelConfiguration">
@@ -434,8 +440,12 @@
 			<var name="key_actionsDescription" value="Reindex all search indexes." />
 		</execute>
 
-		<execute function="Pause" locator1="10000" />
+		<execute macro="Alert#viewSuccessMessage" />
 
+		<execute function="Pause" locator1="10000" />
+	</command>
+
+	<command name="searchForAssetsAfterUpgrade">
 		<execute macro="Navigator#openURL" />
 
 		<execute macro="Search#searchPG">
@@ -495,7 +505,7 @@
 
 		<var name="key_portletName" value="Asset Publisher" />
 
-		<execute function="AssertTextEquals" locator1="BasePortlet#TITLE" value1="Asset Publisher" />
+		<execute function="AssertTextEquals" locator1="Portlet#TITLE" value1="Asset Publisher" />
 
 		<execute macro="WebContent#viewPGViaAP">
 			<var name="webContentContent" value="Web Content Content" />
@@ -520,7 +530,9 @@
 			<var name="eventTitle" value="Calendar Event Title Edited" />
 		</execute>
 
-		<execute macro="CalendarEvent#publish" />
+		<execute macro="CalendarEvent#publishRepeating">
+			<var name="saveOption" value="Entire Series" />
+		</execute>
 
 		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Calendar" />
@@ -558,7 +570,7 @@
 
 		<var name="key_portletName" value="Nested Portlets" />
 
-		<execute function="AssertTextEquals" locator1="BasePortlet#TITLE" value1="Nested Portlets" />
+		<execute function="AssertTextEquals" locator1="Portlet#TITLE" value1="Nested Portlets" />
 
 		<execute function="AssertTextNotEquals" locator1="Message#INFO" value1="Drag portlets below to nest them." />
 

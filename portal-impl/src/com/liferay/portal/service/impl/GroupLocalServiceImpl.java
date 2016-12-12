@@ -104,7 +104,6 @@ import com.liferay.portal.kernel.util.comparator.GroupNameComparator;
 import com.liferay.portal.kernel.workflow.WorkflowHandler;
 import com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil;
 import com.liferay.portal.model.impl.LayoutImpl;
-import com.liferay.portal.security.permission.PermissionCacheUtil;
 import com.liferay.portal.service.base.GroupLocalServiceBaseImpl;
 import com.liferay.portal.theme.ThemeLoader;
 import com.liferay.portal.theme.ThemeLoaderFactory;
@@ -228,7 +227,9 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		// Group
 
 		User user = userPersistence.findByPrimaryKey(userId);
+
 		className = GetterUtil.getString(className);
+
 		long classNameId = classNameLocalService.getClassNameId(className);
 
 		String groupKey = StringPool.BLANK;
@@ -472,32 +473,6 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Adds the groups to the role.
-	 *
-	 * @param roleId the primary key of the role
-	 * @param groupIds the primary keys of the groups
-	 */
-	@Override
-	public void addRoleGroups(long roleId, long[] groupIds) {
-		rolePersistence.addGroups(roleId, groupIds);
-
-		PermissionCacheUtil.clearCache();
-	}
-
-	/**
-	 * Adds the user to the groups.
-	 *
-	 * @param userId the primary key of the user
-	 * @param groupIds the primary keys of the groups
-	 */
-	@Override
-	public void addUserGroups(long userId, long[] groupIds) {
-		userPersistence.addGroups(userId, groupIds);
-
-		PermissionCacheUtil.clearCache(userId);
-	}
-
-	/**
 	 * Adds a company group if it does not exist. This method is typically used
 	 * when a virtual host is added.
 	 *
@@ -709,6 +684,12 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 					group.getGroupId(), true, serviceContext);
 			}
 			catch (NoSuchLayoutSetException nslse) {
+
+				// LPS-52675
+
+				if (_log.isDebugEnabled()) {
+					_log.debug(nslse, nslse);
+				}
 			}
 
 			try {
@@ -716,6 +697,12 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 					group.getGroupId(), false, serviceContext);
 			}
 			catch (NoSuchLayoutSetException nslse) {
+
+				// LPS-52675
+
+				if (_log.isDebugEnabled()) {
+					_log.debug(nslse, nslse);
+				}
 			}
 
 			// Membership requests
@@ -894,10 +881,6 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 				groupPersistence.remove(group);
 			}
 
-			// Permission cache
-
-			PermissionCacheUtil.clearCache();
-
 			return group;
 		}
 		finally {
@@ -1006,6 +989,12 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		friendlyURL = getFriendlyURL(friendlyURL);
 
 		return groupPersistence.fetchByC_F(companyId, friendlyURL);
+	}
+
+	@Override
+	@ThreadLocalCachable
+	public Group fetchGroup(long groupId) {
+		return groupPersistence.fetchByPrimaryKey(groupId);
 	}
 
 	/**
@@ -1914,6 +1903,25 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		else {
 			return false;
 		}
+	}
+
+	@Override
+	public boolean isLiveGroupActive(Group group) {
+		if (group == null) {
+			return false;
+		}
+
+		if (!group.isStagingGroup()) {
+			return group.isActive();
+		}
+
+		Group liveGroup = group.getLiveGroup();
+
+		if (liveGroup == null) {
+			return false;
+		}
+
+		return liveGroup.isActive();
 	}
 
 	/**
@@ -3018,20 +3026,6 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Sets the groups associated with the role, removing and adding
-	 * associations as necessary.
-	 *
-	 * @param roleId the primary key of the role
-	 * @param groupIds the primary keys of the groups
-	 */
-	@Override
-	public void setRoleGroups(long roleId, long[] groupIds) {
-		rolePersistence.setGroups(roleId, groupIds);
-
-		PermissionCacheUtil.clearCache();
-	}
-
-	/**
 	 * Removes the groups from the role.
 	 *
 	 * @param roleId the primary key of the role
@@ -3040,8 +3034,6 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	@Override
 	public void unsetRoleGroups(long roleId, long[] groupIds) {
 		rolePersistence.removeGroups(roleId, groupIds);
-
-		PermissionCacheUtil.clearCache();
 	}
 
 	/**
@@ -3055,8 +3047,6 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		userGroupRoleLocalService.deleteUserGroupRoles(userId, groupIds);
 
 		userPersistence.removeGroups(userId, groupIds);
-
-		PermissionCacheUtil.clearCache(userId);
 	}
 
 	/**
@@ -3628,7 +3618,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			// Filter by active
 
 			if (active != null) {
-				if (active != group.isActive()) {
+				if (active != isLiveGroupActive(group)) {
 					iterator.remove();
 
 					continue;
@@ -4321,6 +4311,12 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			}
 		}
 		catch (NoSuchGroupException nsge) {
+
+			// LPS-52675
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(nsge, nsge);
+			}
 		}
 
 		if (site) {

@@ -28,7 +28,7 @@ import com.liferay.document.library.kernel.service.DLFileEntryLocalService;
 import com.liferay.document.library.kernel.service.DLFileEntryTypeLocalService;
 import com.liferay.document.library.kernel.service.DLFileShortcutLocalService;
 import com.liferay.document.library.kernel.service.DLFolderLocalService;
-import com.liferay.document.library.web.internal.constants.DLPortletKeys;
+import com.liferay.document.library.web.constants.DLPortletKeys;
 import com.liferay.exportimport.kernel.lar.BasePortletDataHandler;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataHandler;
@@ -357,6 +357,7 @@ public class DLPortletDataHandler extends BasePortletDataHandler {
 				}
 
 			});
+
 		actionableDynamicQuery.setPerformActionMethod(
 			new ActionableDynamicQuery.PerformActionMethod<DLFileEntryType>() {
 
@@ -399,6 +400,7 @@ public class DLPortletDataHandler extends BasePortletDataHandler {
 				}
 
 			});
+
 		exportActionableDynamicQuery.setPerformActionMethod(
 			new ActionableDynamicQuery.PerformActionMethod<DLFileShortcut>() {
 
@@ -540,6 +542,7 @@ public class DLPortletDataHandler extends BasePortletDataHandler {
 				}
 
 			});
+
 		exportActionableDynamicQuery.setPerformActionMethod(
 			new ActionableDynamicQuery.PerformActionMethod<DLFolder>() {
 
@@ -618,6 +621,7 @@ public class DLPortletDataHandler extends BasePortletDataHandler {
 				}
 
 			});
+
 		exportActionableDynamicQuery.setStagedModelType(
 			new StagedModelType(
 				PortalUtil.getClassNameId(Repository.class.getName()),

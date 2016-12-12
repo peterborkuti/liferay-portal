@@ -10,7 +10,6 @@ class EventScreen extends HtmlScreen {
 		super();
 
 		this.cacheable = false;
-		this.timeout = Liferay.SPA.requestTimeout || Utils.getMaxTimeout();
 	}
 
 	dispose() {
@@ -37,64 +36,6 @@ class EventScreen extends HtmlScreen {
 		);
 	}
 
-	_clearRequestTimer() {
-		if (this.requestTimer) {
-			clearTimeout(this.requestTimer);
-		}
-
-		if (this.timeoutAlert) {
-			this.timeoutAlert.hide();
-		}
-	}
-
-	_createTimeoutNotification() {
-		var instance = this;
-
-		AUI().use(
-			'liferay-notification',
-			() => {
-				instance.timeoutAlert = new Liferay.Notification(
-					{
-						closeable: true,
-						delay: {
-							hide: 0,
-							show: 0
-						},
-						duration: 500,
-						message: Liferay.SPA.userNotification.message,
-						title: Liferay.SPA.userNotification.title,
-						type: 'warning'
-					}
-				).render('body');
-			}
-		);
-	}
-
-	_startRequestTimer(path) {
-		if (Liferay.SPA.userNotification.timeout > 0) {
-			this._clearRequestTimer();
-
-			this.requestTimer = setTimeout(
-				() => {
-					Liferay.fire(
-						'spaRequestTimeout',
-						{
-							path: path
-						}
-					);
-
-					if (!this.timeoutAlert) {
-						this._createTimeoutNotification();
-					}
-					else {
-						this.timeoutAlert.show();
-					}
-				},
-				Liferay.SPA.userNotification.timeout
-			);
-		}
-	}
-
 	addCache(content) {
 		super.addCache(content);
 
@@ -111,6 +52,8 @@ class EventScreen extends HtmlScreen {
 
 	deactivate() {
 		super.deactivate();
+
+		Utils.resetAllPortlets();
 
 		Liferay.fire(
 			'screenDeactivate',
@@ -141,8 +84,7 @@ class EventScreen extends HtmlScreen {
 	flip(surfaces) {
 		this.copyBodyAttributes();
 
-		return CancellablePromise.resolve(Utils.resetAllPortlets())
-			.then(CancellablePromise.resolve(this.beforeScreenFlip()))
+		return CancellablePromise.resolve(this.beforeScreenFlip())
 			.then(super.flip(surfaces))
 			.then(
 				() => {
@@ -180,13 +122,9 @@ class EventScreen extends HtmlScreen {
 	}
 
 	load(path) {
-		this._startRequestTimer(path);
-
 		return super.load(path)
 			.then(
 				(content) => {
-					this._clearRequestTimer();
-
 					var redirectPath = this.beforeUpdateHistoryPath(path);
 
 					this.checkRedirectPath(redirectPath);

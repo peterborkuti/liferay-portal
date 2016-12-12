@@ -90,7 +90,7 @@ public class DDLRecordSetLocalServiceImpl
 
 		// Record set
 
-		User user = userPersistence.findByPrimaryKey(userId);
+		User user = userLocalService.getUser(userId);
 
 		if (Validator.isNull(recordSetKey)) {
 			recordSetKey = String.valueOf(counterLocalService.increment());
@@ -325,6 +325,13 @@ public class DDLRecordSetLocalServiceImpl
 		throws PortalException {
 
 		return ddlRecordSetPersistence.findByG_R(groupId, recordSetKey);
+	}
+
+	@Override
+	public DDLRecordSet getRecordSet(String uuid, long recordSetId)
+		throws PortalException {
+
+		return ddlRecordSetPersistence.findByUUID_G(uuid, recordSetId);
 	}
 
 	/**

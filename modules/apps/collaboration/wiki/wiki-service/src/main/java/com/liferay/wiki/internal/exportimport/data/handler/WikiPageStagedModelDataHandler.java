@@ -16,12 +16,12 @@ package com.liferay.wiki.internal.exportimport.data.handler;
 
 import com.liferay.document.library.kernel.exception.NoSuchFileException;
 import com.liferay.document.library.kernel.model.DLFileEntry;
+import com.liferay.exportimport.data.handler.base.BaseStagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
-import com.liferay.exportimport.lar.BaseStagedModelDataHandler;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
@@ -269,6 +269,12 @@ public class WikiPageStagedModelDataHandler
 								fileEntry);
 						}
 						catch (NoSuchFileException nsfe) {
+
+							// LPS-52675
+
+							if (_log.isDebugEnabled()) {
+								_log.debug(nsfe, nsfe);
+							}
 						}
 					}
 					else {

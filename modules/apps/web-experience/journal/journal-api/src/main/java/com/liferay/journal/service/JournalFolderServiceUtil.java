@@ -208,6 +208,15 @@ public class JournalFolderServiceUtil {
 			start, end, obc);
 	}
 
+	public static java.util.List<java.lang.Object> getFoldersAndArticles(
+		long groupId, long userId, long folderId, int status,
+		java.util.Locale locale, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<?> obc) {
+		return getService()
+				   .getFoldersAndArticles(groupId, userId, folderId, status,
+			locale, start, end, obc);
+	}
+
 	public static java.util.List<java.lang.Long> getSubfolderIds(long groupId,
 		long folderId, boolean recurse) {
 		return getService().getSubfolderIds(groupId, folderId, recurse);
@@ -224,7 +233,7 @@ public class JournalFolderServiceUtil {
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #getSubfolderIds(List, long,
+	* @deprecated As of 4.0.0, replaced by {@link #getSubfolderIds(List, long,
 	long, boolean)}
 	*/
 	@Deprecated

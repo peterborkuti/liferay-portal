@@ -64,8 +64,8 @@ public class DLFileEntryLocalServiceUtil {
 	}
 
 	/**
-	* As of 7.0.0, replaced by {@link #isKeepFileVersionLabel(long, boolean,
-	* ServiceContext)}
+	* @deprecated As of 7.0.0, replaced by {@link #isKeepFileVersionLabel(long,
+	boolean, ServiceContext)}
 	*/
 	@Deprecated
 	public static boolean isKeepFileVersionLabel(long fileEntryId,
@@ -214,6 +214,11 @@ public class DLFileEntryLocalServiceUtil {
 	public static com.liferay.document.library.kernel.model.DLFileEntry fetchDLFileEntryByUuidAndGroupId(
 		java.lang.String uuid, long groupId) {
 		return getService().fetchDLFileEntryByUuidAndGroupId(uuid, groupId);
+	}
+
+	public static com.liferay.document.library.kernel.model.DLFileEntry fetchFileEntry(
+		java.lang.String uuid, long groupId) {
+		return getService().fetchFileEntry(uuid, groupId);
 	}
 
 	public static com.liferay.document.library.kernel.model.DLFileEntry fetchFileEntry(

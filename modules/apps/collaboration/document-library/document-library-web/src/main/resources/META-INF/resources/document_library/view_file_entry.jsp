@@ -163,7 +163,7 @@ if (portletTitleBasedNavigation) {
 			<h4><%= fileVersion.getTitle() %></h4>
 		</div>
 
-		<liferay-ui:tabs names="<%= tabsNames %>" refresh="<%= false %>" type="dropdown">
+		<liferay-ui:tabs cssClass="navbar-no-collapse" names="<%= tabsNames %>" refresh="<%= false %>" type="dropdown">
 			<liferay-ui:section>
 				<div class="sidebar-body">
 					<dl>
@@ -260,10 +260,10 @@ if (portletTitleBasedNavigation) {
 								String webDavHelpMessage = null;
 
 								if (BrowserSnifferUtil.isWindows(request)) {
-									webDavHelpMessage = LanguageUtil.format(resourceBundle, "webdav-windows-help", new Object[] {"http://www.microsoft.com/downloads/details.aspx?FamilyId=17C36612-632E-4C04-9382-987622ED1D64", "http://www.liferay.com/web/guest/community/wiki/-/wiki/Main/WebDAV"}, false);
+									webDavHelpMessage = LanguageUtil.format(resourceBundle, "webdav-windows-help", new Object[] {"https://support.microsoft.com/en-us/kb/892211", "https://dev.liferay.com/discover/portal/-/knowledge_base/7-0/publishing-files#desktop-access-to-documents-and-media"}, false);
 								}
 								else {
-									webDavHelpMessage = LanguageUtil.format(resourceBundle, "webdav-help", "http://www.liferay.com/web/guest/community/wiki/-/wiki/Main/WebDAV", false);
+									webDavHelpMessage = LanguageUtil.format(resourceBundle, "webdav-help", "https://dev.liferay.com/discover/portal/-/knowledge_base/7-0/publishing-files#desktop-access-to-documents-and-media", false);
 								}
 								%>
 
@@ -447,16 +447,19 @@ if (portletTitleBasedNavigation) {
 					<span class="user-date">
 
 						<%
-						String displayURL = StringPool.BLANK;
-
 						User userDisplay = UserLocalServiceUtil.fetchUser(fileEntry.getUserId());
 
-						if (userDisplay != null) {
-							displayURL = userDisplay.getDisplayURL(themeDisplay);
+						String uploadedByMessage = StringPool.BLANK;
+
+						if ((userDisplay != null) && userDisplay.isActive()) {
+							uploadedByMessage = LanguageUtil.format(resourceBundle, "uploaded-by-x-x", new Object[] {userDisplay.getDisplayURL(themeDisplay), HtmlUtil.escape(fileEntry.getUserName()), dateFormatDateTime.format(fileEntry.getCreateDate())}, false);
+						}
+						else {
+							uploadedByMessage = LanguageUtil.format(resourceBundle, "uploaded-by-x", new Object[] {HtmlUtil.escape(fileEntry.getUserName()), dateFormatDateTime.format(fileEntry.getCreateDate())}, false);
 						}
 						%>
 
-						<liferay-ui:icon iconCssClass="icon-plus" label="<%= true %>" message='<%= LanguageUtil.format(resourceBundle, "uploaded-by-x-x", new Object[] {displayURL, HtmlUtil.escape(fileEntry.getUserName()), dateFormatDateTime.format(fileEntry.getCreateDate())}, false) %>' />
+						<liferay-ui:icon iconCssClass="icon-plus" label="<%= true %>" message="<%= uploadedByMessage %>" />
 					</span>
 
 					<c:if test="<%= dlPortletInstanceSettings.isEnableRatings() && fileEntry.isSupportsSocial() %>">
@@ -527,7 +530,7 @@ if (portletTitleBasedNavigation) {
 			</c:if>
 
 			<c:if test="<%= showComments && fileEntry.isRepositoryCapabilityProvided(CommentCapability.class) %>">
-				<liferay-ui:panel collapsible="<%= true %>" cssClass="lfr-document-library-comments" extended="<%= true %>" markupView="lexicon" persistState="<%= true %>" title="<%= dlViewFileVersionDisplayContext.getDiscussionLabel(locale) %>">
+				<liferay-ui:panel collapsible="<%= true %>" cssClass="lfr-document-library-comments panel-group" extended="<%= true %>" markupView="lexicon" persistState="<%= true %>" title="<%= dlViewFileVersionDisplayContext.getDiscussionLabel(locale) %>">
 					<liferay-ui:discussion
 						className="<%= dlViewFileVersionDisplayContext.getDiscussionClassName() %>"
 						classPK="<%= dlViewFileVersionDisplayContext.getDiscussionClassPK() %>"

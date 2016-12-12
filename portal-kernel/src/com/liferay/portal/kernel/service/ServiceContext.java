@@ -336,7 +336,7 @@ public class ServiceContext implements Cloneable, Serializable {
 	 * Returns the date when an <code>aui:form</code> was generated in this
 	 * service context. The form date can be used in detecting situations in
 	 * which an entity has been modified while another client was editing that
-	 * entity. </p>
+	 * entity.
 	 *
 	 * <p>
 	 * Example:
@@ -1171,8 +1171,8 @@ public class ServiceContext implements Cloneable, Serializable {
 	 * Sets an arbitrary number of attributes of an entity to be persisted.
 	 *
 	 * <p>
-	 * These attributes should only include fields that {@link
-	 * ServiceContext} does not possess by default.
+	 * These attributes should only include fields that {@link ServiceContext}
+	 * does not possess by default.
 	 * </p>
 	 *
 	 * @param expandoBridgeAttributes the expando bridge attributes (optionally

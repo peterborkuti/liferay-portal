@@ -47,6 +47,7 @@ import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Gergely Mathe
+ * @author Mate Thurzo
  */
 @Component(
 	property = {"model.class.name=com.liferay.journal.model.JournalArticle"},
@@ -94,7 +95,7 @@ public class JournalArticleExportImportContentProcessor
 	public void validateContentReferences(long groupId, String content)
 		throws PortalException {
 
-		validateJournalArticleReferences(groupId, content);
+		validateJournalArticleReferences(content);
 
 		super.validateContentReferences(groupId, content);
 	}
@@ -254,8 +255,7 @@ public class JournalArticleExportImportContentProcessor
 		return content;
 	}
 
-	protected void validateJournalArticleReferences(
-			long groupId, String content)
+	protected void validateJournalArticleReferences(String content)
 		throws PortalException {
 
 		StringBuilder sb = new StringBuilder(content);
@@ -315,7 +315,7 @@ public class JournalArticleExportImportContentProcessor
 		if (!throwables.isEmpty()) {
 			throw new PortalException(
 				new BulkException(
-					"Unable to validate jounral article references",
+					"Unable to validate journal article references",
 					throwables));
 		}
 	}

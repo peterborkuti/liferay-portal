@@ -249,7 +249,10 @@ public class BackgroundTaskLocalServiceImpl
 			if (backgroundTask.getStatus() ==
 					BackgroundTaskConstants.STATUS_IN_PROGRESS) {
 
+				backgroundTask.setCompleted(true);
 				backgroundTask.setStatus(BackgroundTaskConstants.STATUS_FAILED);
+
+				backgroundTaskPersistence.update(backgroundTask);
 			}
 
 			cleanUpBackgroundTask(
@@ -641,7 +644,7 @@ public class BackgroundTaskLocalServiceImpl
 		User user = null;
 
 		if (userId != UserConstants.USER_ID_DEFAULT) {
-			user = userPersistence.findByPrimaryKey(userId);
+			user = userLocalService.getUser(userId);
 		}
 
 		final long backgroundTaskId = counterLocalService.increment();

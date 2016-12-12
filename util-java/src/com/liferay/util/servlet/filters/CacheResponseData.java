@@ -50,6 +50,7 @@ public class CacheResponseData implements Serializable {
 		ByteBuffer byteBuffer = bufferCacheServletResponse.getByteBuffer();
 
 		_content = byteBuffer.array();
+
 		_contentType = bufferCacheServletResponse.getContentType();
 		_headers = bufferCacheServletResponse.getHeaders();
 		_length = byteBuffer.remaining();
@@ -107,7 +108,7 @@ public class CacheResponseData implements Serializable {
 	private final String _contentType;
 	private final Map<String, Set<Header>> _headers;
 	private transient int _length;
-	private transient final int _offset;
+	private final transient int _offset;
 	private final boolean _valid;
 
 }

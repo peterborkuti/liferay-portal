@@ -19,9 +19,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.pacl.PACLConstants;
 import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-import com.liferay.registry.Registry;
-import com.liferay.registry.RegistryUtil;
-import com.liferay.registry.ServiceTracker;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 /**
  * @author Shuyang Zhou
@@ -47,19 +45,7 @@ public class PortalExecutorManagerUtil {
 		PortalRuntimePermission.checkGetBeanProperty(
 			PortalExecutorManagerUtil.class);
 
-		try {
-			while (_instance._serviceTracker.getService() == null) {
-				if (_log.isDebugEnabled()) {
-					_log.debug("Waiting for a PortalExecutorManager");
-				}
-
-				Thread.sleep(500);
-			}
-		}
-		catch (InterruptedException ie) {
-		}
-
-		return _instance._serviceTracker.getService();
+		return _portalExecutorManager;
 	}
 
 	public static ThreadPoolExecutor registerPortalExecutor(
@@ -75,45 +61,25 @@ public class PortalExecutorManagerUtil {
 		PortalRuntimePermission.checkThreadPoolExecutor(
 			PACLConstants.PORTAL_RUNTIME_PERMISSION_THREAD_POOL_ALL_EXECUTORS);
 
-		PortalExecutorManager portalExecutorManager =
-			_instance._serviceTracker.getService();
-
-		if (portalExecutorManager == null) {
-			return;
-		}
-
-		portalExecutorManager.shutdown();
+		_portalExecutorManager.shutdown();
 	}
 
 	public static void shutdown(boolean interrupt) {
 		PortalRuntimePermission.checkThreadPoolExecutor(
 			PACLConstants.PORTAL_RUNTIME_PERMISSION_THREAD_POOL_ALL_EXECUTORS);
 
-		PortalExecutorManager portalExecutorManager =
-			_instance._serviceTracker.getService();
-
-		if (portalExecutorManager == null) {
-			return;
-		}
-
-		portalExecutorManager.shutdown(interrupt);
+		_portalExecutorManager.shutdown(interrupt);
 	}
 
 	private PortalExecutorManagerUtil() {
-		Registry registry = RegistryUtil.getRegistry();
-
-		_serviceTracker = registry.trackServices(PortalExecutorManager.class);
-
-		_serviceTracker.open();
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		PortalExecutorManagerUtil.class);
 
-	private static final PortalExecutorManagerUtil _instance =
-		new PortalExecutorManagerUtil();
-
-	private final ServiceTracker<PortalExecutorManager, PortalExecutorManager>
-		_serviceTracker;
+	private static volatile PortalExecutorManager _portalExecutorManager =
+		ServiceProxyFactory.newServiceTrackedInstance(
+			PortalExecutorManager.class, PortalExecutorManagerUtil.class,
+			"_portalExecutorManager", true);
 
 }

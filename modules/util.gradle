@@ -1,4 +1,5 @@
 import com.liferay.gradle.plugins.change.log.builder.BuildChangeLogTask
+import com.liferay.gradle.plugins.util.PortalTools
 import com.liferay.gradle.util.FileUtil
 import com.liferay.gradle.util.StringUtil
 import com.liferay.gradle.util.copy.RenameDependencyClosure
@@ -11,6 +12,7 @@ buildscript {
 
 task buildFixPackChangeLog(type: BuildChangeLogTask)
 task cleanReleng
+task cleanVersionOverride
 task setUpPortalTools
 task wrapper(type: Wrapper)
 
@@ -33,22 +35,42 @@ buildFixPackChangeLog {
 	ticketIdPrefixes "LRQA"
 }
 
-cleanReleng << {
-	File relengRootDir = file(".releng")
+cleanReleng {
+	doLast {
+		File relengRootDir = file(".releng")
 
-	FileTree relengFileTree = fileTree(dir: relengRootDir, include: "**/artifact.properties")
+		FileTree relengFileTree = fileTree(dir: relengRootDir, include: "**/artifact.properties")
 
-	relengFileTree.each {
-		File relengFile ->
+		relengFileTree.each {
+			File relengFile ->
 
-		File relengDir = relengFile.parentFile
+			File relengDir = relengFile.parentFile
 
-		File moduleDir = file(FileUtil.relativize(relengDir, relengRootDir))
+			File moduleDir = file(FileUtil.relativize(relengDir, relengRootDir))
 
-		if (!moduleDir.exists()) {
-			delete relengDir
+			if (!moduleDir.exists()) {
+				delete relengDir
 
-			println "Removed " + relativePath(relengDir)
+				println "Removed " + relativePath(relengDir)
+			}
+		}
+	}
+}
+
+cleanVersionOverride {
+	doLast {
+		String gitRepoPath = project.properties["gitRepoPath"]
+
+		if (!gitRepoPath) {
+			throw new GradleException("Please set the property \"-PgitRepoPath\".")
+		}
+
+		File gitRepoDir = file(gitRepoPath)
+
+		FileTree bndBndFileTree = fileTree(dir: gitRepoDir, include : "**/bnd.bnd")
+
+		delete bndBndFileTree.collect {
+			new File(gitRepoDir.parentFile, ".version-override-${it.parentFile.name}.properties")
 		}
 	}
 }
@@ -67,21 +89,41 @@ wrapper {
 	distributionUrl = "../../tools/gradle-${gradle.gradleVersion}.LIFERAY-PATCHED-1-bin.zip"
 
 	doLast {
-		ant.replace(file: new File(wrapperDir, "gradlew")) {
-			replacefilter token: '# Split up the JVM_OPTS And GRADLE_OPTS values into an array, following the shell quoting and substitution rules', value: '''\
-# Split up the JVM_OPTS And GRADLE_OPTS values into an array, following the shell quoting and substitution rules
-DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS -Dgradle.user.home=$APP_HOME/.gradle"'''
+		File gradlewFile = new File(wrapperDir, "gradlew")
 
-			replacefilter token: 'org.gradle.wrapper.GradleWrapperMain "$@"', value: 'org.gradle.wrapper.GradleWrapperMain --init-script=$APP_HOME/modules/init.gradle "$@"'
-		}
+		ant.replace(
+			failOnNoReplacements: true,
+			file: gradlewFile,
+			token: '# Escape application args',
+			value: '''\
+# Escape application args
+DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS \\\"-Dgradle.user.home=$APP_HOME/.gradle\\\""'''
+		)
 
-		ant.replace(file: new File(wrapperDir, "gradlew.bat")) {
-			replacefilter token: '@rem Setup the command line', value: '''\
+		ant.replace(
+			failOnNoReplacements: true,
+			file: gradlewFile,
+			token: 'org.gradle.wrapper.GradleWrapperMain "$APP_ARGS"',
+			value: 'org.gradle.wrapper.GradleWrapperMain "--init-script=$APP_HOME/modules/init.gradle" "$APP_ARGS"'
+		)
+
+		File gradlewBatFile = new File(wrapperDir, "gradlew.bat")
+
+		ant.replace(
+			failOnNoReplacements: true,
+			file: gradlewBatFile,
+			token: '@rem Setup the command line',
+			value: '''\
 @rem Setup the command line
-set DEFAULT_JVM_OPTS=%DEFAULT_JVM_OPTS% -Dgradle.user.home=%APP_HOME%\\.gradle'''
+set DEFAULT_JVM_OPTS=%DEFAULT_JVM_OPTS% "-Dgradle.user.home=%APP_HOME%\\.gradle"'''
+		)
 
-			replacefilter token: 'org.gradle.wrapper.GradleWrapperMain %CMD_LINE_ARGS%', value: 'org.gradle.wrapper.GradleWrapperMain --init-script=%APP_HOME%\\modules\\init.gradle %CMD_LINE_ARGS%'
-		}
+		ant.replace(
+			failOnNoReplacements: true,
+			file: gradlewBatFile,
+			token: 'org.gradle.wrapper.GradleWrapperMain %CMD_LINE_ARGS%',
+			value: 'org.gradle.wrapper.GradleWrapperMain "--init-script=%APP_HOME%\\modules\\init.gradle" %CMD_LINE_ARGS%'
+		)
 	}
 
 	jarFile = new File(wrapperDir, "gradle/wrapper/gradle-wrapper.jar")
@@ -93,8 +135,6 @@ _createSetUpTasks()
 private void _createSetUpTasks() {
 	FileTree ivyXmlFileTree = fileTree(dir: "../tools/sdk", includes: ["ivy.xml", "dependencies/*/ivy.xml"])
 
-	Properties portalToolVersions = _getPortalToolVersions()
-
 	XmlSlurper xmlSlurper = new XmlSlurper()
 
 	ivyXmlFileTree.each {
@@ -102,32 +142,32 @@ private void _createSetUpTasks() {
 
 		File portalToolDir = ivyXmlFile.parentFile
 
-		String portalToolName = portalToolDir.name
-
-		String portalToolSuffix = _getPortalToolSuffix(portalToolName)
-		String portalToolVersion = portalToolVersions[portalToolName]
+		String portalToolSuffix = _getPortalToolSuffix(portalToolDir.name)
 
 		Configuration portalToolConfiguration = configurations.create("portalTools" + portalToolSuffix)
 
 		portalToolConfiguration.exclude group: "com.liferay.portal"
 
-		if (portalToolVersion) {
-			dependencies.add portalToolConfiguration.name, "com.liferay:${portalToolName}:${portalToolVersion}"
-		}
-		else {
-			def ivyModuleNode = xmlSlurper.parse(ivyXmlFile)
+		def ivyModuleNode = xmlSlurper.parse(ivyXmlFile)
 
-			def dependencyNodes = ivyModuleNode.dependencies.children()
+		def dependencyNodes = ivyModuleNode.dependencies.children()
 
-			dependencyNodes.each {
-				String conf = it.@conf
+		dependencyNodes.each {
+			String dependencyConf = it.@conf
 
-				if (conf) {
-					return
-				}
-
-				dependencies.add portalToolConfiguration.name, "${it.@org}:${it.@name}:${it.@rev}"
+			if (dependencyConf) {
+				return
 			}
+
+			String dependencyGroup = it.@org
+			String dependencyName = it.@name
+			String dependencyVersion = PortalTools.getVersion(project, dependencyName)
+
+			if (!dependencyVersion) {
+				dependencyVersion = it.@rev
+			}
+
+			dependencies.add portalToolConfiguration.name, "${dependencyGroup}:${dependencyName}:${dependencyVersion}"
 		}
 
 		Task portalToolTask = tasks.create(name: "setUp" + portalToolSuffix, type: Copy) {
@@ -152,24 +192,4 @@ private String _getPortalToolSuffix(String name) {
 	}
 
 	return StringUtil.capitalize(suffix)
-}
-
-private Properties _getPortalToolVersions() {
-	Properties properties = new Properties()
-
-	InputStream inputStream = buildscript.classLoader.getResourceAsStream("com/liferay/gradle/plugins/dependencies/portal-tools.properties")
-
-	inputStream.withCloseable {
-		properties.load it
-	}
-
-	for (String name in properties.stringPropertyNames()) {
-		String version = project.properties[name + ".version"]
-
-		if (version) {
-			properties.setProperty name, version
-		}
-	}
-
-	return properties
 }

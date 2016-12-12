@@ -97,7 +97,7 @@ public class ScopeFacet extends MultiValueFacet {
 		TermsFilter scopeGroupIdsTermsFilter = new TermsFilter(
 			Field.SCOPE_GROUP_ID);
 
-		for (int i = 0; i < groupIds.length; i ++) {
+		for (int i = 0; i < groupIds.length; i++) {
 			long groupId = groupIds[i];
 
 			if (groupId <= 0) {
@@ -107,7 +107,7 @@ public class ScopeFacet extends MultiValueFacet {
 			try {
 				Group group = GroupLocalServiceUtil.getGroup(groupId);
 
-				if (!group.isActive()) {
+				if (!GroupLocalServiceUtil.isLiveGroupActive(group)) {
 					continue;
 				}
 

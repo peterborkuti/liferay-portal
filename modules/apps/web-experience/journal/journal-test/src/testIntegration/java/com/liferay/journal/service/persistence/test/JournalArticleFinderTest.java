@@ -30,7 +30,6 @@ import com.liferay.journal.util.comparator.ArticleDisplayDateComparator;
 import com.liferay.journal.util.comparator.ArticleIDComparator;
 import com.liferay.journal.util.comparator.ArticleModifiedDateComparator;
 import com.liferay.journal.util.comparator.ArticleReviewDateComparator;
-import com.liferay.journal.util.comparator.ArticleTitleComparator;
 import com.liferay.journal.util.comparator.ArticleVersionComparator;
 import com.liferay.portal.kernel.dao.orm.QueryDefinition;
 import com.liferay.portal.kernel.model.Group;
@@ -38,7 +37,6 @@ import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.Sync;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
-import com.liferay.portal.kernel.test.rule.TransactionalTestRule;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.transaction.Propagation;
@@ -47,6 +45,7 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.portal.test.rule.TransactionalTestRule;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -82,7 +81,8 @@ public class JournalArticleFinderTest {
 		new AggregateTestRule(
 			new LiferayIntegrationTestRule(),
 			SynchronousDestinationTestRule.INSTANCE,
-			TransactionalTestRule.INSTANCE);
+			new TransactionalTestRule(
+				Propagation.SUPPORTS, "com.liferay.journal.service"));
 
 	@Before
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -409,8 +409,6 @@ public class JournalArticleFinderTest {
 		testQueryByG_F(new ArticleModifiedDateComparator(false));
 		testQueryByG_F(new ArticleReviewDateComparator(true));
 		testQueryByG_F(new ArticleReviewDateComparator(false));
-		testQueryByG_F(new ArticleTitleComparator(true));
-		testQueryByG_F(new ArticleTitleComparator(false));
 		testQueryByG_F(new ArticleVersionComparator(true));
 		testQueryByG_F(new ArticleVersionComparator(false));
 	}
@@ -473,7 +471,6 @@ public class JournalArticleFinderTest {
 			article.setModifiedDate(calendar.getTime());
 			article.setArticleId("a" + i);
 			article.setVersion(i);
-			article.setTitle("a" + i);
 			article.setDisplayDate(calendar.getTime());
 			article.setReviewDate(calendar.getTime());
 

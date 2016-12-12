@@ -14,7 +14,7 @@
 
 package com.liferay.document.library.web.internal.portlet.configuration.icon;
 
-import com.liferay.document.library.web.internal.constants.DLPortletKeys;
+import com.liferay.document.library.web.constants.DLPortletKeys;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.configuration.icon.BasePortletConfigurationIcon;
@@ -89,6 +89,7 @@ public class DocumentTypesPortletConfigurationIcon
 		return true;
 	}
 
+	@Override
 	public boolean isToolTip() {
 		return false;
 	}

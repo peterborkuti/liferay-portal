@@ -25,12 +25,12 @@ import com.liferay.dynamic.data.mapping.io.DDMFormValuesJSONSerializer;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.dynamic.data.mapping.storage.StorageEngine;
+import com.liferay.exportimport.data.handler.base.BaseStagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataException;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
-import com.liferay.exportimport.lar.BaseStagedModelDataHandler;
 import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -53,6 +53,9 @@ public class DDLRecordStagedModelDataHandler
 
 	public static final String[] CLASS_NAMES = {DDLRecord.class.getName()};
 
+	/**
+	 * @deprecated As of 1.1.0
+	 */
 	@Deprecated
 	@Override
 	public void deleteStagedModel(DDLRecord stagedModel)
@@ -61,6 +64,9 @@ public class DDLRecordStagedModelDataHandler
 		super.deleteStagedModel(stagedModel);
 	}
 
+	/**
+	 * @deprecated As of 1.1.0
+	 */
 	@Deprecated
 	@Override
 	public void deleteStagedModel(
@@ -70,6 +76,9 @@ public class DDLRecordStagedModelDataHandler
 		super.deleteStagedModel(uuid, groupId, className, extraData);
 	}
 
+	/**
+	 * @deprecated As of 1.1.0
+	 */
 	@Deprecated
 	@Override
 	public DDLRecord fetchStagedModelByUuidAndGroupId(
@@ -78,6 +87,9 @@ public class DDLRecordStagedModelDataHandler
 		return super.fetchStagedModelByUuidAndGroupId(uuid, groupId);
 	}
 
+	/**
+	 * @deprecated As of 1.1.0
+	 */
 	@Deprecated
 	@Override
 	public List<DDLRecord> fetchStagedModelsByUuidAndCompanyId(
@@ -114,6 +126,21 @@ public class DDLRecordStagedModelDataHandler
 	}
 
 	@Override
+	protected void doImportMissingReference(
+			PortletDataContext portletDataContext, String uuid, long groupId,
+			long recordId)
+		throws Exception {
+
+		DDLRecord existingRecord = fetchMissingReference(uuid, groupId);
+
+		Map<Long, Long> recordIds =
+			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
+				DDLRecord.class);
+
+		recordIds.put(recordId, existingRecord.getRecordId());
+	}
+
+	@Override
 	protected void doImportStagedModel(
 			PortletDataContext portletDataContext, DDLRecord record)
 		throws Exception {
@@ -139,7 +166,9 @@ public class DDLRecordStagedModelDataHandler
 			_ddlRecordStagedModelRepository.fetchStagedModelByUuidAndGroupId(
 				record.getUuid(), portletDataContext.getScopeGroupId());
 
-		if (existingRecord == null) {
+		if ((existingRecord == null) ||
+			!portletDataContext.isDataStrategyMirror()) {
+
 			importedRecord = _ddlRecordStagedModelRepository.addStagedModel(
 				portletDataContext, importedRecord, ddmFormValues);
 		}
@@ -206,6 +235,9 @@ public class DDLRecordStagedModelDataHandler
 		return _ddlRecordStagedModelRepository;
 	}
 
+	/**
+	 * @deprecated As of 1.1.0
+	 */
 	@Deprecated
 	protected void setDDLRecordLocalService(
 		DDLRecordLocalService ddlRecordLocalService) {

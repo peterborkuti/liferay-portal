@@ -106,13 +106,16 @@ public interface DDMDisplay {
 		Locale locale);
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of 3.4.0
 	 */
 	@Deprecated
 	public String getViewTemplatesTitle(
 		DDMStructure structure, boolean controlPanel, Locale locale);
 
 	public String getViewTemplatesTitle(DDMStructure structure, Locale locale);
+
+	public boolean isEnableSelectStructureLink(
+		DDMStructure structure, long classPK);
 
 	public boolean isShowAddStructureButton();
 

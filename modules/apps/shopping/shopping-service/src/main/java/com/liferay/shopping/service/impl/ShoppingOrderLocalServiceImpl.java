@@ -25,10 +25,11 @@ import com.liferay.portal.kernel.settings.LocalizedValuesMap;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.PwdGenerator;
+import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.SubscriptionSender;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.spring.extender.service.ServiceReference;
-import com.liferay.portal.util.PropsValues;
 import com.liferay.shopping.configuration.ShoppingGroupServiceOverriddenConfiguration;
 import com.liferay.shopping.constants.ShoppingConstants;
 import com.liferay.shopping.constants.ShoppingPortletKeys;
@@ -84,7 +85,7 @@ public class ShoppingOrderLocalServiceImpl
 
 		// Order
 
-		User user = userPersistence.findByPrimaryKey(userId);
+		User user = userLocalService.getUser(userId);
 
 		String number = getNumber();
 
@@ -138,14 +139,6 @@ public class ShoppingOrderLocalServiceImpl
 		order.setSendShippingEmail(true);
 
 		shoppingOrderPersistence.update(order);
-
-		// Comment
-
-		if (PropsValues.SHOPPING_ORDER_COMMENTS_ENABLED) {
-			CommentManagerUtil.addDiscussion(
-				userId, groupId, ShoppingOrder.class.getName(), orderId,
-				order.getUserName());
-		}
 
 		// Resources
 
@@ -609,32 +602,56 @@ public class ShoppingOrderLocalServiceImpl
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		User user = userPersistence.findByPrimaryKey(order.getUserId());
+		User user = userLocalService.getUser(order.getUserId());
 
 		Currency currency = Currency.getInstance(
 			shoppingGroupServiceOverriddenConfiguration.getCurrencyId());
 
-		String billingAddress =
-			order.getBillingFirstName() + " " + order.getBillingLastName() +
-				"<br>" +
-			order.getBillingEmailAddress() + "<br>" +
-			order.getBillingStreet() + "<br>" +
-			order.getBillingCity() + "<br>" +
-			order.getBillingState() + "<br>" +
-			order.getBillingZip() + "<br>" +
-			order.getBillingCountry() + "<br>" +
-			order.getBillingPhone() + "<br>";
+		StringBundler sb = new StringBundler(18);
 
-		String shippingAddress =
-			order.getShippingFirstName() + " " + order.getShippingLastName() +
-				"<br>" +
-			order.getShippingEmailAddress() + "<br>" +
-			order.getShippingStreet() + "<br>" +
-			order.getShippingCity() + "<br>" +
-			order.getShippingState() + "<br>" +
-			order.getShippingZip() + "<br>" +
-			order.getShippingCountry() + "<br>" +
-			order.getShippingPhone() + "<br>";
+		sb.append(order.getBillingFirstName());
+		sb.append(StringPool.SPACE);
+		sb.append(order.getBillingLastName());
+		sb.append("<br>");
+		sb.append(order.getBillingEmailAddress());
+		sb.append("<br>");
+		sb.append(order.getBillingStreet());
+		sb.append("<br>");
+		sb.append(order.getBillingCity());
+		sb.append("<br>");
+		sb.append(order.getBillingState());
+		sb.append("<br>");
+		sb.append(order.getBillingZip());
+		sb.append("<br>");
+		sb.append(order.getBillingCountry());
+		sb.append("<br>");
+		sb.append(order.getBillingPhone());
+		sb.append("<br>");
+
+		String billingAddress = sb.toString();
+
+		sb = new StringBundler(18);
+
+		sb.append(order.getShippingFirstName());
+		sb.append(StringPool.SPACE);
+		sb.append(order.getShippingLastName());
+		sb.append("<br>");
+		sb.append(order.getShippingEmailAddress());
+		sb.append("<br>");
+		sb.append(order.getShippingStreet());
+		sb.append("<br>");
+		sb.append(order.getShippingCity());
+		sb.append("<br>");
+		sb.append(order.getShippingState());
+		sb.append("<br>");
+		sb.append(order.getShippingZip());
+		sb.append("<br>");
+		sb.append(order.getShippingCountry());
+		sb.append("<br>");
+		sb.append(order.getShippingPhone());
+		sb.append("<br>");
+
+		String shippingAddress = sb.toString();
 
 		double total = ShoppingUtil.calculateTotal(order);
 

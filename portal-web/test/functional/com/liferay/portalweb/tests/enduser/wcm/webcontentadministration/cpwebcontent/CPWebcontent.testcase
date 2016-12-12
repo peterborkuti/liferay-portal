@@ -226,6 +226,8 @@
 			<var name="portlet" value="Web Content" />
 		</execute>
 
+		<execute macro="WebContentNavigator#gotoManageTemplates" />
+
 		<execute macro="WebContentTemplates#addCP">
 			<var name="templateLanguage" value="ftl" />
 			<var name="templateName" value="WC Template Name" />
@@ -333,17 +335,25 @@
 
 		<execute macro="WebContentNavigator#gotoManageStructures" />
 
-		<execute macro="WebContentStructures#editFieldSettingCP">
-			<var name="localizable" value="false" />
-			<var name="structureFieldNames" value="Text Box" />
+		<execute macro="WebContentNavigator#gotoEditStructure">
 			<var name="structureName" value="WC Structure Name" />
 		</execute>
+
+		<for list="Text Box" param="structureFieldName">
+			<execute macro="DynamicDataMapping#editFieldLocalizable">
+				<var name="fieldFieldLabel" value="${structureFieldName}" />
+			</execute>
+		</for>
+
+		<execute macro="WebContentStructures#saveCP" />
 
 		<execute macro="Navigator#openURL" />
 
 		<execute macro="ProductMenu#gotoSitesContent">
 			<var name="portlet" value="Web Content" />
 		</execute>
+
+		<execute macro="WebContentNavigator#gotoManageTemplates" />
 
 		<execute macro="WebContentTemplates#addCP">
 			<var name="templateDescription" value="WC Template Description" />
@@ -443,6 +453,8 @@
 			<var name="portlet" value="Web Content" />
 		</execute>
 
+		<execute macro="WebContentNavigator#gotoManageTemplates" />
+
 		<execute macro="WebContentTemplates#addCP">
 			<var name="templateDescription" value="WC Template Description" />
 			<var name="templateLanguage" value="ftl" />
@@ -478,6 +490,8 @@
 		<execute macro="ProductMenu#gotoSitesContent">
 			<var name="portlet" value="Web Content" />
 		</execute>
+
+		<execute macro="WebContentNavigator#gotoManageTemplates" />
 
 		<execute macro="WebContentTemplates#addCP">
 			<var name="templateDescription" value="WC Template Description" />
@@ -767,6 +781,8 @@
 			<var name="portlet" value="Web Content" />
 		</execute>
 
+		<execute macro="WebContentNavigator#gotoManageTemplates" />
+
 		<execute macro="WebContentTemplates#addCP">
 			<var name="templateDescription" value="WC Template Description" />
 			<var name="templateLanguage" value="ftl" />
@@ -855,6 +871,8 @@
 			<var name="portlet" value="Web Content" />
 		</execute>
 
+		<execute macro="WebContentNavigator#gotoManageTemplates" />
+
 		<execute macro="WebContentTemplates#addCP">
 			<var name="templateDescription" value="WC Template Description" />
 			<var name="templateName" value="WC Template Name" />
@@ -920,6 +938,8 @@
 		<execute macro="ProductMenu#gotoSitesContent">
 			<var name="portlet" value="Web Content" />
 		</execute>
+
+		<execute macro="WebContentNavigator#gotoManageTemplates" />
 
 		<execute macro="WebContentTemplates#addCP">
 			<var name="templateDescription" value="WC Template Description" />
@@ -1025,6 +1045,8 @@
 		<execute macro="ProductMenu#gotoSitesContent">
 			<var name="portlet" value="Web Content" />
 		</execute>
+
+		<execute macro="WebContentNavigator#gotoManageTemplates" />
 
 		<execute macro="WebContentTemplates#addCP">
 			<var name="templateDescription" value="WC Template Description" />
@@ -1140,11 +1162,23 @@
 
 		<execute macro="WebContentNavigator#gotoManageStructures" />
 
-		<execute macro="WebContentStructures#addCP">
-			<var name="parentStructureName" value="WC Structure Name1" />
-			<var name="structureDescription" value="WC Structure Description" />
+		<execute macro="LexiconEntry#gotoAdd" />
+
+		<execute macro="WebContentStructures#addName">
 			<var name="structureName" value="2" />
-			<var name="substructure" value="true" />
+		</execute>
+
+		<execute macro="Panel#expandPanel">
+			<var name="panelHeading" value="Details" />
+		</execute>
+
+		<execute macro="WebContentStructures#addDescription">
+			<var name="structureDescription" value="WC Structure Description" />
+		</execute>
+
+		<execute macro="WebContentStructures#addSubstructure">
+			<var name="parentStructureName" value="WC Structure Name1" />
+			<var name="structureName" value="2" />
 		</execute>
 
 		<execute macro="DynamicDataMapping#addField">
@@ -1300,7 +1334,7 @@
 		</execute>
 
 		<execute macro="WebContent#expireCP">
-			<var name="webContentTitle" value="WC WebContent Title Edit" />
+			<var name="webContentTitleList" value="WC WebContent Title Edit" />
 		</execute>
 
 		<execute macro="WebContentNavigator#gotoEditCP">
@@ -1346,7 +1380,7 @@
 		</execute>
 
 		<execute macro="WebContent#expireCP">
-			<var name="webContentTitle" value="WC WebContent Title" />
+			<var name="webContentTitleList" value="WC WebContent Title" />
 		</execute>
 
 		<execute macro="WebContentNavigator#gotoEditCP">
@@ -1394,6 +1428,8 @@
 		<execute macro="ProductMenu#gotoSitesContent">
 			<var name="portlet" value="Web Content" />
 		</execute>
+
+		<execute macro="WebContentNavigator#gotoManageTemplates" />
 
 		<execute macro="WebContentTemplates#addCP">
 			<var name="templateDescription" value="WC Template Description" />
@@ -1547,6 +1583,8 @@
 			<var name="portlet" value="Web Content" />
 		</execute>
 
+		<execute macro="WebContentNavigator#gotoManageTemplates" />
+
 		<execute macro="WebContentTemplates#addCP">
 			<var name="templateDescription" value="Test Template Description" />
 			<var name="templateName" value="Test Template" />
@@ -1606,6 +1644,54 @@
 			<var name="larFileName" value="Web_Content.portlet.lar" />
 			<var name="linkedPageName" value="Test Page" />
 			<var name="siteName" value="Site Name" />
+		</execute>
+	</command>
+
+	<command name="MoveWebContentToFolder" priority="4">
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoSitesContent">
+			<var name="portlet" value="Web Content" />
+		</execute>
+
+		<execute macro="WebContentFolder#addCP">
+			<var name="folderDescription" value="WC Folder Description" />
+			<var name="folderName" value="WC Folder Name" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoSitesContent">
+			<var name="portlet" value="Web Content" />
+		</execute>
+
+		<execute macro="WebContentNavigator#gotoAddCP" />
+
+		<execute macro="WebContent#addCP">
+			<var name="webContentContent" value="WC WebContent Content" />
+			<var name="webContentTitle" value="WC WebContent Title" />
+		</execute>
+
+		<execute macro="PortletEntry#publish" />
+
+		<execute macro="ProductMenu#gotoSitesContent">
+			<var name="portlet" value="Web Content" />
+		</execute>
+
+		<execute macro="WebContent#moveToFolderCP">
+			<var name="folderName" value="WC Folder Name" />
+			<var name="webContentTitle" value="WC WebContent Title" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoSitesContent">
+			<var name="portlet" value="Web Content" />
+		</execute>
+
+		<execute macro="WebContentFolder#gotoCP">
+			<var name="folderName" value="WC Folder Name" />
+			<var name="webContentTitle" value="WC Folder Name" />
+		</execute>
+
+		<execute macro="WebContent#viewTitle">
+			<var name="webContentTitle" value="WC WebContent Title" />
 		</execute>
 	</command>
 
@@ -1687,7 +1773,7 @@
 		</execute>
 
 		<execute macro="WebContent#expireCP">
-			<var name="webContentTitle" value="WC WebContent Title" />
+			<var name="webContentTitleList" value="WC WebContent Title" />
 		</execute>
 
 		<execute macro="WebContentNavigator#gotoEditCP">
@@ -1824,12 +1910,12 @@
 		</execute>
 
 		<execute macro="Role#addCP">
-			<var name="roleName" value="Web Content Administrator Role" />
+			<var name="roleTitle" value="Web Content Administrator Role" />
 		</execute>
 
 		<execute macro="Role#definePermissionsCP">
 			<var name="permissionDefinitionKeys" value="SITE_ADMIN_CONTENT_WEB_CONTENT_GENERAL_PERMISSIONS_ACCESS_IN_SITE_ADMINISTRATION_CHECKBOX,SITE_ADMIN_CONTENT_WEB_CONTENT_GENERAL_PERMISSIONS_VIEW_CHECKBOX,SITE_ADMIN_CONTENT_WEB_CONTENT_RESOURCE_PERMISSIONS_WEB_CONTENT_ACTION_CHECKBOX,SITE_ADMIN_CONTENT_WEB_CONTENT_RESOURCE_PERMISSIONS_WEB_CONTENT_FOLDER_ACTION_CHECKBOX,SITE_ADMIN_CONTENT_WEB_CONTENT_RESOURCE_PERMISSIONS_WEB_CONTENT_ARTICLE_ACTION_CHECKBOX" />
-			<var name="roleName" value="Web Content Administrator Role" />
+			<var name="roleTitle" value="Web Content Administrator Role" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoControlPanelUsers">
@@ -1857,7 +1943,7 @@
 		</execute>
 
 		<execute macro="Role#assignRegRoleCP">
-			<var name="roleName" value="Web Content Administrator Role" />
+			<var name="roleTitle" value="Web Content Administrator Role" />
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
@@ -1905,6 +1991,57 @@
 		</execute>
 	</command>
 
+	<command name="ValidateDDMNavigation" priority="4">
+		<execute macro="ProductMenu#gotoSitesContent">
+			<var name="portlet" value="Web Content" />
+		</execute>
+
+		<execute macro="WebContentNavigator#gotoManageStructures" />
+
+		<execute macro="WebContentNavigator#gotoManageTemplatesViaStructures">
+			<var name="structureName" value="Basic Web Content" />
+		</execute>
+
+		<execute macro="WebContentTemplates#addCP">
+			<var name="templateDescription" value="Test WC Template Description" />
+			<var name="templateName" value="Test WC Template" />
+		</execute>
+
+		<execute macro="PortletEntry#save" />
+
+		<execute macro="LexiconEntry#gotoEntryMenuItem">
+			<var name="menuItem" value="Edit" />
+			<var name="rowEntry" value="Test WC Template" />
+		</execute>
+
+		<execute macro="Navigator#gotoBack" />
+
+		<execute macro="SiteAdmin#viewPortletTitle">
+			<var name="portletTitle" value="Templates for Structure: Basic Web Content" />
+		</execute>
+
+		<execute macro="WebContentTemplates#viewTableEntryCP">
+			<var name="templateDescription" value="Test WC Template Description" />
+			<var name="templateName" value="Test WC Template" />
+		</execute>
+
+		<execute macro="WebContentTemplates#viewTableEntryCP">
+			<var name="templateDescription" value="" />
+			<var name="templateName" value="Basic Web Content" />
+		</execute>
+
+		<execute macro="Navigator#gotoBack" />
+
+		<execute macro="SiteAdmin#viewPortletTitle">
+			<var name="portletTitle" value="Structures" />
+		</execute>
+
+		<execute macro="WebContentStructures#viewTableEntryCP">
+			<var name="structureDescription" value="Basic Web Content" />
+			<var name="structureName" value="Basic Web Content" />
+		</execute>
+	</command>
+
 	<command name="ViewContentNotLostWithBlankTitle" priority="4">
 		<execute macro="Navigator#openURL" />
 
@@ -1916,6 +2053,96 @@
 
 		<execute macro="WebContent#addNullCP">
 			<var name="webContentContent" value="WC WebContent Content" />
+		</execute>
+	</command>
+
+	<command name="ViewDisplayStyleCP" priority="3">
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoSitesContent">
+			<var name="portlet" value="Web Content" />
+		</execute>
+
+		<execute macro="WebContentNavigator#gotoAddCP" />
+
+		<execute macro="WebContent#addCP">
+			<var name="webContentContent" value="WC WebContent Content" />
+			<var name="webContentTitle" value="WC WebContent Title" />
+		</execute>
+
+		<execute macro="PortletEntry#publish" />
+
+		<execute macro="ProductMenu#gotoSitesContent">
+			<var name="portlet" value="Web Content" />
+		</execute>
+
+		<execute macro="WebContent#viewDisplayStyleCP">
+			<var name="webContentTitle" value="WC WebContent Title" />
+		</execute>
+	</command>
+
+	<command name="ViewFavoriteStructure" priority="4">
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoSitesContent">
+			<var name="portlet" value="Web Content" />
+		</execute>
+
+		<execute macro="WebContentNavigator#gotoManageStructures" />
+
+		<for list="1,2,3,4,5,6,7,8,9" param="n">
+			<execute macro="WebContentStructures#addCP">
+				<var name="structureDescription" value="WC Structure Description" />
+				<var name="structureName" value="WC Structure Name ${n}" />
+			</execute>
+
+			<execute macro="DynamicDataMapping#addField">
+				<var name="field" value="HTML" />
+				<var name="fieldFieldLabel" value="HTML" />
+				<var name="fieldName" value="HTML" />
+				<var name="structureFieldName" value="HTML" />
+			</execute>
+
+			<execute macro="WebContentStructures#saveCP">
+				<var name="structureName" value="${structureName}" />
+			</execute>
+		</for>
+
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoSitesContent">
+			<var name="portlet" value="Web Content" />
+		</execute>
+
+		<execute macro="WebContentNavigator#gotoMoreStructuresViaPlusButton">
+			<var name="pageMod" value="7 of 10" />
+		</execute>
+
+		<for list="Basic Web Content,WC Structure Name 1,WC Structure Name 2,WC Structure Name 3,WC Structure Name 4,WC Structure Name 5,WC Structure Name 6,WC Structure Name 7,WC Structure Name 8,WC Structure Name 9" param="structureName">
+			<execute macro="WebContentStructures#viewStructuresViaMoreIFrame">
+				<var name="structureName" value="${structureName}" />
+			</execute>
+		</for>
+
+		<execute macro="WebContentStructures#viewNoFavoriteStructure" />
+
+		<execute macro="WebContentStructures#addFavoriteStructure">
+			<var name="structureName" value="WC Structure Name 9" />
+		</execute>
+
+		<execute macro="WebContentStructures#viewFavoriteStructureViaIFrame">
+			<var name="indexNumber" value="1" />
+			<var name="structureName" value="WC Structure Name 9" />
+		</execute>
+
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoSitesContent">
+			<var name="portlet" value="Web Content" />
+		</execute>
+
+		<execute macro="WebContentStructures#viewFavoriteStructureViaPlusButton">
+			<var name="structureName" value="WC Structure Name 9" />
 		</execute>
 	</command>
 </definition>

@@ -63,6 +63,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -1215,6 +1216,7 @@ public class DLFileEntryFinderTest {
 		}
 	}
 
+	@Ignore
 	@Test
 	public void testFindByNoAssets() throws Exception {
 		AssetEntryLocalServiceUtil.deleteEntry(
@@ -1248,176 +1250,6 @@ public class DLFileEntryFinderTest {
 			userId, repositoryId, folderId, fileName, contentType,
 			fileName.concat(titleSuffix), StringPool.BLANK, StringPool.BLANK,
 			(byte[])null, serviceContext);
-	}
-
-	protected int doCountBy_G_U_R_F_M_NewRepository(
-			long userId, String mimeType,
-			QueryDefinition<DLFileEntry> queryDefinition)
-		throws Exception {
-
-		List<Long> repositoryIds = ListUtil.toList(
-			new long[] {_newRepositoryFolder.getRepositoryId()});
-		List<Long> folderIds = ListUtil.toList(
-			new long[] {_newRepositoryFolder.getFolderId()});
-
-		return doCountBy_G_U_R_F_M(
-			userId, repositoryIds, folderIds, mimeType, queryDefinition);
-	}
-
-	protected int doCountBy_G_U_R_F_M_DefaultRepository(
-			long userId, String mimeType,
-			QueryDefinition<DLFileEntry> queryDefinition)
-		throws Exception {
-
-		List<Long> repositoryIds = ListUtil.toList(
-			new long[] {_defaultRepositoryFolder.getRepositoryId()});
-		List<Long> folderIds = ListUtil.toList(
-			new long[] {_defaultRepositoryFolder.getFolderId()});
-
-		return doCountBy_G_U_R_F_M(
-			userId, repositoryIds, folderIds, mimeType, queryDefinition);
-	}
-
-	protected int doCountBy_G_U_R_F_M_BothRepositories(
-			long userId, String mimeType,
-			QueryDefinition<DLFileEntry> queryDefinition)
-		throws Exception {
-
-		List<Long> repositoryIds = ListUtil.toList(
-			new long[] {
-				_defaultRepositoryFolder.getRepositoryId(),
-				_newRepositoryFolder.getRepositoryId()
-			});
-		List<Long> folderIds = ListUtil.toList(
-			new long[] {
-				_defaultRepositoryFolder.getFolderId(),
-				_newRepositoryFolder.getFolderId()
-			});
-
-		return doCountBy_G_U_R_F_M(
-			userId, repositoryIds, folderIds, mimeType, queryDefinition);
-	}
-
-	protected int doCountBy_G_U_R_F_M_EmptyRepositories(
-			long userId, String mimeType,
-			QueryDefinition<DLFileEntry> queryDefinition)
-		throws Exception {
-
-		List<Long> repositoryIds = new ArrayList<>();
-		List<Long> folderIds = new ArrayList<>();
-
-		return doCountBy_G_U_R_F_M(
-			userId, repositoryIds, folderIds, mimeType, queryDefinition);
-	}
-
-	protected int doCountBy_G_U_R_F_M(
-			long userId, List<Long> repositoryIds, List<Long> folderIds,
-			String mimeType, QueryDefinition<DLFileEntry> queryDefinition)
-		throws Exception {
-
-		String[] mimeTypes = null;
-
-		if (mimeType != null) {
-			mimeTypes = new String[] {mimeType};
-		}
-
-		return DLFileEntryLocalServiceUtil.getFileEntriesCount(
-			_group.getGroupId(), userId, repositoryIds, folderIds, mimeTypes,
-			queryDefinition);
-	}
-
-	protected List<DLFileEntry> doFindBy_G_U_F_M(
-			long userId, String mimeType,
-			QueryDefinition<DLFileEntry> queryDefinition)
-		throws Exception {
-
-		List<Long> folderIds = ListUtil.toList(
-			new long[] {_defaultRepositoryFolder.getFolderId()});
-
-		String[] mimeTypes = null;
-
-		if (mimeType != null) {
-			mimeTypes = new String[] {mimeType};
-		}
-
-		return DLFileEntryLocalServiceUtil.getFileEntries(
-			_group.getGroupId(), userId, folderIds, mimeTypes, queryDefinition);
-	}
-
-	protected List<DLFileEntry> doFindBy_G_U_R_F_M_NewRepository(
-			long userId, String mimeType,
-			QueryDefinition<DLFileEntry> queryDefinition)
-		throws Exception {
-
-		List<Long> repositoryIds = ListUtil.toList(
-			new long[] {_newRepositoryFolder.getRepositoryId()});
-		List<Long> folderIds = ListUtil.toList(
-			new long[] {_newRepositoryFolder.getFolderId()});
-
-		return doFindBy_G_U_R_F_M(
-			userId, repositoryIds, folderIds, mimeType, queryDefinition);
-	}
-
-	protected List<DLFileEntry> doFindBy_G_U_R_F_M_DefaultRepository(
-			long userId, String mimeType,
-			QueryDefinition<DLFileEntry> queryDefinition)
-		throws Exception {
-
-		List<Long> repositoryIds = ListUtil.toList(
-			new long[] {_defaultRepositoryFolder.getRepositoryId()});
-		List<Long> folderIds = ListUtil.toList(
-			new long[] {_defaultRepositoryFolder.getFolderId()});
-
-		return doFindBy_G_U_R_F_M(
-			userId, repositoryIds, folderIds, mimeType, queryDefinition);
-	}
-
-	protected List<DLFileEntry> doFindBy_G_U_R_F_M_BothRepositories(
-			long userId, String mimeType,
-			QueryDefinition<DLFileEntry> queryDefinition)
-		throws Exception {
-
-		List<Long> repositoryIds = ListUtil.toList(
-			new long[] {
-				_defaultRepositoryFolder.getRepositoryId(),
-				_newRepositoryFolder.getRepositoryId()
-			});
-		List<Long> folderIds = ListUtil.toList(
-			new long[] {
-				_defaultRepositoryFolder.getFolderId(),
-				_newRepositoryFolder.getFolderId()
-			});
-
-		return doFindBy_G_U_R_F_M(
-			userId, repositoryIds, folderIds, mimeType, queryDefinition);
-	}
-
-	protected List<DLFileEntry> doFindBy_G_U_R_F_M_EmptyRepositories(
-			long userId, String mimeType,
-			QueryDefinition<DLFileEntry> queryDefinition)
-		throws Exception {
-
-		List<Long> repositoryIds = new ArrayList<>();
-		List<Long> folderIds = new ArrayList<>();
-
-		return doFindBy_G_U_R_F_M(
-			userId, repositoryIds, folderIds, mimeType, queryDefinition);
-	}
-
-	protected List<DLFileEntry> doFindBy_G_U_R_F_M(
-			long userId, List<Long> repositoryIds, List<Long> folderIds,
-			String mimeType, QueryDefinition<DLFileEntry> queryDefinition)
-		throws Exception {
-
-		String[] mimeTypes = null;
-
-		if (mimeType != null) {
-			mimeTypes = new String[] {mimeType};
-		}
-
-		return DLFileEntryLocalServiceUtil.getFileEntries(
-			_group.getGroupId(), userId, repositoryIds, folderIds, mimeTypes,
-			queryDefinition);
 	}
 
 	protected static Object[] setUp(
@@ -1507,6 +1339,176 @@ public class DLFileEntryFinderTest {
 
 		return DLFileEntryLocalServiceUtil.getFileEntriesCount(
 			_group.getGroupId(), userId, folderIds, mimeTypes, queryDefinition);
+	}
+
+	protected int doCountBy_G_U_R_F_M(
+			long userId, List<Long> repositoryIds, List<Long> folderIds,
+			String mimeType, QueryDefinition<DLFileEntry> queryDefinition)
+		throws Exception {
+
+		String[] mimeTypes = null;
+
+		if (mimeType != null) {
+			mimeTypes = new String[] {mimeType};
+		}
+
+		return DLFileEntryLocalServiceUtil.getFileEntriesCount(
+			_group.getGroupId(), userId, repositoryIds, folderIds, mimeTypes,
+			queryDefinition);
+	}
+
+	protected int doCountBy_G_U_R_F_M_BothRepositories(
+			long userId, String mimeType,
+			QueryDefinition<DLFileEntry> queryDefinition)
+		throws Exception {
+
+		List<Long> repositoryIds = ListUtil.toList(
+			new long[] {
+				_defaultRepositoryFolder.getRepositoryId(),
+				_newRepositoryFolder.getRepositoryId()
+			});
+		List<Long> folderIds = ListUtil.toList(
+			new long[] {
+				_defaultRepositoryFolder.getFolderId(),
+				_newRepositoryFolder.getFolderId()
+			});
+
+		return doCountBy_G_U_R_F_M(
+			userId, repositoryIds, folderIds, mimeType, queryDefinition);
+	}
+
+	protected int doCountBy_G_U_R_F_M_DefaultRepository(
+			long userId, String mimeType,
+			QueryDefinition<DLFileEntry> queryDefinition)
+		throws Exception {
+
+		List<Long> repositoryIds = ListUtil.toList(
+			new long[] {_defaultRepositoryFolder.getRepositoryId()});
+		List<Long> folderIds = ListUtil.toList(
+			new long[] {_defaultRepositoryFolder.getFolderId()});
+
+		return doCountBy_G_U_R_F_M(
+			userId, repositoryIds, folderIds, mimeType, queryDefinition);
+	}
+
+	protected int doCountBy_G_U_R_F_M_EmptyRepositories(
+			long userId, String mimeType,
+			QueryDefinition<DLFileEntry> queryDefinition)
+		throws Exception {
+
+		List<Long> repositoryIds = new ArrayList<>();
+		List<Long> folderIds = new ArrayList<>();
+
+		return doCountBy_G_U_R_F_M(
+			userId, repositoryIds, folderIds, mimeType, queryDefinition);
+	}
+
+	protected int doCountBy_G_U_R_F_M_NewRepository(
+			long userId, String mimeType,
+			QueryDefinition<DLFileEntry> queryDefinition)
+		throws Exception {
+
+		List<Long> repositoryIds = ListUtil.toList(
+			new long[] {_newRepositoryFolder.getRepositoryId()});
+		List<Long> folderIds = ListUtil.toList(
+			new long[] {_newRepositoryFolder.getFolderId()});
+
+		return doCountBy_G_U_R_F_M(
+			userId, repositoryIds, folderIds, mimeType, queryDefinition);
+	}
+
+	protected List<DLFileEntry> doFindBy_G_U_F_M(
+			long userId, String mimeType,
+			QueryDefinition<DLFileEntry> queryDefinition)
+		throws Exception {
+
+		List<Long> folderIds = ListUtil.toList(
+			new long[] {_defaultRepositoryFolder.getFolderId()});
+
+		String[] mimeTypes = null;
+
+		if (mimeType != null) {
+			mimeTypes = new String[] {mimeType};
+		}
+
+		return DLFileEntryLocalServiceUtil.getFileEntries(
+			_group.getGroupId(), userId, folderIds, mimeTypes, queryDefinition);
+	}
+
+	protected List<DLFileEntry> doFindBy_G_U_R_F_M(
+			long userId, List<Long> repositoryIds, List<Long> folderIds,
+			String mimeType, QueryDefinition<DLFileEntry> queryDefinition)
+		throws Exception {
+
+		String[] mimeTypes = null;
+
+		if (mimeType != null) {
+			mimeTypes = new String[] {mimeType};
+		}
+
+		return DLFileEntryLocalServiceUtil.getFileEntries(
+			_group.getGroupId(), userId, repositoryIds, folderIds, mimeTypes,
+			queryDefinition);
+	}
+
+	protected List<DLFileEntry> doFindBy_G_U_R_F_M_BothRepositories(
+			long userId, String mimeType,
+			QueryDefinition<DLFileEntry> queryDefinition)
+		throws Exception {
+
+		List<Long> repositoryIds = ListUtil.toList(
+			new long[] {
+				_defaultRepositoryFolder.getRepositoryId(),
+				_newRepositoryFolder.getRepositoryId()
+			});
+		List<Long> folderIds = ListUtil.toList(
+			new long[] {
+				_defaultRepositoryFolder.getFolderId(),
+				_newRepositoryFolder.getFolderId()
+			});
+
+		return doFindBy_G_U_R_F_M(
+			userId, repositoryIds, folderIds, mimeType, queryDefinition);
+	}
+
+	protected List<DLFileEntry> doFindBy_G_U_R_F_M_DefaultRepository(
+			long userId, String mimeType,
+			QueryDefinition<DLFileEntry> queryDefinition)
+		throws Exception {
+
+		List<Long> repositoryIds = ListUtil.toList(
+			new long[] {_defaultRepositoryFolder.getRepositoryId()});
+		List<Long> folderIds = ListUtil.toList(
+			new long[] {_defaultRepositoryFolder.getFolderId()});
+
+		return doFindBy_G_U_R_F_M(
+			userId, repositoryIds, folderIds, mimeType, queryDefinition);
+	}
+
+	protected List<DLFileEntry> doFindBy_G_U_R_F_M_EmptyRepositories(
+			long userId, String mimeType,
+			QueryDefinition<DLFileEntry> queryDefinition)
+		throws Exception {
+
+		List<Long> repositoryIds = new ArrayList<>();
+		List<Long> folderIds = new ArrayList<>();
+
+		return doFindBy_G_U_R_F_M(
+			userId, repositoryIds, folderIds, mimeType, queryDefinition);
+	}
+
+	protected List<DLFileEntry> doFindBy_G_U_R_F_M_NewRepository(
+			long userId, String mimeType,
+			QueryDefinition<DLFileEntry> queryDefinition)
+		throws Exception {
+
+		List<Long> repositoryIds = ListUtil.toList(
+			new long[] {_newRepositoryFolder.getRepositoryId()});
+		List<Long> folderIds = ListUtil.toList(
+			new long[] {_newRepositoryFolder.getFolderId()});
+
+		return doFindBy_G_U_R_F_M(
+			userId, repositoryIds, folderIds, mimeType, queryDefinition);
 	}
 
 	private static final long _SMALL_IMAGE_ID = 1234L;

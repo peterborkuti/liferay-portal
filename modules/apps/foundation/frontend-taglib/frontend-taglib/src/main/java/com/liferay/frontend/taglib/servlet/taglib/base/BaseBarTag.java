@@ -14,7 +14,7 @@
 
 package com.liferay.frontend.taglib.servlet.taglib.base;
 
-import com.liferay.frontend.taglib.servlet.ServletContextUtil;
+import com.liferay.frontend.taglib.internal.servlet.ServletContextUtil;
 import com.liferay.frontend.taglib.servlet.taglib.BarTag;
 import com.liferay.taglib.util.IncludeTag;
 
@@ -25,6 +25,7 @@ import javax.servlet.jsp.PageContext;
  */
 public abstract class BaseBarTag extends IncludeTag implements BarTag {
 
+	@Override
 	public void setButtons(String buttons) {
 		this.buttons = buttons;
 	}

@@ -21,12 +21,13 @@ import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.template.TemplateException;
 import com.liferay.portal.kernel.template.TemplateManagerUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.UnsyncPrintWriterPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.portlet.bridge.soy.internal.SoyPortletHelper;
-import com.liferay.portal.portlet.bridge.soy.internal.SoyTemplateResourcesCollector;
+import com.liferay.portal.template.soy.utils.SoyTemplateResourcesCollector;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -41,6 +42,8 @@ import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
@@ -58,7 +61,7 @@ public class SoyPortlet extends MVCPortlet {
 		propagateRequestParameters = GetterUtil.getBoolean(
 			getInitParameter("propagate-request-parameters"), true);
 
-		_bundle = FrameworkUtil.getBundle(this.getClass());
+		_bundle = FrameworkUtil.getBundle(getClass());
 
 		try {
 			_soyPortletHelper = new SoyPortletHelper(_bundle);
@@ -118,6 +121,11 @@ public class SoyPortlet extends MVCPortlet {
 
 			populateJavaScriptTemplateContext(
 				template, portletResponse.getNamespace());
+
+			HttpServletRequest httpServletRequest =
+				PortalUtil.getHttpServletRequest(portletRequest);
+
+			template.prepare(httpServletRequest);
 
 			template.processTemplate(writer);
 

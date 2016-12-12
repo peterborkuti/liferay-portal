@@ -72,8 +72,8 @@ public class VariablesEvaluationTest {
 		DDMExpression<Long> ddmExpression = new DDMExpressionImpl<>(
 			"x / y", Long.class);
 
-		ddmExpression.setLongVariableValue("x", 2l);
-		ddmExpression.setLongVariableValue("y", 1l);
+		ddmExpression.setLongVariableValue("x", 2L);
+		ddmExpression.setLongVariableValue("y", 1L);
 
 		Assert.assertEquals(2, (long)ddmExpression.evaluate());
 	}
@@ -91,6 +91,7 @@ public class VariablesEvaluationTest {
 		ddmExpression.setExpressionStringVariableValue("z", "x - y");
 
 		int y = x + 1;
+
 		int z = x - y;
 
 		Assert.assertEquals(x + y + z, ddmExpression.evaluate().intValue());

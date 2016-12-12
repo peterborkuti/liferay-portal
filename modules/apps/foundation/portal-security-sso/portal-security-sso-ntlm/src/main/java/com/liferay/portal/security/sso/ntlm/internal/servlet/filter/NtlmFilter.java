@@ -14,6 +14,7 @@
 
 package com.liferay.portal.security.sso.ntlm.internal.servlet.filter;
 
+import com.liferay.portal.instances.service.PortalInstancesLocalService;
 import com.liferay.portal.kernel.cache.PortalCache;
 import com.liferay.portal.kernel.cache.SingleVMPool;
 import com.liferay.portal.kernel.io.BigEndianCodec;
@@ -26,13 +27,12 @@ import com.liferay.portal.kernel.servlet.BrowserSnifferUtil;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.settings.CompanyServiceSettingsLocator;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.security.sso.ntlm.NetlogonConnectionManager;
 import com.liferay.portal.security.sso.ntlm.configuration.NtlmConfiguration;
 import com.liferay.portal.security.sso.ntlm.constants.NtlmConstants;
 import com.liferay.portal.security.sso.ntlm.constants.NtlmWebKeys;
+import com.liferay.portal.security.sso.ntlm.internal.NetlogonConnectionManager;
 import com.liferay.portal.security.sso.ntlm.internal.NtlmManager;
 import com.liferay.portal.security.sso.ntlm.internal.NtlmUserAccount;
-import com.liferay.portal.util.PortalInstances;
 
 import java.util.Map;
 import java.util.Objects;
@@ -92,6 +92,7 @@ import org.osgi.service.component.annotations.Reference;
  * com.liferay.portal.security.sso.ntlm.internal.auto.login.NTLMAutoLogin} class
  * to log the user in (see above).
  * </li>
+ * </ol>
  *
  * @author Bruno Farache
  * @author Marcus Schmidke
@@ -104,10 +105,11 @@ import org.osgi.service.component.annotations.Reference;
 	configurationPid = "com.liferay.portal.security.sso.ntlm.configuration.NtlmConfiguration",
 	immediate = true,
 	property = {
-		"dispatcher=FORWARD", "dispatcher=REQUEST", "servlet-context-name=",
+		"before-filter=Auto Login Filter", "dispatcher=FORWARD",
+		"dispatcher=REQUEST", "servlet-context-name=",
 		"servlet-filter-name=SSO Ntlm Filter", "url-pattern=/c/portal/login"
 	},
-	service = Filter.class
+	service = {Filter.class, NtlmFilter.class}
 )
 public class NtlmFilter extends BaseFilter {
 
@@ -115,20 +117,20 @@ public class NtlmFilter extends BaseFilter {
 	public boolean isFilterEnabled(
 		HttpServletRequest request, HttpServletResponse response) {
 
-		try {
-			long companyId = PortalInstances.getCompanyId(request);
+		if (!BrowserSnifferUtil.isIe(request)) {
+			return false;
+		}
 
+		long companyId = _portalInstancesLocalService.getCompanyId(request);
+
+		try {
 			NtlmConfiguration ntlmConfiguration =
 				_configurationProvider.getConfiguration(
 					NtlmConfiguration.class,
 					new CompanyServiceSettingsLocator(
 						companyId, NtlmConstants.SERVICE_NAME));
 
-			if (BrowserSnifferUtil.isIe(request) &&
-				ntlmConfiguration.enabled()) {
-
-				return true;
-			}
+			return ntlmConfiguration.enabled();
 		}
 		catch (Exception e) {
 			_log.error(e, e);
@@ -236,7 +238,7 @@ public class NtlmFilter extends BaseFilter {
 
 		HttpSession session = request.getSession(false);
 
-		long companyId = PortalInstances.getCompanyId(request);
+		long companyId = _portalInstancesLocalService.getCompanyId(request);
 
 		String authorization = GetterUtil.getString(
 			request.getHeader(HttpHeaders.AUTHORIZATION));
@@ -366,5 +368,8 @@ public class NtlmFilter extends BaseFilter {
 	private final Map<Long, NtlmManager> _ntlmManagers =
 		new ConcurrentHashMap<>();
 	private PortalCache<String, byte[]> _portalCache;
+
+	@Reference
+	private PortalInstancesLocalService _portalInstancesLocalService;
 
 }

@@ -32,7 +32,7 @@ import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.document.library.kernel.service.DLTrashService;
 import com.liferay.document.library.kernel.util.DL;
-import com.liferay.document.library.web.internal.constants.DLPortletKeys;
+import com.liferay.document.library.web.constants.DLPortletKeys;
 import com.liferay.document.library.web.internal.util.DLTrashUtil;
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -355,7 +355,9 @@ public class DLWebDAVStorageImpl extends BaseWebDAVStorageImpl {
 			String[] pathArray = webDAVRequest.getPathArray();
 
 			long companyId = webDAVRequest.getCompanyId();
+
 			long parentFolderId = getParentFolderId(companyId, pathArray);
+
 			String name = WebDAVUtil.getResourceName(pathArray);
 
 			if (Validator.isNull(name)) {
@@ -464,7 +466,9 @@ public class DLWebDAVStorageImpl extends BaseWebDAVStorageImpl {
 				long companyId = webDAVRequest.getCompanyId();
 				long groupId = webDAVRequest.getGroupId();
 				long parentFolderId = getParentFolderId(companyId, pathArray);
+
 				String title = getTitle(pathArray);
+
 				String extension = FileUtil.getExtension(title);
 
 				String contentType = getContentType(
@@ -614,7 +618,9 @@ public class DLWebDAVStorageImpl extends BaseWebDAVStorageImpl {
 			Folder folder = (Folder)resource.getModel();
 
 			long companyId = webDAVRequest.getCompanyId();
+
 			long groupId = WebDAVUtil.getGroupId(companyId, destinationArray);
+
 			long folderId = folder.getFolderId();
 			long parentFolderId = getParentFolderId(
 				companyId, destinationArray);
@@ -688,9 +694,11 @@ public class DLWebDAVStorageImpl extends BaseWebDAVStorageImpl {
 			}
 
 			long companyId = webDAVRequest.getCompanyId();
+
 			long groupId = WebDAVUtil.getGroupId(companyId, destinationArray);
 			long newParentFolderId = getParentFolderId(
 				companyId, destinationArray);
+
 			String title = getTitle(destinationArray);
 			String description = fileEntry.getDescription();
 			String changeLog = StringPool.BLANK;

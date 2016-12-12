@@ -20,10 +20,12 @@ import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.dynamic.data.mapping.storage.Fields;
 import com.liferay.dynamic.data.mapping.util.DDMIndexer;
 import com.liferay.dynamic.data.mapping.util.FieldsToDDMFormValuesConverter;
-import com.liferay.journal.configuration.JournalServiceConfigurationValues;
+import com.liferay.journal.configuration.JournalServiceConfiguration;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalArticleDisplay;
+import com.liferay.journal.model.JournalArticleResource;
 import com.liferay.journal.service.JournalArticleLocalService;
+import com.liferay.journal.service.JournalArticleResourceLocalService;
 import com.liferay.journal.service.permission.JournalArticlePermission;
 import com.liferay.journal.util.JournalContent;
 import com.liferay.journal.util.JournalConverter;
@@ -36,6 +38,7 @@ import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.portlet.PortletRequestModel;
 import com.liferay.portal.kernel.search.BaseIndexer;
 import com.liferay.portal.kernel.search.BooleanClauseOccur;
@@ -44,9 +47,9 @@ import com.liferay.portal.kernel.search.DDMStructureIndexer;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.DocumentImpl;
 import com.liferay.portal.kernel.search.Field;
-import com.liferay.portal.kernel.search.IndexWriterHelperUtil;
+import com.liferay.portal.kernel.search.IndexWriterHelper;
 import com.liferay.portal.kernel.search.Indexer;
-import com.liferay.portal.kernel.search.IndexerRegistryUtil;
+import com.liferay.portal.kernel.search.IndexerRegistry;
 import com.liferay.portal.kernel.search.Query;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchException;
@@ -54,6 +57,7 @@ import com.liferay.portal.kernel.search.Summary;
 import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.search.filter.QueryFilter;
 import com.liferay.portal.kernel.search.generic.BooleanQueryImpl;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -69,6 +73,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.search.index.IndexStatusManager;
 import com.liferay.trash.kernel.util.TrashUtil;
 
 import java.io.Serializable;
@@ -240,7 +245,7 @@ public class JournalArticleIndexer
 	public void reindexDDMStructures(List<Long> ddmStructureIds)
 		throws SearchException {
 
-		if (IndexWriterHelperUtil.isIndexReadOnly() || !isIndexerEnabled()) {
+		if (_indexStatusManager.isIndexReadOnly() || !isIndexerEnabled()) {
 			return;
 		}
 
@@ -258,7 +263,7 @@ public class JournalArticleIndexer
 			}
 
 			final Indexer<JournalArticle> indexer =
-				IndexerRegistryUtil.nullSafeGetIndexer(JournalArticle.class);
+				_indexerRegistry.nullSafeGetIndexer(JournalArticle.class);
 
 			final ActionableDynamicQuery actionableDynamicQuery =
 				_journalArticleLocalService.getActionableDynamicQuery();
@@ -273,9 +278,7 @@ public class JournalArticleIndexer
 
 						dynamicQuery.add(ddmStructureKey.in(ddmStructureKeys));
 
-						if (!JournalServiceConfigurationValues.
-								JOURNAL_ARTICLE_INDEX_ALL_VERSIONS) {
-
+						if (!isIndexAllArticleVersions()) {
 							Property statusProperty =
 								PropertyFactoryUtil.forName("status");
 
@@ -407,9 +410,7 @@ public class JournalArticleIndexer
 	protected void doDelete(JournalArticle journalArticle) throws Exception {
 		long classPK = journalArticle.getId();
 
-		if (!JournalServiceConfigurationValues.
-				JOURNAL_ARTICLE_INDEX_ALL_VERSIONS) {
-
+		if (!isIndexAllArticleVersions()) {
 			if (_journalArticleLocalService.getArticlesCount(
 					journalArticle.getGroupId(),
 					journalArticle.getArticleId()) > 0) {
@@ -440,7 +441,7 @@ public class JournalArticleIndexer
 			return;
 		}
 
-		IndexWriterHelperUtil.updateDocument(
+		_indexWriterHelper.updateDocument(
 			getSearchEngineId(), journalArticle.getCompanyId(),
 			getDocument(latestIndexableArticle), isCommitImmediately());
 	}
@@ -453,9 +454,7 @@ public class JournalArticleIndexer
 
 		long classPK = journalArticle.getId();
 
-		if (!JournalServiceConfigurationValues.
-				JOURNAL_ARTICLE_INDEX_ALL_VERSIONS) {
-
+		if (!isIndexAllArticleVersions()) {
 			classPK = journalArticle.getResourcePrimKey();
 		}
 
@@ -477,7 +476,6 @@ public class JournalArticleIndexer
 			if (languageId.equals(articleDefaultLanguageId)) {
 				document.addText(Field.CONTENT, content);
 				document.addText(Field.DESCRIPTION, description);
-				document.addText(Field.TITLE, title);
 				document.addText("defaultLanguageId", languageId);
 			}
 
@@ -609,7 +607,7 @@ public class JournalArticleIndexer
 
 			Document document = getDocument(article);
 
-			IndexWriterHelperUtil.deleteDocument(
+			_indexWriterHelper.deleteDocument(
 				getSearchEngineId(), article.getCompanyId(),
 				document.get(Field.UID), isCommitImmediately());
 
@@ -700,9 +698,7 @@ public class JournalArticleIndexer
 
 		List<JournalArticle> articles = null;
 
-		if (JournalServiceConfigurationValues.
-				JOURNAL_ARTICLE_INDEX_ALL_VERSIONS) {
-
+		if (isIndexAllArticleVersions()) {
 			articles = _journalArticleLocalService.getArticlesByResourcePrimKey(
 				article.getResourcePrimKey());
 		}
@@ -753,6 +749,7 @@ public class JournalArticleIndexer
 				themeDisplay);
 
 			content = articleDisplay.getDescription();
+
 			content = HtmlUtil.replaceNewLine(content);
 
 			if (Validator.isNull(content)) {
@@ -768,46 +765,98 @@ public class JournalArticleIndexer
 		return content;
 	}
 
+	protected boolean isIndexAllArticleVersions() {
+		JournalServiceConfiguration journalServiceConfiguration = null;
+
+		try {
+			journalServiceConfiguration =
+				_configurationProvider.getCompanyConfiguration(
+					JournalServiceConfiguration.class,
+					CompanyThreadLocal.getCompanyId());
+
+			return journalServiceConfiguration.indexAllArticleVersionsEnabled();
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+		}
+
+		return false;
+	}
+
 	protected void reindexArticles(long companyId) throws PortalException {
-		final IndexableActionableDynamicQuery indexableActionableDynamicQuery =
-			_journalArticleLocalService.getIndexableActionableDynamicQuery();
+		final IndexableActionableDynamicQuery indexableActionableDynamicQuery;
 
-		indexableActionableDynamicQuery.setCompanyId(companyId);
-		indexableActionableDynamicQuery.setPerformActionMethod(
-			new ActionableDynamicQuery.PerformActionMethod<JournalArticle>() {
+		if (isIndexAllArticleVersions()) {
+			indexableActionableDynamicQuery =
+				_journalArticleLocalService.
+					getIndexableActionableDynamicQuery();
 
-				@Override
-				public void performAction(JournalArticle article) {
-					if (!JournalServiceConfigurationValues.
-							JOURNAL_ARTICLE_INDEX_ALL_VERSIONS) {
+			indexableActionableDynamicQuery.setPerformActionMethod(
+				new ActionableDynamicQuery.
+					PerformActionMethod<JournalArticle>() {
+
+					@Override
+					public void performAction(JournalArticle article) {
+						try {
+							Document document = getDocument(article);
+
+							indexableActionableDynamicQuery.addDocuments(
+								document);
+						}
+						catch (PortalException pe) {
+							if (_log.isWarnEnabled()) {
+								_log.warn(
+									"Unable to index journal article " +
+										article.getId(),
+									pe);
+							}
+						}
+					}
+
+				});
+		}
+		else {
+			indexableActionableDynamicQuery =
+				_journalArticleResourceLocalService.
+					getIndexableActionableDynamicQuery();
+
+			indexableActionableDynamicQuery.setPerformActionMethod(
+				new ActionableDynamicQuery.
+					PerformActionMethod<JournalArticleResource>() {
+
+					@Override
+					public void performAction(
+						JournalArticleResource articleResource) {
 
 						JournalArticle latestIndexableArticle =
 							fetchLatestIndexableArticleVersion(
-								article.getResourcePrimKey());
+								articleResource.getResourcePrimKey());
 
 						if (latestIndexableArticle == null) {
 							return;
 						}
 
-						article = latestIndexableArticle;
-					}
+						try {
+							Document document = getDocument(
+								latestIndexableArticle);
 
-					try {
-						Document document = getDocument(article);
-
-						indexableActionableDynamicQuery.addDocuments(document);
-					}
-					catch (PortalException pe) {
-						if (_log.isWarnEnabled()) {
-							_log.warn(
-								"Unable to index journal article " +
-									article.getId(),
-								pe);
+							indexableActionableDynamicQuery.addDocuments(
+								document);
+						}
+						catch (PortalException pe) {
+							if (_log.isWarnEnabled()) {
+								_log.warn(
+									"Unable to index journal article " +
+										latestIndexableArticle.getId(),
+									pe);
+							}
 						}
 					}
-				}
 
-			});
+				});
+		}
+
+		indexableActionableDynamicQuery.setCompanyId(companyId);
 		indexableActionableDynamicQuery.setSearchEngineId(getSearchEngineId());
 
 		indexableActionableDynamicQuery.performActions();
@@ -816,9 +865,16 @@ public class JournalArticleIndexer
 	protected void reindexArticleVersions(JournalArticle article)
 		throws PortalException {
 
-		IndexWriterHelperUtil.updateDocuments(
+		_indexWriterHelper.updateDocuments(
 			getSearchEngineId(), article.getCompanyId(),
 			getArticleVersions(article), isCommitImmediately());
+	}
+
+	@Reference(unbind = "-")
+	protected void setConfigurationProvider(
+		ConfigurationProvider configurationProvider) {
+
+		_configurationProvider = configurationProvider;
 	}
 
 	@Reference(unbind = "-")
@@ -848,6 +904,14 @@ public class JournalArticleIndexer
 	}
 
 	@Reference(unbind = "-")
+	protected void setJournalArticleResourceLocalService(
+		JournalArticleResourceLocalService journalArticleResourceLocalService) {
+
+		_journalArticleResourceLocalService =
+			journalArticleResourceLocalService;
+	}
+
+	@Reference(unbind = "-")
 	protected void setJournalContent(JournalContent journalContent) {
 		_journalContent = journalContent;
 	}
@@ -860,10 +924,23 @@ public class JournalArticleIndexer
 	private static final Log _log = LogFactoryUtil.getLog(
 		JournalArticleIndexer.class);
 
+	private ConfigurationProvider _configurationProvider;
 	private DDMIndexer _ddmIndexer;
 	private DDMStructureLocalService _ddmStructureLocalService;
 	private FieldsToDDMFormValuesConverter _fieldsToDDMFormValuesConverter;
+
+	@Reference
+	private IndexerRegistry _indexerRegistry;
+
+	@Reference
+	private IndexStatusManager _indexStatusManager;
+
+	@Reference
+	private IndexWriterHelper _indexWriterHelper;
+
 	private JournalArticleLocalService _journalArticleLocalService;
+	private JournalArticleResourceLocalService
+		_journalArticleResourceLocalService;
 	private JournalContent _journalContent;
 	private JournalConverter _journalConverter;
 

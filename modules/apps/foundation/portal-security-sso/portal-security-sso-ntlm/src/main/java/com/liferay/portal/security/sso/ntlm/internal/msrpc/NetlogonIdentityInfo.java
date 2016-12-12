@@ -77,6 +77,7 @@ public class NetlogonIdentityInfo extends NdrObject {
 		int stringBuffers = string.maximum_length / 2;
 
 		ndrBuffer.enc_ndr_long(stringBuffers);
+
 		ndrBuffer.enc_ndr_long(0);
 		ndrBuffer.enc_ndr_long(stringBufferl);
 
@@ -86,8 +87,8 @@ public class NetlogonIdentityInfo extends NdrObject {
 
 		ndrBuffer = ndrBuffer.derive(stringBufferIndex);
 
-		for (int _i = 0; _i < stringBufferl; _i++) {
-			ndrBuffer.enc_ndr_short(string.buffer[_i]);
+		for (int i = 0; i < stringBufferl; i++) {
+			ndrBuffer.enc_ndr_short(string.buffer[i]);
 		}
 	}
 

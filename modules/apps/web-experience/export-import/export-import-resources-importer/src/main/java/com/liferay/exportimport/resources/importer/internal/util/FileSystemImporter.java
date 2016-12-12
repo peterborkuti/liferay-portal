@@ -224,7 +224,7 @@ public class FileSystemImporter extends BaseImporter {
 					getKey(fileName), getMap(name), null,
 					DDMTemplateConstants.TEMPLATE_TYPE_DISPLAY,
 					StringPool.BLANK, getDDMTemplateLanguage(file.getName()),
-					script, false, false, StringPool.BLANK, null,
+					script, true, false, StringPool.BLANK, null,
 					serviceContext);
 			}
 			else {
@@ -233,7 +233,7 @@ public class FileSystemImporter extends BaseImporter {
 					ddmTemplate.getClassPK(), getMap(name), null,
 					DDMTemplateConstants.TEMPLATE_TYPE_DISPLAY,
 					StringPool.BLANK, getDDMTemplateLanguage(file.getName()),
-					script, false, serviceContext);
+					script, ddmTemplate.getCacheable(), serviceContext);
 			}
 		}
 		catch (PortalException pe) {
@@ -604,7 +604,7 @@ public class FileSystemImporter extends BaseImporter {
 					portal.getClassNameId(DDMStructure.class), ddmStructureId,
 					portal.getClassNameId(JournalArticle.class),
 					getKey(fileName), getMap(name), null, type, mode, language,
-					script, false, false, StringPool.BLANK, null,
+					script, true, false, StringPool.BLANK, null,
 					serviceContext);
 			}
 			else {
@@ -612,7 +612,8 @@ public class FileSystemImporter extends BaseImporter {
 					userId, ddmTemplate.getTemplateId(),
 					portal.getClassNameId(DDMStructure.class), getMap(name),
 					null, DDMTemplateConstants.TEMPLATE_TYPE_DISPLAY, null,
-					language, script, false, false, null, null, serviceContext);
+					language, script, ddmTemplate.getCacheable(),
+					serviceContext);
 			}
 		}
 		catch (PortalException pe) {
@@ -698,7 +699,7 @@ public class FileSystemImporter extends BaseImporter {
 					portal.getClassNameId(JournalArticle.class),
 					getKey(fileName), getMap(name), null,
 					DDMTemplateConstants.TEMPLATE_TYPE_DISPLAY, null, language,
-					replaceFileEntryURL(script), false, false, null, null,
+					replaceFileEntryURL(script), true, false, null, null,
 					serviceContext);
 			}
 			else {
@@ -706,8 +707,8 @@ public class FileSystemImporter extends BaseImporter {
 					userId, ddmTemplate.getTemplateId(),
 					portal.getClassNameId(DDMStructure.class), getMap(name),
 					null, DDMTemplateConstants.TEMPLATE_TYPE_DISPLAY, null,
-					language, replaceFileEntryURL(script), false, false, null,
-					null, serviceContext);
+					language, replaceFileEntryURL(script),
+					ddmTemplate.getCacheable(), serviceContext);
 			}
 		}
 		catch (PortalException pe) {
@@ -727,7 +728,7 @@ public class FileSystemImporter extends BaseImporter {
 	protected void addDLFileEntries(String dirName) throws Exception {
 		File dir = new File(_resourcesDir, dirName);
 
-		if (!dir.isDirectory()|| !dir.canRead()) {
+		if (!dir.isDirectory() || !dir.canRead()) {
 			return;
 		}
 
@@ -785,6 +786,13 @@ public class FileSystemImporter extends BaseImporter {
 					StringPool.BLANK, inputStream, length, serviceContext);
 			}
 			catch (DuplicateFileEntryException dfee) {
+
+				// LPS-52675
+
+				if (_log.isDebugEnabled()) {
+					_log.debug(dfee, dfee);
+				}
+
 				fileEntry = dlAppLocalService.getFileEntry(
 					groupId, parentFolderId, title);
 
@@ -1644,12 +1652,14 @@ public class FileSystemImporter extends BaseImporter {
 				}
 				catch (SearchException se) {
 					if (_log.isWarnEnabled()) {
-						_log.warn(
-							"Cannot index entry: className=" +
-								JournalArticle.class.getName() +
-								", primaryKey=" +
-								journalArticle.getPrimaryKey(),
-							se);
+						StringBundler sb = new StringBundler();
+
+						sb.append("Cannot index entry: className=");
+						sb.append(JournalArticle.class.getName());
+						sb.append(", primaryKey=");
+						sb.append(journalArticle.getPrimaryKey());
+
+						_log.warn(sb.toString(), se);
 					}
 				}
 			}
@@ -1968,7 +1978,7 @@ public class FileSystemImporter extends BaseImporter {
 			{"asset_category", "com.liferay.asset.kernel.model.AssetCategory"},
 			{"asset_entry", "com.liferay.asset.kernel.model.AssetEntry"},
 			{"asset_tag", "com.liferay.asset.kernel.model.AssetTag"},
-			{"blogs_entry", "com.liferay.blogs.kernel.model.BlogsEntry"},
+			{"blogs_entry", "com.liferay.blogs.model.BlogsEntry"},
 			{
 				"bread_crumb",
 				"com.liferay.portal.kernel.servlet.taglib.ui.BreadcrumbEntry"

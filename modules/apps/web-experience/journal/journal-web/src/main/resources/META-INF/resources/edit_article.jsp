@@ -141,33 +141,7 @@ request.setAttribute("edit_article.jsp-changeStructure", changeStructure);
 
 </c:if>
 
-<liferay-ui:error exception="<%= ArticleContentSizeException.class %>" message="you-have-exceeded-the-maximum-web-content-size-allowed" />
-<liferay-ui:error exception="<%= DuplicateFileEntryException.class %>" message="a-file-with-that-name-already-exists" />
-
-<liferay-ui:error exception="<%= FileSizeException.class %>">
-
-	<%
-	long fileMaxSize = PrefsPropsUtil.getLong(PropsKeys.DL_FILE_MAX_SIZE);
-
-	if (fileMaxSize == 0) {
-		fileMaxSize = PrefsPropsUtil.getLong(PropsKeys.UPLOAD_SERVLET_REQUEST_IMPL_MAX_SIZE);
-	}
-	%>
-
-	<liferay-ui:message arguments="<%= TextFormatter.formatStorageSize(fileMaxSize, locale) %>" key="please-enter-a-file-with-a-valid-file-size-no-larger-than-x" translateArguments="<%= false %>" />
-</liferay-ui:error>
-
-<liferay-ui:error exception="<%= LiferayFileItemException.class %>">
-	<liferay-ui:message arguments="<%= TextFormatter.formatStorageSize(LiferayFileItem.THRESHOLD_SIZE, locale) %>" key="please-enter-valid-content-with-valid-content-size-no-larger-than-x" translateArguments="<%= false %>" />
-</liferay-ui:error>
-
 <aui:model-context bean="<%= article %>" model="<%= JournalArticle.class %>" />
-
-<c:if test="<%= (article != null) && !article.isNew() && (classNameId == JournalArticleConstants.CLASSNAME_ID_DEFAULT) %>">
-	<liferay-frontend:info-bar>
-		<aui:workflow-status id="<%= String.valueOf(article.getArticleId()) %>" markupView="lexicon" showHelpMessage="<%= false %>" showIcon="<%= false %>" showLabel="<%= false %>" status="<%= article.getStatus() %>" version="<%= String.valueOf(article.getVersion()) %>" />
-	</liferay-frontend:info-bar>
-</c:if>
 
 <portlet:actionURL var="editArticleActionURL" windowState="<%= WindowState.MAXIMIZED.toString() %>">
 	<portlet:param name="mvcPath" value="/edit_article.jsp" />
@@ -211,51 +185,79 @@ request.setAttribute("edit_article.jsp-changeStructure", changeStructure);
 	}
 	%>
 
-	<aui:translation-manager
-		availableLocales="<%= availableLocales %>"
-		changeableDefaultLanguage="<%= changeableDefaultLanguage %>"
-		defaultLanguageId="<%= defaultLanguageId %>"
-		id="translationManager"
-	/>
+	<div class="lfr-form-content">
+		<liferay-ui:error exception="<%= ArticleContentSizeException.class %>" message="you-have-exceeded-the-maximum-web-content-size-allowed" />
+		<liferay-ui:error exception="<%= DuplicateFileEntryException.class %>" message="a-file-with-that-name-already-exists" />
 
-	<%
-	boolean approved = false;
-	boolean pending = false;
+		<liferay-ui:error exception="<%= FileSizeException.class %>">
 
-	long inheritedWorkflowDDMStructuresFolderId = JournalFolderLocalServiceUtil.getInheritedWorkflowFolderId(folderId);
+			<%
+			long fileMaxSize = PrefsPropsUtil.getLong(PropsKeys.DL_FILE_MAX_SIZE);
 
-	boolean workflowEnabled = WorkflowDefinitionLinkLocalServiceUtil.hasWorkflowDefinitionLink(themeDisplay.getCompanyId(), groupId, JournalFolder.class.getName(), folderId, ddmStructure.getStructureId()) || WorkflowDefinitionLinkLocalServiceUtil.hasWorkflowDefinitionLink(themeDisplay.getCompanyId(), groupId, JournalFolder.class.getName(), inheritedWorkflowDDMStructuresFolderId, ddmStructure.getStructureId()) || WorkflowDefinitionLinkLocalServiceUtil.hasWorkflowDefinitionLink(themeDisplay.getCompanyId(), groupId, JournalFolder.class.getName(), inheritedWorkflowDDMStructuresFolderId, JournalArticleConstants.DDM_STRUCTURE_ID_ALL);
+			if (fileMaxSize == 0) {
+				fileMaxSize = PrefsPropsUtil.getLong(PropsKeys.UPLOAD_SERVLET_REQUEST_IMPL_MAX_SIZE);
+			}
+			%>
 
-	if ((article != null) && (version > 0)) {
-		approved = article.isApproved();
+			<liferay-ui:message arguments="<%= TextFormatter.formatStorageSize(fileMaxSize, locale) %>" key="please-enter-a-file-with-a-valid-file-size-no-larger-than-x" translateArguments="<%= false %>" />
+		</liferay-ui:error>
 
-		if (workflowEnabled) {
-			pending = article.isPending();
+		<liferay-ui:error exception="<%= LiferayFileItemException.class %>">
+			<liferay-ui:message arguments="<%= TextFormatter.formatStorageSize(LiferayFileItem.THRESHOLD_SIZE, locale) %>" key="please-enter-valid-content-with-valid-content-size-no-larger-than-x" translateArguments="<%= false %>" />
+		</liferay-ui:error>
+
+		<c:if test="<%= (article != null) && !article.isNew() && (classNameId == JournalArticleConstants.CLASSNAME_ID_DEFAULT) %>">
+			<liferay-frontend:info-bar>
+				<aui:workflow-status id="<%= String.valueOf(article.getArticleId()) %>" markupView="lexicon" showHelpMessage="<%= false %>" showIcon="<%= false %>" showLabel="<%= false %>" status="<%= article.getStatus() %>" version="<%= String.valueOf(article.getVersion()) %>" />
+			</liferay-frontend:info-bar>
+		</c:if>
+
+		<aui:translation-manager
+			availableLocales="<%= availableLocales %>"
+			changeableDefaultLanguage="<%= changeableDefaultLanguage %>"
+			defaultLanguageId="<%= defaultLanguageId %>"
+			id="translationManager"
+		/>
+
+		<%
+		boolean approved = false;
+		boolean pending = false;
+
+		long inheritedWorkflowDDMStructuresFolderId = JournalFolderLocalServiceUtil.getInheritedWorkflowFolderId(folderId);
+
+		boolean workflowEnabled = WorkflowDefinitionLinkLocalServiceUtil.hasWorkflowDefinitionLink(themeDisplay.getCompanyId(), groupId, JournalFolder.class.getName(), folderId, ddmStructure.getStructureId()) || WorkflowDefinitionLinkLocalServiceUtil.hasWorkflowDefinitionLink(themeDisplay.getCompanyId(), groupId, JournalFolder.class.getName(), inheritedWorkflowDDMStructuresFolderId, ddmStructure.getStructureId()) || WorkflowDefinitionLinkLocalServiceUtil.hasWorkflowDefinitionLink(themeDisplay.getCompanyId(), groupId, JournalFolder.class.getName(), inheritedWorkflowDDMStructuresFolderId, JournalArticleConstants.DDM_STRUCTURE_ID_ALL);
+
+		if ((article != null) && (version > 0)) {
+			approved = article.isApproved();
+
+			if (workflowEnabled) {
+				pending = article.isPending();
+			}
 		}
-	}
-	%>
+		%>
 
-	<c:if test="<%= classNameId == JournalArticleConstants.CLASSNAME_ID_DEFAULT %>">
-		<c:if test="<%= approved %>">
-			<div class="alert alert-info">
-				<liferay-ui:message key="a-new-version-is-created-automatically-if-this-content-is-modified" />
-			</div>
+		<c:if test="<%= classNameId == JournalArticleConstants.CLASSNAME_ID_DEFAULT %>">
+			<c:if test="<%= approved %>">
+				<div class="alert alert-info">
+					<liferay-ui:message key="a-new-version-is-created-automatically-if-this-content-is-modified" />
+				</div>
+			</c:if>
+
+			<c:if test="<%= pending %>">
+				<div class="alert alert-info">
+					<liferay-ui:message key="there-is-a-publication-workflow-in-process" />
+				</div>
+			</c:if>
 		</c:if>
 
-		<c:if test="<%= pending %>">
-			<div class="alert alert-info">
-				<liferay-ui:message key="there-is-a-publication-workflow-in-process" />
-			</div>
-		</c:if>
-	</c:if>
-
-	<liferay-ui:form-navigator
-		formModelBean="<%= article %>"
-		formName="fm1"
-		id="<%= FormNavigatorConstants.FORM_NAVIGATOR_ID_JOURNAL %>"
-		markupView="lexicon"
-		showButtons="<%= false %>"
-	/>
+		<liferay-ui:form-navigator
+			formModelBean="<%= article %>"
+			formName="fm1"
+			id="<%= FormNavigatorConstants.FORM_NAVIGATOR_ID_JOURNAL %>"
+			markupView="lexicon"
+			showButtons="<%= false %>"
+		/>
+	</div>
 
 	<aui:button-row cssClass="journal-article-button-row">
 

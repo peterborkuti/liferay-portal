@@ -97,7 +97,7 @@ public class KBSuggestionListDisplayContext {
 		else {
 			return KBCommentServiceUtil.getKBCommentsCount(
 				_groupId, KBArticleConstants.getClassName(),
-				_kbArticle.getClassPK(), status);
+				_kbArticle.getResourcePrimKey(), status);
 		}
 	}
 
@@ -118,7 +118,14 @@ public class KBSuggestionListDisplayContext {
 		portletURL.setParameter("expanded", Boolean.TRUE.toString());
 
 		if (_kbArticle == null) {
-			portletURL.setParameter("mvcPath", "/admin/view_suggestions.jsp");
+			if (portletId.equals(KBPortletKeys.KNOWLEDGE_BASE_ADMIN)) {
+				portletURL.setParameter(
+					"mvcPath", _templatePath + "view_suggestions.jsp");
+			}
+			else {
+				portletURL.setParameter(
+					"mvcPath", _templatePath + "view_suggestion.jsp");
+			}
 		}
 		else if (Validator.isNull(_kbArticle.getUrlTitle()) ||
 				 portletId.equals(KBPortletKeys.KNOWLEDGE_BASE_ADMIN)) {
@@ -202,13 +209,13 @@ public class KBSuggestionListDisplayContext {
 				searchContainer.setTotal(
 					KBCommentServiceUtil.getKBCommentsCount(
 						_groupId, KBArticleConstants.getClassName(),
-						_kbArticle.getClassPK()));
+						_kbArticle.getResourcePrimKey()));
 
 				searchContainer.setResults(
 					KBCommentServiceUtil.getKBComments(
 						_groupId, KBArticleConstants.getClassName(),
-						_kbArticle.getClassPK(), searchContainer.getStart(),
-						searchContainer.getEnd(),
+						_kbArticle.getResourcePrimKey(),
+						searchContainer.getStart(), searchContainer.getEnd(),
 						KBUtil.getKBCommentOrderByComparator(
 							searchContainer.getOrderByCol(),
 							searchContainer.getOrderByType())));
@@ -219,7 +226,7 @@ public class KBSuggestionListDisplayContext {
 				searchContainer.setResults(
 					KBCommentServiceUtil.getKBComments(
 						_groupId, KBArticleConstants.getClassName(),
-						_kbArticle.getClassPK(), status,
+						_kbArticle.getResourcePrimKey(), status,
 						searchContainer.getStart(), searchContainer.getEnd(),
 						KBUtil.getKBCommentOrderByComparator(
 							searchContainer.getOrderByCol(),

@@ -60,8 +60,8 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 	}
 
 	/**
-	* As of 7.0.0, replaced by {@link #isKeepFileVersionLabel(long, boolean,
-	* ServiceContext)}
+	* @deprecated As of 7.0.0, replaced by {@link #isKeepFileVersionLabel(long,
+	boolean, ServiceContext)}
 	*/
 	@Deprecated
 	@Override
@@ -230,6 +230,12 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 		java.lang.String uuid, long groupId) {
 		return _dlFileEntryLocalService.fetchDLFileEntryByUuidAndGroupId(uuid,
 			groupId);
+	}
+
+	@Override
+	public com.liferay.document.library.kernel.model.DLFileEntry fetchFileEntry(
+		java.lang.String uuid, long groupId) {
+		return _dlFileEntryLocalService.fetchFileEntry(uuid, groupId);
 	}
 
 	@Override

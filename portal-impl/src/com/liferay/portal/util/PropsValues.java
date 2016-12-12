@@ -490,6 +490,8 @@ public class PropsValues {
 
 	public static final boolean DL_FILE_ENTRY_PREVIEW_FORK_PROCESS_ENABLED = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.DL_FILE_ENTRY_PREVIEW_FORK_PROCESS_ENABLED));
 
+	public static final String[] DL_FILE_ENTRY_PREVIEW_GENERATION_DECRYPT_PASSWORDS_PDFBOX = PropsUtil.getArray(PropsKeys.DL_FILE_ENTRY_PREVIEW_GENERATION_DECRYPT_PASSWORDS_PDFBOX);
+
 	public static final long DL_FILE_ENTRY_PREVIEW_GENERATION_TIMEOUT_GHOSTSCRIPT = GetterUtil.getLong(PropsUtil.get(PropsKeys.DL_FILE_ENTRY_PREVIEW_GENERATION_TIMEOUT_GHOSTSCRIPT));
 
 	public static final long DL_FILE_ENTRY_PREVIEW_GENERATION_TIMEOUT_PDFBOX = GetterUtil.getLong(PropsUtil.get(PropsKeys.DL_FILE_ENTRY_PREVIEW_GENERATION_TIMEOUT_PDFBOX));
@@ -532,6 +534,8 @@ public class PropsValues {
 
 	public static final boolean DL_FILE_EXTENSIONS_STRICT_CHECK = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.DL_FILE_EXTENSIONS_STRICT_CHECK));
 
+	public static final int DL_FILE_INDEXING_INTERVAL = GetterUtil.getInteger(PropsUtil.get(PropsKeys.DL_FILE_INDEXING_INTERVAL));
+
 	public static final int DL_FILE_INDEXING_MAX_SIZE = GetterUtil.getInteger(PropsUtil.get(PropsKeys.DL_FILE_INDEXING_MAX_SIZE));
 
 	public static final long DL_FILE_MAX_SIZE = GetterUtil.getLong(PropsUtil.get(PropsKeys.DL_FILE_MAX_SIZE));
@@ -552,7 +556,7 @@ public class PropsValues {
 
 	public static final String[] DL_REPOSITORY_IMPL = PropsUtil.getArray(PropsKeys.DL_REPOSITORY_IMPL);
 
-	public static boolean DL_STORE_ANTIVIRUS_ENABLED = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.DL_STORE_ANTIVIRUS_ENABLED), false);
+	public static boolean DL_STORE_ANTIVIRUS_ENABLED = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.DL_STORE_ANTIVIRUS_ENABLED));
 
 	public static final String DL_STORE_ANTIVIRUS_IMPL = PropsUtil.get(PropsKeys.DL_STORE_ANTIVIRUS_IMPL);
 
@@ -920,6 +924,8 @@ public class PropsValues {
 
 	public static final int MODULE_FRAMEWORK_BEGINNING_START_LEVEL = GetterUtil.getInteger(PropsUtil.get(PropsKeys.MODULE_FRAMEWORK_BEGINNING_START_LEVEL));
 
+	public static final String MODULE_FRAMEWORK_CONFIGS_DIR = PropsUtil.get(PropsKeys.MODULE_FRAMEWORK_CONFIGS_DIR);
+
 	public static final int MODULE_FRAMEWORK_DYNAMIC_INSTALL_START_LEVEL = GetterUtil.getInteger(PropsUtil.get(PropsKeys.MODULE_FRAMEWORK_DYNAMIC_INSTALL_START_LEVEL));
 
 	/**
@@ -928,15 +934,11 @@ public class PropsValues {
 	@Deprecated
 	public static final String[] MODULE_FRAMEWORK_INITIAL_BUNDLES = PropsUtil.getArray(PropsKeys.MODULE_FRAMEWORK_INITIAL_BUNDLES);
 
-	public static final String MODULE_FRAMEWORK_CONFIGS_DIR = PropsUtil.get(PropsKeys.MODULE_FRAMEWORK_CONFIGS_DIR);
-
 	public static final String MODULE_FRAMEWORK_MARKETPLACE_DIR = PropsUtil.get(PropsKeys.MODULE_FRAMEWORK_MARKETPLACE_DIR);
 
 	public static final String MODULE_FRAMEWORK_MODULES_DIR = PropsUtil.get(PropsKeys.MODULE_FRAMEWORK_MODULES_DIR);
 
 	public static final String MODULE_FRAMEWORK_PORTAL_DIR = PropsUtil.get(PropsKeys.MODULE_FRAMEWORK_PORTAL_DIR);
-
-	public static final String MODULE_FRAMEWORK_WAR_DIR = PropsUtil.get(PropsKeys.MODULE_FRAMEWORK_WAR_DIR);
 
 	public static final boolean MODULE_FRAMEWORK_REGISTER_LIFERAY_SERVICES = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.MODULE_FRAMEWORK_REGISTER_LIFERAY_SERVICES));
 
@@ -949,6 +951,8 @@ public class PropsValues {
 	public static final long MODULE_FRAMEWORK_STOP_WAIT_TIMEOUT = GetterUtil.getLong(PropsUtil.get(PropsKeys.MODULE_FRAMEWORK_STOP_WAIT_TIMEOUT));
 
 	public static final String[] MODULE_FRAMEWORK_SYSTEM_PACKAGES_EXTRA = PropsUtil.getArray(PropsKeys.MODULE_FRAMEWORK_SYSTEM_PACKAGES_EXTRA);
+
+	public static final String MODULE_FRAMEWORK_WAR_DIR = PropsUtil.get(PropsKeys.MODULE_FRAMEWORK_WAR_DIR);
 
 	public static final String[] MODULE_FRAMEWORK_WEB_GENERATOR_DEFAULT_SERVLET_PACKAGES = PropsUtil.getArray(PropsKeys.MODULE_FRAMEWORK_WEB_GENERATOR_DEFAULT_SERVLET_PACKAGES);
 
@@ -1282,6 +1286,8 @@ public class PropsValues {
 
 	public static final String[] REQUEST_SHARED_ATTRIBUTES = PropsUtil.getArray(PropsKeys.REQUEST_SHARED_ATTRIBUTES);
 
+	public static final String[] REQUEST_UNWRAP_PACKAGES = PropsUtil.getArray(PropsKeys.REQUEST_UNWRAP_PACKAGES);
+
 	public static String[] RESOURCE_ACTIONS_CONFIGS = PropsUtil.getArray(PropsKeys.RESOURCE_ACTIONS_CONFIGS);
 
 	public static final boolean RESOURCE_ACTIONS_READ_PORTLET_RESOURCES = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.RESOURCE_ACTIONS_READ_PORTLET_RESOURCES));
@@ -1290,9 +1296,9 @@ public class PropsValues {
 
 	public static final String[] REST_PROXY_URL_PREFIXES_ALLOWED = PropsUtil.getArray(PropsKeys.REST_PROXY_URL_PREFIXES_ALLOWED);
 
-	public static final int RETRY_ADVICE_MAX_RETRIES =  GetterUtil.getInteger(PropsUtil.get(PropsKeys.RETRY_ADVICE_MAX_RETRIES));
+	public static final int RETRY_ADVICE_MAX_RETRIES = GetterUtil.getInteger(PropsUtil.get(PropsKeys.RETRY_ADVICE_MAX_RETRIES));
 
-	public static final int RETRY_DATA_SOURCE_MAX_RETRIES =  GetterUtil.getInteger(PropsUtil.get(PropsKeys.RETRY_DATA_SOURCE_MAX_RETRIES));
+	public static final int RETRY_DATA_SOURCE_MAX_RETRIES = GetterUtil.getInteger(PropsUtil.get(PropsKeys.RETRY_DATA_SOURCE_MAX_RETRIES));
 
 	public static final String ROBOTS_TXT_WITH_SITEMAP = PropsUtil.get(PropsKeys.ROBOTS_TXT_WITH_SITEMAP);
 
@@ -1428,9 +1434,11 @@ public class PropsValues {
 
 	public static final String[] SPRING_HIBERNATE_CONFIGURATION_PROXY_FACTORY_PRELOAD_CLASSLOADER_CLASSES = PropsUtil.getArray(PropsKeys.SPRING_HIBERNATE_CONFIGURATION_PROXY_FACTORY_PRELOAD_CLASSLOADER_CLASSES);
 
-	public static boolean SPRING_HIBERNATE_SESSION_DELEGATED = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.SPRING_HIBERNATE_SESSION_DELEGATED));
+	public static volatile boolean SPRING_HIBERNATE_SESSION_DELEGATED = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.SPRING_HIBERNATE_SESSION_DELEGATED));
 
 	public static final String[] SPRING_HIBERNATE_SESSION_FACTORY_PRELOAD_CLASSLOADER_CLASSES = PropsUtil.getArray(PropsKeys.SPRING_HIBERNATE_SESSION_FACTORY_PRELOAD_CLASSLOADER_CLASSES);
+
+	public static final boolean SPRING_HIBERNATE_SESSION_FACTORY_VERIFY = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.SPRING_HIBERNATE_SESSION_FACTORY_VERIFY));
 
 	public static final String[] SPRING_INFRASTRUCTURE_CONFIGS = PropsUtil.getArray(PropsKeys.SPRING_INFRASTRUCTURE_CONFIGS);
 

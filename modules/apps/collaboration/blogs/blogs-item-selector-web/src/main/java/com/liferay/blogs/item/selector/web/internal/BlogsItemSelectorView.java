@@ -15,8 +15,11 @@
 package com.liferay.blogs.item.selector.web.internal;
 
 import com.liferay.blogs.item.selector.criterion.BlogsItemSelectorCriterion;
+import com.liferay.blogs.item.selector.web.constants.BlogsItemSelectorViewConstants;
 import com.liferay.blogs.item.selector.web.internal.display.context.BlogsItemSelectorViewDisplayContext;
+import com.liferay.blogs.service.BlogsEntryLocalService;
 import com.liferay.item.selector.ItemSelectorReturnType;
+import com.liferay.item.selector.ItemSelectorReturnTypeResolverHandler;
 import com.liferay.item.selector.ItemSelectorView;
 import com.liferay.item.selector.criteria.FileEntryItemSelectorReturnType;
 import com.liferay.item.selector.criteria.URLItemSelectorReturnType;
@@ -44,7 +47,11 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Roberto Díaz
  */
-@Component
+@Component(
+	property = {
+		"item.selector.view.key=" + BlogsItemSelectorViewConstants.ITEM_SELECTOR_VIEW_KEY
+	}
+)
 public class BlogsItemSelectorView
 	implements ItemSelectorView<BlogsItemSelectorCriterion> {
 
@@ -90,8 +97,10 @@ public class BlogsItemSelectorView
 		BlogsItemSelectorViewDisplayContext
 			blogsItemSelectorViewDisplayContext =
 				new BlogsItemSelectorViewDisplayContext(
-					blogsItemSelectorCriterion, this, itemSelectedEventName,
-					search, portletURL);
+					blogsItemSelectorCriterion, this,
+					_itemSelectorReturnTypeResolverHandler,
+					itemSelectedEventName, search, portletURL,
+					_blogsEntryLocalService);
 
 		request.setAttribute(
 			BLOGS_ITEM_SELECTOR_VIEW_DISPLAY_CONTEXT,
@@ -105,12 +114,28 @@ public class BlogsItemSelectorView
 		requestDispatcher.include(request, response);
 	}
 
+	@Reference(unbind = "-")
+	public void setItemSelectorReturnTypeResolverHandler(
+		ItemSelectorReturnTypeResolverHandler
+			itemSelectorReturnTypeResolverHandler) {
+
+		_itemSelectorReturnTypeResolverHandler =
+			itemSelectorReturnTypeResolverHandler;
+	}
+
 	@Reference(
 		target = "(osgi.web.symbolicname=com.liferay.blogs.item.selector.web)",
 		unbind = "-"
 	)
 	public void setServletContext(ServletContext servletContext) {
 		_servletContext = servletContext;
+	}
+
+	@Reference(unbind = "-")
+	protected void setBlogsEntryLocalService(
+		BlogsEntryLocalService blogsEntryLocalService) {
+
+		_blogsEntryLocalService = blogsEntryLocalService;
 	}
 
 	private static final List<ItemSelectorReturnType>
@@ -121,6 +146,9 @@ public class BlogsItemSelectorView
 					new URLItemSelectorReturnType()
 				}));
 
+	private BlogsEntryLocalService _blogsEntryLocalService;
+	private ItemSelectorReturnTypeResolverHandler
+		_itemSelectorReturnTypeResolverHandler;
 	private ServletContext _servletContext;
 
 }

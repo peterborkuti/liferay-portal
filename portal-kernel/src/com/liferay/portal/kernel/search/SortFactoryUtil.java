@@ -15,7 +15,7 @@
 package com.liferay.portal.kernel.search;
 
 import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-import com.liferay.portal.kernel.util.ProxyFactory;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 import java.util.List;
 
@@ -26,49 +26,57 @@ import java.util.List;
 public class SortFactoryUtil {
 
 	public static Sort create(String fieldName, boolean reverse) {
-		return getSortFactory().create(fieldName, reverse);
+		return _getSortFactory().create(fieldName, reverse);
 	}
 
 	public static Sort create(String fieldName, int type, boolean reverse) {
-		return getSortFactory().create(fieldName, type, reverse);
+		return _getSortFactory().create(fieldName, type, reverse);
 	}
 
 	public static Sort[] getDefaultSorts() {
-		return getSortFactory().getDefaultSorts();
+		return _getSortFactory().getDefaultSorts();
 	}
 
 	public static Sort getSort(
 		Class<?> clazz, int type, String orderByCol, boolean inferSortField,
 		String orderByType) {
 
-		return getSortFactory().getSort(
+		return _getSortFactory().getSort(
 			clazz, type, orderByCol, inferSortField, orderByType);
 	}
 
 	public static Sort getSort(
 		Class<?> clazz, int type, String orderByCol, String orderByType) {
 
-		return getSortFactory().getSort(clazz, type, orderByCol, orderByType);
+		return _getSortFactory().getSort(clazz, type, orderByCol, orderByType);
 	}
 
 	public static Sort getSort(
 		Class<?> clazz, String orderByCol, String orderByType) {
 
-		return getSortFactory().getSort(clazz, orderByCol, orderByType);
+		return _getSortFactory().getSort(clazz, orderByCol, orderByType);
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link #_getSortFactory()}
+	 */
+	@Deprecated
 	public static SortFactory getSortFactory() {
+		return _getSortFactory();
+	}
+
+	public static Sort[] toArray(List<Sort> sorts) {
+		return _getSortFactory().toArray(sorts);
+	}
+
+	private static SortFactory _getSortFactory() {
 		PortalRuntimePermission.checkGetBeanProperty(SortFactoryUtil.class);
 
 		return _sortFactory;
 	}
 
-	public static Sort[] toArray(List<Sort> sorts) {
-		return getSortFactory().toArray(sorts);
-	}
-
 	private static volatile SortFactory _sortFactory =
-		ProxyFactory.newServiceTrackedInstance(
-			SortFactory.class, SortFactoryUtil.class, "_sortFactory");
+		ServiceProxyFactory.newServiceTrackedInstance(
+			SortFactory.class, SortFactoryUtil.class, "_sortFactory", false);
 
 }

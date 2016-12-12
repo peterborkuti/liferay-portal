@@ -17,7 +17,7 @@ package com.liferay.portal.kernel.search.background.task;
 import aQute.bnd.annotation.ProviderType;
 
 import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-import com.liferay.portal.kernel.util.ProxyFactory;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 /**
  * @author Andrew Betts
@@ -25,8 +25,33 @@ import com.liferay.portal.kernel.util.ProxyFactory;
 @ProviderType
 public class ReindexStatusMessageSenderUtil {
 
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             #_getReindexStatusMessageSender()}
+	 */
+	@Deprecated
 	public static ReindexStatusMessageSender
 		getReindexStatusMessageSender() {
+
+		return _getReindexStatusMessageSender();
+	}
+
+	public static void sendStatusMessage(
+		String className, long count, long total) {
+
+		_getReindexStatusMessageSender().sendStatusMessage(
+			className, count, total);
+	}
+
+	public static void sendStatusMessage(
+		String phase, long companyId, long[] companyIds) {
+
+		_getReindexStatusMessageSender().sendStatusMessage(
+			phase, companyId, companyIds);
+	}
+
+	private static ReindexStatusMessageSender
+		_getReindexStatusMessageSender() {
 
 		PortalRuntimePermission.checkGetBeanProperty(
 			ReindexStatusMessageSenderUtil.class);
@@ -34,24 +59,11 @@ public class ReindexStatusMessageSenderUtil {
 		return _reindexStatusMessageSender;
 	}
 
-	public static void sendStatusMessage(
-		String className, long count, long total) {
-
-		getReindexStatusMessageSender().sendStatusMessage(
-			className, count, total);
-	}
-
-	public static void sendStatusMessage(
-		String phase, long companyId, long[] companyIds) {
-
-		getReindexStatusMessageSender().sendStatusMessage(
-			phase, companyId, companyIds);
-	}
-
 	private static volatile ReindexStatusMessageSender
-		_reindexStatusMessageSender = ProxyFactory.newServiceTrackedInstance(
-			ReindexStatusMessageSender.class,
-			ReindexStatusMessageSenderUtil.class,
-			"_reindexStatusMessageSender");
+		_reindexStatusMessageSender =
+			ServiceProxyFactory.newServiceTrackedInstance(
+				ReindexStatusMessageSender.class,
+				ReindexStatusMessageSenderUtil.class,
+				"_reindexStatusMessageSender", false);
 
 }

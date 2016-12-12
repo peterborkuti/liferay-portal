@@ -194,7 +194,8 @@ public class HookHotDeployListener
 		"dl.file.entry.drafts.enabled",
 		"dl.file.entry.open.in.ms.office.manual.check.in.required",
 		"dl.file.entry.processors", "dl.repository.impl",
-		"dl.store.antivirus.impl", "dl.store.impl",
+		"dl.store.antivirus.enabled", "dl.store.antivirus.impl",
+		"dl.store.impl",
 		"field.enable.com.liferay.portal.kernel.model.Contact.birthday",
 		"field.enable.com.liferay.portal.kernel.model.Contact.male",
 		"field.enable.com.liferay.portal.kernel.model.Organization.status",
@@ -498,7 +499,7 @@ public class HookHotDeployListener
 		}
 		catch (DuplicateCustomJspException dcje) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(servletContextName + " will be undeployed");
+				_log.warn(servletContextName + " will be undeployed", dcje);
 			}
 
 			HotDeployUtil.fireUndeployEvent(
@@ -1921,7 +1922,7 @@ public class HookHotDeployListener
 
 		filter = (Filter)ProxyUtil.newProxyInstance(
 			portletClassLoader,
-			interfaces.toArray(new Class[interfaces.size()]),
+			interfaces.toArray(new Class<?>[interfaces.size()]),
 			new ClassLoaderBeanHandler(filter, portletClassLoader));
 
 		return filter;
@@ -2010,6 +2011,7 @@ public class HookHotDeployListener
 			properties.put("after-filter", filterTuple.getObject(0));
 			properties.put("before-filter", filterTuple.getObject(1));
 			properties.put("dispatcher", filterTuple.getObject(2));
+
 			properties.put(
 				"servlet-context-name",
 				PortalContextLoaderListener.getPortalServletContextName());
@@ -2036,7 +2038,7 @@ public class HookHotDeployListener
 		if (strutsActionObject instanceof StrutsAction) {
 			StrutsAction strutsAction =
 				(StrutsAction)ProxyUtil.newProxyInstance(
-					portletClassLoader, new Class[] {StrutsAction.class},
+					portletClassLoader, new Class<?>[] {StrutsAction.class},
 					new ClassLoaderBeanHandler(
 						strutsActionObject, portletClassLoader));
 
@@ -2047,7 +2049,8 @@ public class HookHotDeployListener
 		else {
 			StrutsPortletAction strutsPortletAction =
 				(StrutsPortletAction)ProxyUtil.newProxyInstance(
-					portletClassLoader, new Class[] {StrutsPortletAction.class},
+					portletClassLoader,
+					new Class<?>[] {StrutsPortletAction.class},
 					new ClassLoaderBeanHandler(
 						strutsActionObject, portletClassLoader));
 
@@ -2291,8 +2294,8 @@ public class HookHotDeployListener
 		String[] value = null;
 
 		if (initPhase) {
-			if (stringArraysContainer
-					instanceof OverrideStringArraysContainer) {
+			if (stringArraysContainer instanceof
+					OverrideStringArraysContainer) {
 
 				OverrideStringArraysContainer overrideStringArraysContainer =
 					(OverrideStringArraysContainer)stringArraysContainer;
@@ -2341,6 +2344,7 @@ public class HookHotDeployListener
 		"auth.forward.by.last.path", "captcha.check.portal.create_account",
 		"dl.file.entry.drafts.enabled",
 		"dl.file.entry.open.in.ms.office.manual.check.in.required",
+		"dl.store.antivirus.enabled",
 		"field.enable.com.liferay.portal.kernel.model.Contact.birthday",
 		"field.enable.com.liferay.portal.kernel.model.Contact.male",
 		"field.enable.com.liferay.portal.kernel.model.Organization.status",

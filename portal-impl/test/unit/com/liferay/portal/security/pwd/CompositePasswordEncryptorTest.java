@@ -37,7 +37,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 /**
  * @author Tomas Polesovsky
  */
-@PowerMockIgnore({"javax.crypto.*"})
+@PowerMockIgnore("javax.crypto.*")
 @PrepareForTest(PropsUtil.class)
 @RunWith(PowerMockRunner.class)
 public class CompositePasswordEncryptorTest extends PowerMockito {
@@ -230,8 +230,7 @@ public class CompositePasswordEncryptorTest extends PowerMockito {
 
 		testEncrypt(
 			algorithm, "password",
-			"qLZLq9CsqRpZvbt3YbQh1PK7OCgNOnW6DyHyvrxFWD1EbFmGYMl" +
-				"M5oDEfRnDB4On");
+			"qLZLq9CsqRpZvbt3YbQh1PK7OCgNOnW6DyHyvrxFWD1EbFmGYMlM5oDEfRnDB4On");
 	}
 
 	@Test

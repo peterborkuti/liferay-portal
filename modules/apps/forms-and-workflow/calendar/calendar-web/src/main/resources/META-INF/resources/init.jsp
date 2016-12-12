@@ -30,7 +30,6 @@ taglib uri="http://liferay.com/tld/util" prefix="liferay-util" %>
 <%@ page import="com.liferay.asset.kernel.model.AssetEntry" %><%@
 page import="com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil" %><%@
 page import="com.liferay.calendar.constants.CalendarActionKeys" %><%@
-page import="com.liferay.calendar.constants.CalendarWebKeys" %><%@
 page import="com.liferay.calendar.exception.CalendarBookingDurationException" %><%@
 page import="com.liferay.calendar.exception.CalendarBookingRecurrenceException" %><%@
 page import="com.liferay.calendar.exception.CalendarNameException" %><%@
@@ -66,6 +65,8 @@ page import="com.liferay.calendar.util.ColorUtil" %><%@
 page import="com.liferay.calendar.util.JCalendarUtil" %><%@
 page import="com.liferay.calendar.util.RecurrenceUtil" %><%@
 page import="com.liferay.calendar.util.comparator.CalendarNameComparator" %><%@
+page import="com.liferay.calendar.web.internal.constants.CalendarWebKeys" %><%@
+page import="com.liferay.calendar.web.internal.display.context.CalendarDisplayContext" %><%@
 page import="com.liferay.calendar.web.internal.search.CalendarResourceDisplayTerms" %><%@
 page import="com.liferay.calendar.web.internal.search.CalendarResourceSearch" %><%@
 page import="com.liferay.calendar.workflow.CalendarBookingWorkflowConstants" %><%@
@@ -147,13 +148,14 @@ if (usePortalTimeZone) {
 	timeZoneId = user.getTimeZoneId();
 }
 
+boolean displaySchedulerHeader = GetterUtil.getBoolean(portletPreferences.getValue("displaySchedulerHeader", null), true);
 boolean displaySchedulerOnly = GetterUtil.getBoolean(portletPreferences.getValue("displaySchedulerOnly", null));
 boolean showUserEvents = GetterUtil.getBoolean(portletPreferences.getValue("showUserEvents", null), true);
 
 boolean showAgendaView = GetterUtil.getBoolean(portletPreferences.getValue("showAgendaView", null), true);
 boolean showDayView = GetterUtil.getBoolean(portletPreferences.getValue("showDayView", null), true);
-boolean showWeekView = GetterUtil.getBoolean(portletPreferences.getValue("showWeekView", null), true);
 boolean showMonthView = GetterUtil.getBoolean(portletPreferences.getValue("showMonthView", null), true);
+boolean showWeekView = GetterUtil.getBoolean(portletPreferences.getValue("showWeekView", null), true);
 
 boolean enableRSS = !PortalUtil.isRSSFeedsEnabled() ? false : GetterUtil.getBoolean(portletPreferences.getValue("enableRss", null), true);
 int rssDelta = GetterUtil.getInteger(portletPreferences.getValue("rssDelta", StringPool.BLANK), SearchContainer.DEFAULT_DELTA);
@@ -204,16 +206,10 @@ long[] calendarIds = StringUtil.split(SessionClicks.get(request, "com.liferay.ca
 
 Calendar defaultCalendar = null;
 
-for (long calendarId : calendarIds) {
-	Calendar calendar = CalendarServiceUtil.fetchCalendar(calendarId);
+CalendarDisplayContext calendarDisplayContext = (CalendarDisplayContext)renderRequest.getAttribute(CalendarWebKeys.CALENDAR_DISPLAY_CONTEXT);
 
-	if (calendar != null) {
-		CalendarResource calendarResource = calendar.getCalendarResource();
-
-		if (calendarResource.isActive()) {
-			otherCalendars.add(calendar);
-		}
-	}
+if (calendarDisplayContext != null) {
+	otherCalendars = calendarDisplayContext.getOtherCalendars(calendarIds);
 }
 
 for (Calendar groupCalendar : groupCalendars) {

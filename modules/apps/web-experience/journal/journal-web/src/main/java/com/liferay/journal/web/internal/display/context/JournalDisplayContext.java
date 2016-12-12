@@ -19,6 +19,7 @@ import com.liferay.dynamic.data.mapping.service.DDMStructureLocalServiceUtil;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.dynamic.data.mapping.storage.Fields;
 import com.liferay.frontend.taglib.servlet.taglib.ManagementBarFilterItem;
+import com.liferay.journal.configuration.JournalServiceConfiguration;
 import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.constants.JournalWebKeys;
 import com.liferay.journal.model.JournalArticle;
@@ -32,6 +33,7 @@ import com.liferay.journal.service.JournalFolderServiceUtil;
 import com.liferay.journal.util.JournalConverter;
 import com.liferay.journal.util.comparator.FolderArticleDisplayDateComparator;
 import com.liferay.journal.util.comparator.FolderArticleModifiedDateComparator;
+import com.liferay.journal.util.comparator.FolderArticleTitleComparator;
 import com.liferay.journal.web.configuration.JournalWebConfiguration;
 import com.liferay.journal.web.internal.portlet.action.ActionUtil;
 import com.liferay.journal.web.internal.search.ArticleSearch;
@@ -44,7 +46,11 @@ import com.liferay.message.boards.kernel.service.MBMessageLocalServiceUtil;
 import com.liferay.portal.kernel.bean.BeanParamUtil;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.json.JSONArray;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortalPreferences;
@@ -112,7 +118,7 @@ public class JournalDisplayContext {
 			_request);
 	}
 
-	public String[] getAddMenuFavItems() {
+	public String[] getAddMenuFavItems() throws PortalException {
 		if (_addMenuFavItems != null) {
 			return _addMenuFavItems;
 		}
@@ -120,13 +126,16 @@ public class JournalDisplayContext {
 		PortalPreferences portalPreferences =
 			PortletPreferencesFactoryUtil.getPortalPreferences(_request);
 
+		String key = JournalPortletUtil.getAddMenuFavItemKey(
+			_liferayPortletRequest, _liferayPortletResponse);
+
 		_addMenuFavItems = portalPreferences.getValues(
-			JournalPortletKeys.JOURNAL, "add-menu-fav-items", new String[0]);
+			JournalPortletKeys.JOURNAL, key, new String[0]);
 
 		return _addMenuFavItems;
 	}
 
-	public int getAddMenuFavItemsLength() {
+	public int getAddMenuFavItemsLength() throws PortalException {
 		String[] addMenuFavItems = getAddMenuFavItems();
 
 		return addMenuFavItems.length;
@@ -140,6 +149,17 @@ public class JournalDisplayContext {
 		_article = ActionUtil.getArticle(_request);
 
 		return _article;
+	}
+
+	public String[] getCharactersBlacklist() throws PortalException {
+		ThemeDisplay themeDisplay = (ThemeDisplay)_request.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		JournalServiceConfiguration journalServiceConfiguration =
+			ConfigurationProviderUtil.getCompanyConfiguration(
+				JournalServiceConfiguration.class, themeDisplay.getCompanyId());
+
+		return journalServiceConfiguration.charactersblacklist();
 	}
 
 	public SearchContainer<MBMessage> getCommentsSearchContainer()
@@ -242,7 +262,7 @@ public class JournalDisplayContext {
 			return _ddmStructureName;
 		}
 
-		ThemeDisplay themeDisplay = (ThemeDisplay) _request.getAttribute(
+		ThemeDisplay themeDisplay = (ThemeDisplay)_request.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
 		DDMStructure ddmStructure = DDMStructureLocalServiceUtil.fetchStructure(
@@ -340,6 +360,25 @@ public class JournalDisplayContext {
 			JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID);
 
 		return _folderId;
+	}
+
+	public String getFoldersJSON() {
+		ThemeDisplay themeDisplay = (ThemeDisplay)_request.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		JSONArray jsonArray = _getFoldersJSONArray(
+			themeDisplay.getScopeGroupId(),
+			JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID);
+
+		JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
+
+		jsonObject.put("children", jsonArray);
+		jsonObject.put("icon", "folder");
+		jsonObject.put("id", JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID);
+		jsonObject.put(
+			"name", LanguageUtil.get(themeDisplay.getLocale(), "home"));
+
+		return jsonObject.toString();
 	}
 
 	public String getFolderTitle() throws PortalException {
@@ -546,6 +585,10 @@ public class JournalDisplayContext {
 	}
 
 	public ArticleSearch getSearchContainer() throws PortalException {
+		if (_articleSearchContainer != null) {
+			return _articleSearchContainer;
+		}
+
 		ThemeDisplay themeDisplay = (ThemeDisplay)_request.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
@@ -682,6 +725,9 @@ public class JournalDisplayContext {
 					sort = new Sort(
 						Field.MODIFIED_DATE, Sort.LONG_TYPE, orderByAsc);
 				}
+				else if (Objects.equals(getOrderByCol(), "title")) {
+					sort = new Sort("title", Sort.STRING_TYPE, !orderByAsc);
+				}
 
 				LinkedHashMap<String, Object> params = new LinkedHashMap<>();
 
@@ -782,16 +828,22 @@ public class JournalDisplayContext {
 				folderOrderByComparator =
 					new FolderArticleModifiedDateComparator(orderByAsc);
 			}
+			else if (Objects.equals(getOrderByCol(), "title")) {
+				folderOrderByComparator = new FolderArticleTitleComparator(
+					orderByAsc);
+			}
 
 			List results = JournalFolderServiceUtil.getFoldersAndArticles(
 				themeDisplay.getScopeGroupId(), 0, getFolderId(), getStatus(),
-				articleSearchContainer.getStart(),
+				themeDisplay.getLocale(), articleSearchContainer.getStart(),
 				articleSearchContainer.getEnd(), folderOrderByComparator);
 
 			articleSearchContainer.setResults(results);
 		}
 
-		return articleSearchContainer;
+		_articleSearchContainer = articleSearchContainer;
+
+		return _articleSearchContainer;
 	}
 
 	public int getStatus() {
@@ -1100,8 +1152,35 @@ public class JournalDisplayContext {
 			portletURL.toString());
 	}
 
+	private JSONArray _getFoldersJSONArray(long groupId, long folderId) {
+		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
+
+		List<JournalFolder> folders = JournalFolderLocalServiceUtil.getFolders(
+			groupId, folderId);
+
+		for (JournalFolder folder : folders) {
+			JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
+
+			JSONArray childrenJsonArray = _getFoldersJSONArray(
+				groupId, folder.getFolderId());
+
+			if (childrenJsonArray.length() > 0) {
+				jsonObject.put("children", childrenJsonArray);
+			}
+
+			jsonObject.put("icon", "folder");
+			jsonObject.put("id", folder.getFolderId());
+			jsonObject.put("name", folder.getName());
+
+			jsonArray.put(jsonObject);
+		}
+
+		return jsonArray;
+	}
+
 	private String[] _addMenuFavItems;
 	private JournalArticle _article;
+	private ArticleSearch _articleSearchContainer;
 	private DDMFormValues _ddmFormValues;
 	private String _ddmStructureKey;
 	private String _ddmStructureName;

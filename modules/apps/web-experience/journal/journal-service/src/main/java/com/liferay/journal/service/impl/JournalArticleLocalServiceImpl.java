@@ -40,7 +40,7 @@ import com.liferay.exportimport.content.processor.ExportImportContentProcessor;
 import com.liferay.exportimport.content.processor.ExportImportContentProcessorRegistryUtil;
 import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.journal.configuration.JournalGroupServiceConfiguration;
-import com.liferay.journal.configuration.JournalServiceConfigurationValues;
+import com.liferay.journal.configuration.JournalServiceConfiguration;
 import com.liferay.journal.constants.JournalConstants;
 import com.liferay.journal.exception.ArticleContentException;
 import com.liferay.journal.exception.ArticleDisplayDateException;
@@ -57,6 +57,7 @@ import com.liferay.journal.exception.NoSuchArticleException;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalArticleConstants;
 import com.liferay.journal.model.JournalArticleDisplay;
+import com.liferay.journal.model.JournalArticleLocalization;
 import com.liferay.journal.model.JournalArticleResource;
 import com.liferay.journal.model.JournalFolder;
 import com.liferay.journal.model.impl.JournalArticleDisplayImpl;
@@ -117,6 +118,7 @@ import com.liferay.portal.kernel.search.QueryConfig;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.search.Sort;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextUtil;
 import com.liferay.portal.kernel.settings.GroupServiceSettingsLocator;
@@ -150,7 +152,6 @@ import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.SubscriptionSender;
-import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -179,6 +180,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -318,7 +320,7 @@ public class JournalArticleLocalServiceImpl
 
 		// Article
 
-		User user = userPersistence.findByPrimaryKey(userId);
+		User user = userLocalService.getUser(userId);
 		articleId = StringUtil.toUpperCase(articleId.trim());
 
 		Date displayDate = null;
@@ -401,11 +403,9 @@ public class JournalArticleLocalServiceImpl
 		article.setTreePath(article.buildTreePath());
 		article.setArticleId(articleId);
 		article.setVersion(version);
-		article.setTitleMap(titleMap, locale);
 		article.setUrlTitle(
 			getUniqueUrlTitle(
 				id, groupId, articleId, title, null, serviceContext));
-		article.setDescriptionMap(descriptionMap, locale);
 
 		content = format(user, groupId, article, content);
 
@@ -413,6 +413,7 @@ public class JournalArticleLocalServiceImpl
 
 		article.setDDMStructureKey(ddmStructureKey);
 		article.setDDMTemplateKey(ddmTemplateKey);
+		article.setDefaultLanguageId(LocaleUtil.toLanguageId(locale));
 		article.setLayoutUuid(layoutUuid);
 		article.setDisplayDate(displayDate);
 		article.setExpirationDate(expirationDate);
@@ -434,6 +435,11 @@ public class JournalArticleLocalServiceImpl
 		article.setExpandoBridgeAttributes(serviceContext);
 
 		journalArticlePersistence.update(article);
+
+		// Article localization
+
+		_addArticleLocalizedFields(
+			user.getCompanyId(), article.getId(), titleMap, descriptionMap);
 
 		// Resources
 
@@ -463,16 +469,6 @@ public class JournalArticleLocalServiceImpl
 			serviceContext.getAssetTagNames(),
 			serviceContext.getAssetLinkEntryIds(),
 			serviceContext.getAssetPriority());
-
-		// Comment
-
-		if (JournalServiceConfigurationValues.
-				JOURNAL_ARTICLE_COMMENTS_ENABLED) {
-
-			CommentManagerUtil.addDiscussion(
-				userId, groupId, JournalArticle.class.getName(),
-				resourcePrimKey, article.getUserName());
-		}
 
 		// Dynamic data mapping
 
@@ -548,7 +544,7 @@ public class JournalArticleLocalServiceImpl
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		User user = userPersistence.findByPrimaryKey(userId);
+		User user = userLocalService.getUser(userId);
 
 		Calendar calendar = CalendarFactoryUtil.getCalendar(user.getTimeZone());
 
@@ -765,7 +761,7 @@ public class JournalArticleLocalServiceImpl
 
 		// Article
 
-		User user = userPersistence.findByPrimaryKey(userId);
+		User user = userLocalService.getUser(userId);
 		oldArticleId = StringUtil.toUpperCase(oldArticleId.trim());
 		newArticleId = StringUtil.toUpperCase(newArticleId.trim());
 
@@ -810,11 +806,9 @@ public class JournalArticleLocalServiceImpl
 		newArticle.setTreePath(oldArticle.getTreePath());
 		newArticle.setArticleId(newArticleId);
 		newArticle.setVersion(JournalArticleConstants.VERSION_DEFAULT);
-		newArticle.setTitle(oldArticle.getTitle());
 		newArticle.setUrlTitle(
 			getUniqueUrlTitle(
 				id, groupId, newArticleId, oldArticle.getTitleCurrentValue()));
-		newArticle.setDescription(oldArticle.getDescription());
 
 		try {
 			copyArticleImages(oldArticle, newArticle);
@@ -825,6 +819,7 @@ public class JournalArticleLocalServiceImpl
 
 		newArticle.setDDMStructureKey(oldArticle.getDDMStructureKey());
 		newArticle.setDDMTemplateKey(oldArticle.getDDMTemplateKey());
+		newArticle.setDefaultLanguageId(oldArticle.getDefaultLanguageId());
 		newArticle.setLayoutUuid(oldArticle.getLayoutUuid());
 		newArticle.setDisplayDate(oldArticle.getDisplayDate());
 		newArticle.setExpirationDate(oldArticle.getExpirationDate());
@@ -848,6 +843,12 @@ public class JournalArticleLocalServiceImpl
 			oldArticle.getExpandoBridge(), newArticle.getExpandoBridge());
 
 		journalArticlePersistence.update(newArticle);
+
+		// Article localization
+
+		_addArticleLocalizedFields(
+			newArticle.getCompanyId(), newArticle.getId(),
+			oldArticle.getTitleMap(), oldArticle.getDescriptionMap());
 
 		// Resources
 
@@ -949,6 +950,11 @@ public class JournalArticleLocalServiceImpl
 
 			updatePreviousApprovedArticle(article);
 		}
+
+		// Article localization
+
+		journalArticleLocalizationPersistence.removeByArticlePK(
+			article.getId());
 
 		// Email
 
@@ -1374,9 +1380,9 @@ public class JournalArticleLocalServiceImpl
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		if (JournalServiceConfigurationValues.
-				JOURNAL_ARTICLE_EXPIRE_ALL_VERSIONS) {
+		User user = userLocalService.getUser(userId);
 
+		if (isExpireAllArticleVersions(user.getCompanyId())) {
 			List<JournalArticle> articles = journalArticlePersistence.findByG_A(
 				groupId, articleId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
 				new ArticleVersionComparator(true));
@@ -1395,6 +1401,17 @@ public class JournalArticleLocalServiceImpl
 				userId, groupId, article.getArticleId(), article.getVersion(),
 				articleURL, serviceContext);
 		}
+	}
+
+	/**
+	 * Returns the web content article with the ID.
+	 *
+	 * @param  id the primary key of the web content article
+	 * @return the web content article with the ID
+	 */
+	@Override
+	public JournalArticle fetchArticle(long id) {
+		return journalArticlePersistence.fetchByPrimaryKey(id);
 	}
 
 	@Override
@@ -1794,7 +1811,7 @@ public class JournalArticleLocalServiceImpl
 	 * @param      languageId the primary key of the language translation to get
 	 * @param      themeDisplay the theme display
 	 * @return     the web content from the matching web content article
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of 4.0.0, replaced by {@link
 	 *             #getArticleContent(JournalArticle, String, String, String,
 	 *             PortletRequestModel,ThemeDisplay)}
 	 */
@@ -1859,7 +1876,7 @@ public class JournalArticleLocalServiceImpl
 	 * @param      languageId the primary key of the language translation to get
 	 * @param      themeDisplay the theme display
 	 * @return     the web content from the matching web content article
-	 * @deprecated As of 7.0.0, replaced by {@link #getArticleContent(long,
+	 * @deprecated As of 4.0.0, replaced by {@link #getArticleContent(long,
 	 *             String, double, String, String, String, PortletRequestModel,
 	 *             ThemeDisplay)}
 	 */
@@ -1886,7 +1903,7 @@ public class JournalArticleLocalServiceImpl
 	 * @param      languageId the primary key of the language translation to get
 	 * @param      themeDisplay the theme display
 	 * @return     the web content from the matching web content article
-	 * @deprecated As of 7.0.0, replaced by {@link #getArticleContent(long,
+	 * @deprecated As of 4.0.0, replaced by {@link #getArticleContent(long,
 	 *             String, double, String, String, String, PortletRequestModel,
 	 *             ThemeDisplay)}
 	 */
@@ -1943,7 +1960,7 @@ public class JournalArticleLocalServiceImpl
 	 * @param      languageId the primary key of the language translation to get
 	 * @param      themeDisplay the theme display
 	 * @return     the latest web content from the matching web content article
-	 * @deprecated As of 7.0.0, replaced by {@link #getArticleContent(long,
+	 * @deprecated As of 4.0.0, replaced by {@link #getArticleContent(long,
 	 *             String, String, String, String, PortletRequestModel,
 	 *             ThemeDisplay)}
 	 */
@@ -1969,7 +1986,7 @@ public class JournalArticleLocalServiceImpl
 	 * @param      languageId the primary key of the language translation to get
 	 * @param      themeDisplay the theme display
 	 * @return     the latest web content from the matching web content article
-	 * @deprecated As of 7.0.0, replaced by {@link #getArticleContent(long,
+	 * @deprecated As of 4.0.0, replaced by {@link #getArticleContent(long,
 	 *             String, String, String, String, PortletRequestModel,
 	 *             ThemeDisplay)}
 	 */
@@ -1982,6 +1999,46 @@ public class JournalArticleLocalServiceImpl
 
 		return getArticleContent(
 			groupId, articleId, viewMode, null, languageId, null, themeDisplay);
+	}
+
+	@Override
+	public String getArticleDescription(long articlePK, Locale locale) {
+		String languageId = LocaleUtil.toLanguageId(locale);
+
+		return getArticleDescription(articlePK, languageId);
+	}
+
+	@Override
+	public String getArticleDescription(long articlePK, String languageId) {
+		JournalArticleLocalization journalArticleLocalization =
+			journalArticleLocalizationPersistence.fetchByA_L(
+				articlePK, languageId);
+
+		if (journalArticleLocalization == null) {
+			return null;
+		}
+
+		return journalArticleLocalization.getDescription();
+	}
+
+	@Override
+	public Map<Locale, String> getArticleDescriptionMap(long articlePK) {
+		Map<Locale, String> journalArticleLocalizationDescriptionMap =
+			new HashMap<>();
+
+		List<JournalArticleLocalization> journalArticleLocalizationList =
+			journalArticleLocalizationPersistence.findByArticlePK(articlePK);
+
+		for (JournalArticleLocalization journalArticleLocalization :
+				journalArticleLocalizationList) {
+
+			journalArticleLocalizationDescriptionMap.put(
+				LocaleUtil.fromLanguageId(
+					journalArticleLocalization.getLanguageId()),
+				journalArticleLocalization.getDescription());
+		}
+
+		return journalArticleLocalizationDescriptionMap;
 	}
 
 	/**
@@ -2210,6 +2267,23 @@ public class JournalArticleLocalServiceImpl
 
 		return getArticleDisplay(
 			groupId, articleId, null, viewMode, languageId, themeDisplay);
+	}
+
+	@Override
+	public List<String> getArticleLocalizationLanguageIds(long articlePK) {
+		List<JournalArticleLocalization> journalArticleLocalizationList =
+			journalArticleLocalizationPersistence.findByArticlePK(articlePK);
+
+		List<String> availableLanguageIds = new ArrayList<>();
+
+		for (JournalArticleLocalization journalArticleLocalization :
+				journalArticleLocalizationList) {
+
+			availableLanguageIds.add(
+				journalArticleLocalization.getLanguageId());
+		}
+
+		return availableLanguageIds;
 	}
 
 	/**
@@ -2520,6 +2594,46 @@ public class JournalArticleLocalServiceImpl
 		return journalArticlePersistence.countByG_A(groupId, articleId);
 	}
 
+	@Override
+	public String getArticleTitle(long articlePK, Locale locale) {
+		String languageId = LocaleUtil.toLanguageId(locale);
+
+		return getArticleTitle(articlePK, languageId);
+	}
+
+	@Override
+	public String getArticleTitle(long articlePK, String languageId) {
+		JournalArticleLocalization journalArticleLocalization =
+			journalArticleLocalizationPersistence.fetchByA_L(
+				articlePK, languageId);
+
+		if (journalArticleLocalization == null) {
+			return null;
+		}
+
+		return journalArticleLocalization.getTitle();
+	}
+
+	@Override
+	public Map<Locale, String> getArticleTitleMap(long articlePK) {
+		Map<Locale, String> journalArticleLocalizationTitleMap =
+			new HashMap<>();
+
+		List<JournalArticleLocalization> journalArticleLocalizationList =
+			journalArticleLocalizationPersistence.findByArticlePK(articlePK);
+
+		for (JournalArticleLocalization journalArticleLocalization :
+				journalArticleLocalizationList) {
+
+			journalArticleLocalizationTitleMap.put(
+				LocaleUtil.fromLanguageId(
+					journalArticleLocalization.getLanguageId()),
+				journalArticleLocalization.getTitle());
+		}
+
+		return journalArticleLocalizationTitleMap;
+	}
+
 	/**
 	 * Returns an ordered range of all the web content articles matching the
 	 * company, version, and workflow status.
@@ -2672,7 +2786,7 @@ public class JournalArticleLocalServiceImpl
 		if (article == null) {
 			throw new NoSuchArticleException(
 				"No approved JournalArticle exists with the key {groupId=" +
-					groupId + ", " + "articleId=" + articleId + "}");
+					groupId + ", articleId=" + articleId + "}");
 		}
 
 		return article;
@@ -2728,9 +2842,7 @@ public class JournalArticleLocalServiceImpl
 	public List<JournalArticle> getIndexableArticlesByDDMStructureKey(
 		String[] ddmStructureKeys) {
 
-		if (JournalServiceConfigurationValues.
-				JOURNAL_ARTICLE_INDEX_ALL_VERSIONS) {
-
+		if (isReindexAllArticleVersions()) {
 			return getStructureArticles(ddmStructureKeys);
 		}
 
@@ -3377,7 +3489,7 @@ public class JournalArticleLocalServiceImpl
 	 *             folder
 	 * @return     the updated web content article, which was moved to a new
 	 *             folder
-	 * @deprecated As of 7.0.0, replaced by {@link #moveArticle(long, String,
+	 * @deprecated As of 4.0.0, replaced by {@link #moveArticle(long, String,
 	 *             long, ServiceContext)}
 	 */
 	@Deprecated
@@ -3612,9 +3724,7 @@ public class JournalArticleLocalServiceImpl
 
 		// Comment
 
-		if (JournalServiceConfigurationValues.
-				JOURNAL_ARTICLE_COMMENTS_ENABLED) {
-
+		if (isArticleCommentsEnabled(article.getCompanyId())) {
 			CommentManagerUtil.moveDiscussionToTrash(
 				JournalArticle.class.getName(), article.getResourcePrimKey());
 		}
@@ -3623,7 +3733,7 @@ public class JournalArticleLocalServiceImpl
 
 		JSONObject extraDataJSONObject = JSONFactoryUtil.createJSONObject();
 
-		extraDataJSONObject.put("title", article.getTitle());
+		extraDataJSONObject.put("title", article.getTitleMapAsXML());
 
 		SocialActivityManagerUtil.addActivity(
 			userId, article, SocialActivityConstants.TYPE_MOVE_TO_TRASH,
@@ -3707,19 +3817,8 @@ public class JournalArticleLocalServiceImpl
 		JournalArticle article = journalArticlePersistence.findByG_A_V(
 			groupId, articleId, version);
 
-		String title = article.getTitle();
-
-		title = LocalizationUtil.removeLocalization(
-			title, "static-content", languageId, true);
-
-		article.setTitle(title);
-
-		String description = article.getDescription();
-
-		description = LocalizationUtil.removeLocalization(
-			description, "static-content", languageId, true);
-
-		article.setDescription(description);
+		journalArticleLocalizationPersistence.removeByA_L(
+			article.getId(), languageId);
 
 		String content = article.getContent();
 
@@ -3826,9 +3925,7 @@ public class JournalArticleLocalServiceImpl
 
 		// Comment
 
-		if (JournalServiceConfigurationValues.
-				JOURNAL_ARTICLE_COMMENTS_ENABLED) {
-
+		if (isArticleCommentsEnabled(article.getCompanyId())) {
 			CommentManagerUtil.restoreDiscussionFromTrash(
 				JournalArticle.class.getName(), article.getResourcePrimKey());
 		}
@@ -3837,7 +3934,7 @@ public class JournalArticleLocalServiceImpl
 
 		JSONObject extraDataJSONObject = JSONFactoryUtil.createJSONObject();
 
-		extraDataJSONObject.put("title", article.getTitle());
+		extraDataJSONObject.put("title", article.getTitleMapAsXML());
 
 		SocialActivityManagerUtil.addActivity(
 			userId, article, SocialActivityConstants.TYPE_RESTORE_FROM_TRASH,
@@ -4319,7 +4416,7 @@ public class JournalArticleLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #search(long, long, List,
+	 * @deprecated As of 4.0.0, replaced by {@link #search(long, long, List,
 	 *             long, String, String, String, String, int, String, String,
 	 *             LinkedHashMap, boolean, int, int, Sort)}
 	 */
@@ -4956,7 +5053,7 @@ public class JournalArticleLocalServiceImpl
 			String layoutUuid, ServiceContext serviceContext)
 		throws PortalException {
 
-		User user = userPersistence.findByPrimaryKey(userId);
+		User user = userLocalService.getUser(userId);
 
 		JournalArticle article = journalArticlePersistence.findByG_A_V(
 			groupId, articleId, version);
@@ -5006,6 +5103,7 @@ public class JournalArticleLocalServiceImpl
 			expirationDateYear = expirationCal.get(Calendar.YEAR);
 			expirationDateHour = expirationCal.get(Calendar.HOUR);
 			expirationDateMinute = expirationCal.get(Calendar.MINUTE);
+
 			neverExpire = false;
 
 			if (expirationCal.get(Calendar.AM_PM) == Calendar.PM) {
@@ -5033,6 +5131,7 @@ public class JournalArticleLocalServiceImpl
 			reviewDateYear = reviewCal.get(Calendar.YEAR);
 			reviewDateHour = reviewCal.get(Calendar.HOUR);
 			reviewDateMinute = reviewCal.get(Calendar.MINUTE);
+
 			neverReview = false;
 
 			if (reviewCal.get(Calendar.AM_PM) == Calendar.PM) {
@@ -5154,7 +5253,7 @@ public class JournalArticleLocalServiceImpl
 
 		// Article
 
-		User user = userPersistence.findByPrimaryKey(userId);
+		User user = userLocalService.getUser(userId);
 		articleId = StringUtil.toUpperCase(articleId.trim());
 
 		byte[] smallImageBytes = null;
@@ -5265,6 +5364,15 @@ public class JournalArticleLocalServiceImpl
 			article.setArticleId(articleId);
 			article.setVersion(version);
 			article.setSmallImageId(latestArticle.getSmallImageId());
+
+			_addArticleLocalizedFields(
+				article.getCompanyId(), article.getId(), titleMap,
+				descriptionMap);
+		}
+		else {
+			_updateArticleLocalizedFields(
+				article.getCompanyId(), article.getId(), titleMap,
+				descriptionMap);
 		}
 
 		Locale locale = getArticleDefaultLocale(content);
@@ -5275,15 +5383,14 @@ public class JournalArticleLocalServiceImpl
 
 		article.setFolderId(folderId);
 		article.setTreePath(article.buildTreePath());
-		article.setTitleMap(titleMap, locale);
 		article.setUrlTitle(
 			getUniqueUrlTitle(
 				article.getId(), groupId, article.getArticleId(), title,
 				latestArticle.getUrlTitle(), serviceContext));
-		article.setDescriptionMap(descriptionMap, locale);
 		article.setContent(content);
 		article.setDDMStructureKey(ddmStructureKey);
 		article.setDDMTemplateKey(ddmTemplateKey);
+		article.setDefaultLanguageId(LocaleUtil.toLanguageId(locale));
 		article.setLayoutUuid(layoutUuid);
 		article.setDisplayDate(displayDate);
 		article.setExpirationDate(expirationDate);
@@ -5479,11 +5586,10 @@ public class JournalArticleLocalServiceImpl
 
 		JournalArticle article = null;
 
-		User user = userPersistence.fetchByC_U(
-			oldArticle.getCompanyId(), oldArticle.getUserId());
+		User user = userLocalService.fetchUser(oldArticle.getUserId());
 
 		if (user == null) {
-			user = userPersistence.fetchByC_DU(oldArticle.getCompanyId(), true);
+			user = userLocalService.getDefaultUser(oldArticle.getCompanyId());
 		}
 
 		Locale defaultLocale = getArticleDefaultLocale(content);
@@ -5506,14 +5612,14 @@ public class JournalArticleLocalServiceImpl
 			article.setClassPK(oldArticle.getClassPK());
 			article.setArticleId(articleId);
 			article.setVersion(newVersion);
-			article.setTitleMap(oldArticle.getTitleMap(), defaultLocale);
 			article.setUrlTitle(
 				getUniqueUrlTitle(
 					id, groupId, articleId, title, oldArticle.getUrlTitle(),
 					serviceContext));
-			article.setDescriptionMap(oldArticle.getDescriptionMap());
 			article.setDDMStructureKey(oldArticle.getDDMStructureKey());
 			article.setDDMTemplateKey(oldArticle.getDDMTemplateKey());
+			article.setDefaultLanguageId(
+				LocaleUtil.toLanguageId(defaultLocale));
 			article.setLayoutUuid(oldArticle.getLayoutUuid());
 			article.setDisplayDate(oldArticle.getDisplayDate());
 			article.setExpirationDate(oldArticle.getExpirationDate());
@@ -5534,6 +5640,12 @@ public class JournalArticleLocalServiceImpl
 			ExpandoBridgeUtil.copyExpandoBridgeAttributes(
 				oldArticle.getExpandoBridge(), article.getExpandoBridge());
 
+			// Article localization
+
+			_addArticleLocalizedFields(
+				article.getCompanyId(), article.getId(),
+				oldArticle.getTitleMap(), oldArticle.getDescriptionMap());
+
 			// Dynamic data mapping
 
 			updateDDMLinks(
@@ -5544,17 +5656,9 @@ public class JournalArticleLocalServiceImpl
 			article = oldArticle;
 		}
 
-		Map<Locale, String> titleMap = article.getTitleMap();
-
-		titleMap.put(locale, title);
-
-		article.setTitleMap(titleMap, defaultLocale);
-
-		Map<Locale, String> descriptionMap = article.getDescriptionMap();
-
-		descriptionMap.put(locale, description);
-
-		article.setDescriptionMap(descriptionMap);
+		_updateArticleLocalizedFields(
+			article.getCompanyId(), article.getId(), title, description,
+			LocaleUtil.toLanguageId(locale));
 
 		content = format(user, groupId, article, content);
 
@@ -5576,7 +5680,7 @@ public class JournalArticleLocalServiceImpl
 	 * @param      assetTagNames the new asset tag names
 	 * @param      assetLinkEntryIds the primary keys of the new asset link
 	 *             entries
-	 * @deprecated As of 7.0.0, replaced by {@link #updateAsset(long,
+	 * @deprecated As of 4.0.0, replaced by {@link #updateAsset(long,
 	 *             JournalArticle, long[], String[], long[], Double)}
 	 */
 	@Deprecated
@@ -5633,6 +5737,9 @@ public class JournalArticleLocalServiceImpl
 
 		AssetEntry assetEntry = null;
 
+		String title = article.getTitleMapAsXML();
+		String description = article.getDescriptionMapAsXML();
+
 		if (addDraftAssetEntry) {
 			assetEntry = assetEntryLocalService.updateEntry(
 				userId, article.getGroupId(), article.getCreateDate(),
@@ -5640,8 +5747,7 @@ public class JournalArticleLocalServiceImpl
 				article.getPrimaryKey(), article.getUuid(),
 				getClassTypeId(article), assetCategoryIds, assetTagNames,
 				isListable(article), false, null, null, null, null,
-				ContentTypes.TEXT_HTML, article.getTitle(),
-				article.getDescription(), article.getDescription(), null,
+				ContentTypes.TEXT_HTML, title, description, description, null,
 				article.getLayoutUuid(), 0, 0, priority);
 		}
 		else {
@@ -5655,9 +5761,8 @@ public class JournalArticleLocalServiceImpl
 				journalArticleResource.getResourcePrimKey(),
 				journalArticleResource.getUuid(), getClassTypeId(article),
 				assetCategoryIds, assetTagNames, isListable(article), visible,
-				null, null, null, null, ContentTypes.TEXT_HTML,
-				article.getTitle(), article.getDescription(),
-				article.getDescription(), null, article.getLayoutUuid(), 0, 0,
+				null, null, null, null, ContentTypes.TEXT_HTML, title,
+				description, description, null, article.getLayoutUuid(), 0, 0,
 				priority);
 		}
 
@@ -5758,7 +5863,7 @@ public class JournalArticleLocalServiceImpl
 
 		// Article
 
-		User user = userPersistence.findByPrimaryKey(userId);
+		User user = userLocalService.getUser(userId);
 		Date now = new Date();
 
 		if ((status == WorkflowConstants.STATUS_APPROVED) &&
@@ -5795,9 +5900,7 @@ public class JournalArticleLocalServiceImpl
 
 		journalArticlePersistence.update(article);
 
-		if (JournalServiceConfigurationValues.
-				JOURNAL_ARTICLE_EXPIRE_ALL_VERSIONS) {
-
+		if (isExpireAllArticleVersions(article.getCompanyId())) {
 			setArticlesExpirationDate(article);
 		}
 
@@ -5811,6 +5914,9 @@ public class JournalArticleLocalServiceImpl
 					article.getUrlTitle());
 
 				// Asset
+
+				String title = article.getTitleMapAsXML();
+				String description = article.getDescriptionMapAsXML();
 
 				if ((oldStatus != WorkflowConstants.STATUS_APPROVED) &&
 					(article.getVersion() !=
@@ -5843,9 +5949,8 @@ public class JournalArticleLocalServiceImpl
 								article.getResourcePrimKey(), article.getUuid(),
 								getClassTypeId(article), assetCategoryIds,
 								assetTagNames, isListable(article), false, null,
-								null, null, null, ContentTypes.TEXT_HTML,
-								article.getTitle(), article.getDescription(),
-								article.getDescription(), null,
+								null, null, null, ContentTypes.TEXT_HTML, title,
+								description, description, null,
 								article.getLayoutUuid(), 0, 0,
 								draftAssetEntry.getPriority());
 
@@ -5871,7 +5976,7 @@ public class JournalArticleLocalServiceImpl
 				JSONObject extraDataJSONObject =
 					JSONFactoryUtil.createJSONObject();
 
-				extraDataJSONObject.put("title", article.getTitle());
+				extraDataJSONObject.put("title", title);
 
 				if (serviceContext.isCommandUpdate()) {
 					SocialActivityManagerUtil.addActivity(
@@ -5923,7 +6028,7 @@ public class JournalArticleLocalServiceImpl
 				catch (Exception e) {
 					_log.error(
 						"Unable to send email to notify the change of status " +
-							" to " + msg + " for article " + article.getId() +
+							"to " + msg + " for article " + article.getId() +
 								": " + e.getMessage());
 				}
 			}
@@ -6023,7 +6128,7 @@ public class JournalArticleLocalServiceImpl
 	 *             article's old DDM template
 	 * @param      newDDMTemplateKey the primary key of the web content
 	 *             article's new DDM template
-	 * @deprecated As of 7.0.0, replaced by {@link #updateDDMTemplateKey}
+	 * @deprecated As of 4.0.0, replaced by {@link #updateDDMTemplateKey}
 	 */
 	@Deprecated
 	@Override
@@ -6033,6 +6138,107 @@ public class JournalArticleLocalServiceImpl
 
 		updateDDMTemplateKey(
 			groupId, classNameId, oldDDMTemplateKey, newDDMTemplateKey);
+	}
+
+	protected void addDocumentLibraryFileEntries(Element dynamicElementElement)
+		throws PortalException {
+
+		if (ExportImportThreadLocal.isImportInProcess()) {
+			return;
+		}
+
+		for (Element dynamicContentElement :
+				dynamicElementElement.elements("dynamic-content")) {
+
+			String value = dynamicContentElement.getText();
+
+			if (Validator.isNull(value)) {
+				continue;
+			}
+
+			JSONObject jsonObject = JSONFactoryUtil.createJSONObject(value);
+
+			String uuid = jsonObject.getString("uuid");
+			long groupId = jsonObject.getLong("groupId");
+			boolean tempFile = jsonObject.getBoolean("tempFile");
+
+			if (!tempFile) {
+				continue;
+			}
+
+			FileEntry fileEntry =
+				dlAppLocalService.getFileEntryByUuidAndGroupId(uuid, groupId);
+
+			String fileEntryName = DLUtil.getUniqueFileName(
+				fileEntry.getGroupId(), fileEntry.getFolderId(),
+				fileEntry.getFileName());
+
+			dlAppLocalService.addFileEntry(
+				fileEntry.getUserId(), fileEntry.getGroupId(), 0, fileEntryName,
+				fileEntry.getMimeType(), fileEntryName, StringPool.BLANK,
+				StringPool.BLANK, fileEntry.getContentStream(),
+				fileEntry.getSize(), new ServiceContext());
+		}
+	}
+
+	protected void addImageFileEntries(
+			JournalArticle article, Element dynamicElementElement)
+		throws PortalException {
+
+		if (ExportImportThreadLocal.isImportInProcess()) {
+			return;
+		}
+
+		for (Element dynamicContentElement :
+				dynamicElementElement.elements("dynamic-content")) {
+
+			String value = dynamicContentElement.getText();
+
+			if (Validator.isNull(value)) {
+				continue;
+			}
+
+			JSONObject jsonObject = JSONFactoryUtil.createJSONObject(value);
+
+			String uuid = jsonObject.getString("uuid");
+			long groupId = jsonObject.getLong("groupId");
+
+			FileEntry fileEntry =
+				dlAppLocalService.getFileEntryByUuidAndGroupId(uuid, groupId);
+
+			boolean isTempFile = fileEntry.isRepositoryCapabilityProvided(
+				TemporaryFileEntriesCapability.class);
+
+			if (isTempFile) {
+				FileEntry tempFileEntry = fileEntry;
+
+				Folder folder = article.addImagesFolder();
+
+				String fileEntryName = DLUtil.getUniqueFileName(
+					fileEntry.getGroupId(), folder.getFolderId(),
+					fileEntry.getFileName());
+
+				fileEntry = PortletFileRepositoryUtil.addPortletFileEntry(
+					groupId, fileEntry.getUserId(),
+					JournalArticle.class.getName(),
+					article.getResourcePrimKey(), JournalConstants.SERVICE_NAME,
+					folder.getFolderId(), fileEntry.getContentStream(),
+					fileEntryName, fileEntry.getMimeType(), false);
+
+				dlAppLocalService.deleteFileEntry(
+					tempFileEntry.getFileEntryId());
+			}
+
+			JSONObject cdata = JSONFactoryUtil.createJSONObject(
+				dynamicContentElement.getText());
+
+			cdata.put("resourcePrimKey", article.getResourcePrimKey());
+			cdata.put("uuid", fileEntry.getUuid());
+
+			dynamicContentElement.clearContent();
+
+			dynamicContentElement.addCDATA(cdata.toString());
+		}
 	}
 
 	protected String buildArticleURL(
@@ -6175,8 +6381,7 @@ public class JournalArticleLocalServiceImpl
 		List<JournalArticle> articles =
 			journalArticleFinder.findByExpirationDate(
 				JournalArticleConstants.CLASSNAME_ID_DEFAULT,
-				new Date(
-					expirationDate.getTime() + _JOURNAL_ARTICLE_CHECK_INTERVAL),
+				new Date(expirationDate.getTime() + getArticleCheckInterval()),
 				new QueryDefinition<JournalArticle>(
 					WorkflowConstants.STATUS_APPROVED));
 
@@ -6185,9 +6390,7 @@ public class JournalArticleLocalServiceImpl
 		}
 
 		for (JournalArticle article : articles) {
-			if (JournalServiceConfigurationValues.
-					JOURNAL_ARTICLE_EXPIRE_ALL_VERSIONS) {
-
+			if (isExpireAllArticleVersions(article.getCompanyId())) {
 				List<JournalArticle> currentArticles =
 					journalArticlePersistence.findByG_A(
 						article.getGroupId(), article.getArticleId(),
@@ -6224,7 +6427,7 @@ public class JournalArticleLocalServiceImpl
 
 		if (_previousCheckDate == null) {
 			_previousCheckDate = new Date(
-				expirationDate.getTime() - _JOURNAL_ARTICLE_CHECK_INTERVAL);
+				expirationDate.getTime() - getArticleCheckInterval());
 		}
 	}
 
@@ -6501,10 +6704,10 @@ public class JournalArticleLocalServiceImpl
 			String elType = element.attributeValue("type", StringPool.BLANK);
 
 			if (elType.equals("document_library")) {
-				formatDocumentLibrary(article, element);
+				addDocumentLibraryFileEntries(element);
 			}
 			else if (elType.equals("image")) {
-				formatImage(article, element);
+				addImageFileEntries(article, element);
 			}
 			else if (elType.equals("text_area") || elType.equals("text") ||
 					 elType.equals("text_box")) {
@@ -6560,149 +6763,49 @@ public class JournalArticleLocalServiceImpl
 		return content;
 	}
 
+	/**
+	 * @deprecated As of 4.0.0
+	 */
+	@Deprecated
 	protected void formatDocumentLibrary(
 			JournalArticle article, Element dynamicElementElement)
 		throws PortalException {
-
-		if (ExportImportThreadLocal.isImportInProcess()) {
-			return;
-		}
-
-		for (Element dynamicContentElement :
-				dynamicElementElement.elements("dynamic-content")) {
-
-			formatDocumentLibraryDynamicContent(dynamicContentElement);
-		}
 	}
 
+	/**
+	 * @deprecated As of 4.0.0
+	 */
+	@Deprecated
 	protected void formatDocumentLibraryDynamicContent(
 			Element dynamicContentElement)
 		throws PortalException {
-
-		String value = dynamicContentElement.getText();
-
-		if (Validator.isNull(value)) {
-			return;
-		}
-
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(value);
-
-		String data = jsonObject.getString("data");
-
-		if (Validator.isNotNull(data)) {
-			dynamicContentElement.clearContent();
-
-			dynamicContentElement.addCDATA(data);
-
-			return;
-		}
-
-		String uuid = jsonObject.getString("uuid");
-		long groupId = jsonObject.getLong("groupId");
-		boolean tempFile = jsonObject.getBoolean("tempFile");
-
-		FileEntry fileEntry = dlAppLocalService.getFileEntryByUuidAndGroupId(
-			uuid, groupId);
-
-		if (tempFile) {
-			String fileEntryName = DLUtil.getUniqueFileName(
-				fileEntry.getGroupId(), fileEntry.getFolderId(),
-				fileEntry.getFileName());
-
-			fileEntry = dlAppLocalService.addFileEntry(
-				fileEntry.getUserId(), fileEntry.getGroupId(), 0, fileEntryName,
-				fileEntry.getMimeType(), fileEntryName, StringPool.BLANK,
-				StringPool.BLANK, fileEntry.getContentStream(),
-				fileEntry.getSize(), new ServiceContext());
-		}
-
-		String previewURL = DLUtil.getPreviewURL(
-			fileEntry, fileEntry.getFileVersion(), null, StringPool.BLANK,
-			false, true);
-
-		dynamicContentElement.clearContent();
-
-		dynamicContentElement.addCDATA(previewURL);
 	}
 
+	/**
+	 * @deprecated As of 4.0.0
+	 */
+	@Deprecated
+	protected void formatImage(JournalArticle article, Element el)
+		throws PortalException {
+	}
+
+	/**
+	 * @deprecated As of 4.0.0
+	 */
+	@Deprecated
 	protected void formatImageDynamicContent(
 			JournalArticle article, String type, Element dynamicContentElement)
 		throws PortalException {
-
-		String value = dynamicContentElement.getText();
-
-		if (Validator.isNull(value)) {
-			return;
-		}
-
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(value);
-
-		String data = jsonObject.getString("data");
-
-		if (Validator.isNotNull(data)) {
-			dynamicContentElement.clearContent();
-
-			dynamicContentElement.addCDATA(data);
-
-			return;
-		}
-
-		String uuid = jsonObject.getString("uuid");
-		long groupId = jsonObject.getLong("groupId");
-
-		FileEntry fileEntry =
-			dlAppLocalService.getFileEntryByUuidAndGroupId(uuid, groupId);
-
-		boolean isTempFile = fileEntry.isRepositoryCapabilityProvided(
-			TemporaryFileEntriesCapability.class);
-
-		if (isTempFile) {
-			FileEntry tempFileEntry = fileEntry;
-
-			Folder folder = article.addImagesFolder();
-
-			String fileEntryName = DLUtil.getUniqueFileName(
-				fileEntry.getGroupId(), folder.getFolderId(),
-				fileEntry.getFileName());
-
-			fileEntry = PortletFileRepositoryUtil.addPortletFileEntry(
-				groupId, fileEntry.getUserId(),
-				JournalArticle.class.getName(),
-				article.getResourcePrimKey(), JournalConstants.SERVICE_NAME,
-				folder.getFolderId(), fileEntry.getContentStream(),
-				fileEntryName, fileEntry.getMimeType(), false);
-
-			dlAppLocalService.deleteFileEntry(tempFileEntry.getFileEntryId());
-		}
-
-		String previewURL = DLUtil.getPreviewURL(
-			fileEntry, fileEntry.getFileVersion(), null, StringPool.BLANK,
-			false, true);
-
-		dynamicContentElement.addAttribute(
-			"resourcePrimKey", String.valueOf(article.getResourcePrimKey()));
-
-		dynamicContentElement.clearContent();
-
-		dynamicContentElement.addCDATA(previewURL);
 	}
 
-	protected void formatImage(JournalArticle article, Element el)
-		throws PortalException {
+	protected long getArticleCheckInterval() throws PortalException {
+		long companyId = CompanyThreadLocal.getCompanyId();
 
-		List<Element> imageContents = el.elements("dynamic-content");
+		JournalServiceConfiguration journalServiceConfiguration =
+			configurationProvider.getCompanyConfiguration(
+				JournalServiceConfiguration.class, companyId);
 
-		for (Element dynamicContent : imageContents) {
-			String elType = dynamicContent.attributeValue(
-				"type", StringPool.BLANK);
-
-			if (ExportImportThreadLocal.isImportInProcess()) {
-				continue;
-			}
-
-			formatImageDynamicContent(
-				article, elType, dynamicContent);
-		}
+		return journalServiceConfiguration.checkInterval();
 	}
 
 	protected Locale getArticleDefaultLocale(String content) {
@@ -6902,10 +7005,14 @@ public class JournalArticleLocalServiceImpl
 				portletRequestModel, script, langType, propagateException);
 
 			if (!pageFlow) {
+				JournalServiceConfiguration journalServiceConfiguration =
+					configurationProvider.getCompanyConfiguration(
+						JournalServiceConfiguration.class,
+						article.getCompanyId());
+
 				String[] pieces = StringUtil.split(
 					content,
-					JournalServiceConfigurationValues.
-						JOURNAL_ARTICLE_TOKEN_PAGE_BREAK);
+					journalServiceConfiguration.journalArticlePageBreakToken());
 
 				if (pieces.length > 1) {
 					if (page > pieces.length) {
@@ -7065,6 +7172,43 @@ public class JournalArticleLocalServiceImpl
 
 		if ((article == null) || (article.getVersion() <= version)) {
 			return true;
+		}
+
+		return false;
+	}
+
+	protected boolean isArticleCommentsEnabled(long companyId)
+		throws PortalException {
+
+		JournalServiceConfiguration journalServiceConfiguration =
+			configurationProvider.getCompanyConfiguration(
+				JournalServiceConfiguration.class, companyId);
+
+		return journalServiceConfiguration.articleCommentsEnabled();
+	}
+
+	protected boolean isExpireAllArticleVersions(long companyId)
+		throws PortalException {
+
+		JournalServiceConfiguration journalServiceConfiguration =
+			configurationProvider.getCompanyConfiguration(
+				JournalServiceConfiguration.class, companyId);
+
+		return journalServiceConfiguration.expireAllArticleVersionsEnabled();
+	}
+
+	protected boolean isReindexAllArticleVersions() {
+		try {
+			long companyId = CompanyThreadLocal.getCompanyId();
+
+			JournalServiceConfiguration journalServiceConfiguration =
+				configurationProvider.getCompanyConfiguration(
+					JournalServiceConfiguration.class, companyId);
+
+			return journalServiceConfiguration.indexAllArticleVersionsEnabled();
+		}
+		catch (Exception e) {
+			_log.error(e, e);
 		}
 
 		return false;
@@ -7253,7 +7397,7 @@ public class JournalArticleLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 7.0.1, replaced by {@link #notifySubscribers(long,
+	 * @deprecated As of 4.0.0, replaced by {@link #notifySubscribers(long,
 	 *             JournalArticle, String, ServiceContext)}
 	 */
 	@Deprecated
@@ -7333,10 +7477,10 @@ public class JournalArticleLocalServiceImpl
 			return;
 		}
 
-		Company company = companyPersistence.findByPrimaryKey(
+		Company company = companyLocalService.getCompany(
 			article.getCompanyId());
 
-		User user = userPersistence.findByPrimaryKey(article.getUserId());
+		User user = userLocalService.getUser(article.getUserId());
 
 		String fromName = journalGroupServiceConfiguration.emailFromName();
 		String fromAddress =
@@ -7580,9 +7724,18 @@ public class JournalArticleLocalServiceImpl
 			}
 		}
 
-		ddmStructureLocalService.updateStructure(
-			serviceContext.getUserId(), ddmStructureId, ddmForm,
-			ddmStructure.getDDMFormLayout(), serviceContext);
+		boolean indexingEnabled = serviceContext.isIndexingEnabled();
+
+		try {
+			serviceContext.setIndexingEnabled(false);
+
+			ddmStructureLocalService.updateStructure(
+				serviceContext.getUserId(), ddmStructureId, ddmForm,
+				ddmStructure.getDDMFormLayout(), serviceContext);
+		}
+		finally {
+			serviceContext.setIndexingEnabled(indexingEnabled);
+		}
 	}
 
 	protected void updatePreviousApprovedArticle(JournalArticle article)
@@ -7605,9 +7758,9 @@ public class JournalArticleLocalServiceImpl
 
 			assetEntry.setModifiedDate(
 				previousApprovedArticle.getModifiedDate());
-			assetEntry.setTitle(previousApprovedArticle.getTitle());
+			assetEntry.setTitle(previousApprovedArticle.getTitleMapAsXML());
 
-			assetEntryPersistence.update(assetEntry);
+			assetEntryLocalService.updateAssetEntry(assetEntry);
 		}
 	}
 
@@ -7718,9 +7871,9 @@ public class JournalArticleLocalServiceImpl
 
 		boolean validSmallImageExtension = false;
 
-		for (String _imageExtension : imageExtensions) {
-			if (StringPool.STAR.equals(_imageExtension) ||
-				StringUtil.endsWith(smallImageName, _imageExtension)) {
+		for (String imageExtension : imageExtensions) {
+			if (StringPool.STAR.equals(imageExtension) ||
+				StringUtil.endsWith(smallImageName, imageExtension)) {
 
 				validSmallImageExtension = true;
 
@@ -7784,7 +7937,7 @@ public class JournalArticleLocalServiceImpl
 			(articleId.indexOf(CharPool.COMMA) != -1) ||
 			(articleId.indexOf(CharPool.SPACE) != -1)) {
 
-			throw new ArticleIdException("Invalid articleId: " + articleId);
+			throw new ArticleIdException("Invalid article ID: " + articleId);
 		}
 	}
 
@@ -7925,7 +8078,7 @@ public class JournalArticleLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #validateReferences(long,
+	 * @deprecated As of 4.0.0, replaced by {@link #validateReferences(long,
 	 *             String, String, String, boolean, String, byte[], long,
 	 *             String)}
 	 */
@@ -7959,9 +8112,133 @@ public class JournalArticleLocalServiceImpl
 	@ServiceReference(type = JournalConverter.class)
 	protected JournalConverter journalConverter;
 
-	private static final long _JOURNAL_ARTICLE_CHECK_INTERVAL =
-		JournalServiceConfigurationValues.JOURNAL_ARTICLE_CHECK_INTERVAL
-			* Time.MINUTE;
+	private List<JournalArticleLocalization> _addArticleLocalizedFields(
+			long companyId, long articlePK, Map<Locale, String> titleMap,
+			Map<Locale, String> descriptionMap)
+		throws PortalException {
+
+		Set<Locale> localeSet = new HashSet<>();
+
+		localeSet.addAll(titleMap.keySet());
+
+		if (descriptionMap != null) {
+			localeSet.addAll(descriptionMap.keySet());
+		}
+
+		List<JournalArticleLocalization> journalArticleLocalizations =
+			new ArrayList<>();
+
+		for (Locale locale : localeSet) {
+			String title = titleMap.get(locale);
+			String description = null;
+
+			if (descriptionMap != null) {
+				description = descriptionMap.get(locale);
+			}
+
+			if (Validator.isNull(title) && Validator.isNull(description)) {
+				continue;
+			}
+
+			JournalArticleLocalization journalArticleLocalization =
+				_addArticleLocalizedFields(
+					companyId, articlePK, title, description,
+					LocaleUtil.toLanguageId(locale));
+
+			journalArticleLocalizations.add(journalArticleLocalization);
+		}
+
+		return journalArticleLocalizations;
+	}
+
+	private JournalArticleLocalization _addArticleLocalizedFields(
+			long companyId, long articlePK, String title, String description,
+			String languageId)
+		throws PortalException {
+
+		JournalArticleLocalization journalArticleLocalization =
+			journalArticleLocalizationPersistence.fetchByA_L(
+				articlePK, languageId);
+
+		if (journalArticleLocalization == null) {
+			long journalArticleLocalizationId = counterLocalService.increment();
+
+			journalArticleLocalization =
+				journalArticleLocalizationPersistence.create(
+					journalArticleLocalizationId);
+
+			journalArticleLocalization.setCompanyId(companyId);
+			journalArticleLocalization.setArticlePK(articlePK);
+			journalArticleLocalization.setTitle(title);
+			journalArticleLocalization.setDescription(description);
+			journalArticleLocalization.setLanguageId(languageId);
+		}
+		else {
+			journalArticleLocalization.setTitle(title);
+			journalArticleLocalization.setDescription(description);
+		}
+
+		return journalArticleLocalizationPersistence.update(
+			journalArticleLocalization);
+	}
+
+	private long _getArticleCheckInterval() throws PortalException {
+		long companyId = CompanyThreadLocal.getCompanyId();
+
+		JournalServiceConfiguration journalServiceConfiguration =
+			configurationProvider.getCompanyConfiguration(
+				JournalServiceConfiguration.class, companyId);
+
+		return journalServiceConfiguration.checkInterval();
+	}
+
+	private List<JournalArticleLocalization> _updateArticleLocalizedFields(
+			long companyId, long articleId, Map<Locale, String> titleMap,
+			Map<Locale, String> descriptionMap)
+		throws PortalException {
+
+		List<JournalArticleLocalization> oldJournalArticleLocalizations =
+			new ArrayList<>(
+				journalArticleLocalizationPersistence.findByArticlePK(
+					articleId));
+
+		List<JournalArticleLocalization> newJournalArticleLocalizations =
+			_addArticleLocalizedFields(
+				companyId, articleId, titleMap, descriptionMap);
+
+		oldJournalArticleLocalizations.removeAll(
+			newJournalArticleLocalizations);
+
+		for (JournalArticleLocalization oldJournalArticleLocalization :
+				oldJournalArticleLocalizations) {
+
+			journalArticleLocalizationPersistence.remove(
+				oldJournalArticleLocalization);
+		}
+
+		return newJournalArticleLocalizations;
+	}
+
+	private JournalArticleLocalization _updateArticleLocalizedFields(
+			long companyId, long articleId, String title, String description,
+			String languageId)
+		throws PortalException {
+
+		JournalArticleLocalization journalArticleLocalization =
+			journalArticleLocalizationPersistence.fetchByA_L(
+				articleId, languageId);
+
+		if (journalArticleLocalization == null) {
+			return _addArticleLocalizedFields(
+				companyId, articleId, title, description, languageId);
+		}
+
+		journalArticleLocalization.setTitle(title);
+		journalArticleLocalization.setDescription(description);
+
+		return journalArticleLocalizationPersistence.update(
+			journalArticleLocalization);
+	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		JournalArticleLocalServiceImpl.class);

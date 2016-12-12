@@ -166,6 +166,7 @@
 			<var name="orgName" value="Organization Name" />
 			<var name="userFirstName" value="userfn" />
 			<var name="userLastName" value="userln" />
+			<var name="userName" value="userfn userln" />
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
@@ -457,6 +458,14 @@
 	</command>
 
 	<command name="AddOrganizationTeam" priority="4">
+		<execute macro="ProductMenu#gotoControlPanelConfiguration">
+			<var name="portlet" value="Server Administration" />
+		</execute>
+
+		<execute macro="ServerAdministration#executeServerResourcesActions">
+			<var name="actionsDescription" value="Reindex all search indexes." />
+		</execute>
+
 		<execute macro="ProductMenu#gotoControlPanelUsers">
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
@@ -497,6 +506,7 @@
 			<var name="orgName" value="Organization Name" />
 			<var name="userFirstName" value="Test" />
 			<var name="userLastName" value="Test" />
+			<var name="userName" value="Test Test" />
 			<var name="userScreenName" value="test" />
 		</execute>
 
@@ -1189,7 +1199,9 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="User#logoutPG" />
+		<execute macro="Navigator#openSpecificURL">
+			<var name="url" value="http://localhost:8080/c/portal/logout" />
+		</execute>
 
 		<execute macro="User#loginUserInvalidPG">
 			<var name="password" value="test" />
@@ -1427,6 +1439,7 @@
 			<var name="orgName" value="Organization Name" />
 			<var name="userFirstName" value="userfn" />
 			<var name="userLastName" value="userln" />
+			<var name="userName" value="userfn userln" />
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
@@ -1612,6 +1625,7 @@
 			<var name="orgName" value="Organization Name" />
 			<var name="userFirstName" value="userfn" />
 			<var name="userLastName" value="userln" />
+			<var name="userName" value="userfn userln" />
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
@@ -1792,6 +1806,7 @@
 			<var name="orgName" value="Organization Name" />
 			<var name="userFirstName" value="userfn" />
 			<var name="userLastName" value="userln" />
+			<var name="userName" value="userfn userln" />
 			<var name="userScreenName" value="usersn" />
 		</execute>
 

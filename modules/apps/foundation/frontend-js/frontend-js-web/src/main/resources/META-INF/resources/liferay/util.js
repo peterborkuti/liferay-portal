@@ -1250,7 +1250,22 @@
 
 			var dialog = event.dialog;
 
+			var lfrFormContent = iframeBody.one('.lfr-form-content');
+
 			iframeBody.addClass('dialog-iframe-popup');
+
+			if (lfrFormContent && iframeBody.one('.button-holder.dialog-footer')) {
+				iframeBody.addClass('dialog-with-footer');
+
+				var stagingAlert = iframeBody.one('.portlet-body > .lfr-portlet-message-staging-alert');
+
+				if (stagingAlert) {
+					stagingAlert.remove();
+
+					lfrFormContent.prepend(stagingAlert);
+				}
+			}
+
 			iframeBody.addClass(dialog.iframeConfig.bodyCssClass);
 
 			var detachEventHandles = function() {
@@ -1339,12 +1354,22 @@
 
 			ddmURL.setParameter('scopeTitle', config.title);
 
+			if ('searchRestriction' in config) {
+				ddmURL.setParameter('searchRestriction', config.searchRestriction);
+				ddmURL.setParameter('searchRestrictionClassNameId', config.searchRestrictionClassNameId);
+				ddmURL.setParameter('searchRestrictionClassPK', config.searchRestrictionClassPK);
+			}
+
 			if ('showAncestorScopes' in config) {
 				ddmURL.setParameter('showAncestorScopes', config.showAncestorScopes);
 			}
 
 			if ('showBackURL' in config) {
 				ddmURL.setParameter('showBackURL', config.showBackURL);
+			}
+
+			if ('showCacheableInput' in config) {
+				ddmURL.setParameter('showCacheableInput', config.showCacheableInput);
 			}
 
 			if ('showHeader' in config) {
@@ -1548,16 +1573,17 @@
 				if (selectedData && selectedData.length) {
 					var currentWindow = event.currentTarget.node.get('contentWindow.document');
 
-					var selectorButtons = currentWindow.all('.lfr-search-container .selector-button');
+					var selectorButtons = currentWindow.all('.lfr-search-container-wrapper .selector-button');
 
 					A.some(
 						selectorButtons,
 						function(item, index) {
-							var assetEntryId = item.attr('data-assetentryid');
+							var assetEntryId = item.attr('data-entityid') || item.attr('data-entityname');
 
 							var assetEntryIndex = selectedData.indexOf(assetEntryId);
 
 							if (assetEntryIndex > -1) {
+								item.attr('data-prevent-selection', true);
 								item.attr('disabled', true);
 
 								selectedData.splice(assetEntryIndex, 1);
@@ -1831,6 +1857,7 @@
 		DROP_POSITION: 450,
 		MENU: 5000,
 		OVERLAY: 1000,
+		POPOVER: 1060,
 		TOOLTIP: 10000,
 		WINDOW: 1200
 	};

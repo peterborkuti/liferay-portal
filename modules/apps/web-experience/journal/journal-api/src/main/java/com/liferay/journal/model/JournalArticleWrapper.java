@@ -75,12 +75,11 @@ public class JournalArticleWrapper implements JournalArticle,
 		attributes.put("treePath", getTreePath());
 		attributes.put("articleId", getArticleId());
 		attributes.put("version", getVersion());
-		attributes.put("title", getTitle());
 		attributes.put("urlTitle", getUrlTitle());
-		attributes.put("description", getDescription());
 		attributes.put("content", getContent());
 		attributes.put("DDMStructureKey", getDDMStructureKey());
 		attributes.put("DDMTemplateKey", getDDMTemplateKey());
+		attributes.put("defaultLanguageId", getDefaultLanguageId());
 		attributes.put("layoutUuid", getLayoutUuid());
 		attributes.put("displayDate", getDisplayDate());
 		attributes.put("expirationDate", getExpirationDate());
@@ -190,22 +189,10 @@ public class JournalArticleWrapper implements JournalArticle,
 			setVersion(version);
 		}
 
-		String title = (String)attributes.get("title");
-
-		if (title != null) {
-			setTitle(title);
-		}
-
 		String urlTitle = (String)attributes.get("urlTitle");
 
 		if (urlTitle != null) {
 			setUrlTitle(urlTitle);
-		}
-
-		String description = (String)attributes.get("description");
-
-		if (description != null) {
-			setDescription(description);
 		}
 
 		String content = (String)attributes.get("content");
@@ -224,6 +211,12 @@ public class JournalArticleWrapper implements JournalArticle,
 
 		if (DDMTemplateKey != null) {
 			setDDMTemplateKey(DDMTemplateKey);
+		}
+
+		String defaultLanguageId = (String)attributes.get("defaultLanguageId");
+
+		if (defaultLanguageId != null) {
+			setDefaultLanguageId(defaultLanguageId);
 		}
 
 		String layoutUuid = (String)attributes.get("layoutUuid");
@@ -503,7 +496,7 @@ public class JournalArticleWrapper implements JournalArticle,
 	}
 
 	/**
-	* @deprecated As of 7.0.0, with no direct replacement
+	* @deprecated As of 4.0.0, with no direct replacement
 	*/
 	@Deprecated
 	@Override
@@ -512,14 +505,12 @@ public class JournalArticleWrapper implements JournalArticle,
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMStructure getDDMStructure()
-		throws com.liferay.portal.kernel.exception.PortalException {
+	public com.liferay.dynamic.data.mapping.model.DDMStructure getDDMStructure() {
 		return _journalArticle.getDDMStructure();
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMTemplate getDDMTemplate()
-		throws com.liferay.portal.kernel.exception.PortalException {
+	public com.liferay.dynamic.data.mapping.model.DDMTemplate getDDMTemplate() {
 		return _journalArticle.getDDMTemplate();
 	}
 
@@ -689,63 +680,37 @@ public class JournalArticleWrapper implements JournalArticle,
 		return _journalArticle.getDDMTemplateKey();
 	}
 
+	/**
+	* Returns the default language ID of this journal article.
+	*
+	* @return the default language ID of this journal article
+	*/
 	@Override
 	public java.lang.String getDefaultLanguageId() {
 		return _journalArticle.getDefaultLanguageId();
 	}
 
-	/**
-	* Returns the description of this journal article.
-	*
-	* @return the description of this journal article
-	*/
 	@Override
 	public java.lang.String getDescription() {
 		return _journalArticle.getDescription();
 	}
 
-	/**
-	* Returns the localized description of this journal article in the language. Uses the default language if no localization exists for the requested language.
-	*
-	* @param languageId the ID of the language
-	* @return the localized description of this journal article
-	*/
 	@Override
 	public java.lang.String getDescription(java.lang.String languageId) {
 		return _journalArticle.getDescription(languageId);
 	}
 
-	/**
-	* Returns the localized description of this journal article in the language, optionally using the default language if no localization exists for the requested language.
-	*
-	* @param languageId the ID of the language
-	* @param useDefault whether to use the default language if no localization exists for the requested language
-	* @return the localized description of this journal article
-	*/
 	@Override
 	public java.lang.String getDescription(java.lang.String languageId,
 		boolean useDefault) {
 		return _journalArticle.getDescription(languageId, useDefault);
 	}
 
-	/**
-	* Returns the localized description of this journal article in the language. Uses the default language if no localization exists for the requested language.
-	*
-	* @param locale the locale of the language
-	* @return the localized description of this journal article
-	*/
 	@Override
 	public java.lang.String getDescription(java.util.Locale locale) {
 		return _journalArticle.getDescription(locale);
 	}
 
-	/**
-	* Returns the localized description of this journal article in the language, optionally using the default language if no localization exists for the requested language.
-	*
-	* @param locale the local of the language
-	* @param useDefault whether to use the default language if no localization exists for the requested language
-	* @return the localized description of this journal article. If <code>useDefault</code> is <code>false</code> and no localization exists for the requested language, an empty string will be returned.
-	*/
 	@Override
 	public java.lang.String getDescription(java.util.Locale locale,
 		boolean useDefault) {
@@ -753,13 +718,8 @@ public class JournalArticleWrapper implements JournalArticle,
 	}
 
 	@Override
-	public java.lang.String getDescriptionCurrentLanguageId() {
-		return _journalArticle.getDescriptionCurrentLanguageId();
-	}
-
-	@Override
-	public java.lang.String getDescriptionCurrentValue() {
-		return _journalArticle.getDescriptionCurrentValue();
+	public java.lang.String getDescriptionMapAsXML() {
+		return _journalArticle.getDescriptionMapAsXML();
 	}
 
 	/**
@@ -770,6 +730,24 @@ public class JournalArticleWrapper implements JournalArticle,
 	@Override
 	public java.lang.String getLayoutUuid() {
 		return _journalArticle.getLayoutUuid();
+	}
+
+	/**
+	* @deprecated As of 4.0.0
+	*/
+	@Deprecated
+	@Override
+	public java.lang.String getLegacyDescription() {
+		return _journalArticle.getLegacyDescription();
+	}
+
+	/**
+	* @deprecated As of 4.0.0
+	*/
+	@Deprecated
+	@Override
+	public java.lang.String getLegacyTitle() {
+		return _journalArticle.getLegacyTitle();
 	}
 
 	@Override
@@ -809,7 +787,7 @@ public class JournalArticleWrapper implements JournalArticle,
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #getDDMStructureKey()}
+	* @deprecated As of 4.0.0, replaced by {@link #getDDMStructureKey()}
 	*/
 	@Deprecated
 	@Override
@@ -818,7 +796,7 @@ public class JournalArticleWrapper implements JournalArticle,
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #getDDMTemplateKey()}
+	* @deprecated As of 4.0.0, replaced by {@link #getDDMTemplateKey()}
 	*/
 	@Deprecated
 	@Override
@@ -826,71 +804,40 @@ public class JournalArticleWrapper implements JournalArticle,
 		return _journalArticle.getTemplateId();
 	}
 
-	/**
-	* Returns the title of this journal article.
-	*
-	* @return the title of this journal article
-	*/
 	@Override
 	public java.lang.String getTitle() {
 		return _journalArticle.getTitle();
 	}
 
-	/**
-	* Returns the localized title of this journal article in the language. Uses the default language if no localization exists for the requested language.
-	*
-	* @param languageId the ID of the language
-	* @return the localized title of this journal article
-	*/
 	@Override
 	public java.lang.String getTitle(java.lang.String languageId) {
 		return _journalArticle.getTitle(languageId);
 	}
 
-	/**
-	* Returns the localized title of this journal article in the language, optionally using the default language if no localization exists for the requested language.
-	*
-	* @param languageId the ID of the language
-	* @param useDefault whether to use the default language if no localization exists for the requested language
-	* @return the localized title of this journal article
-	*/
 	@Override
 	public java.lang.String getTitle(java.lang.String languageId,
 		boolean useDefault) {
 		return _journalArticle.getTitle(languageId, useDefault);
 	}
 
-	/**
-	* Returns the localized title of this journal article in the language. Uses the default language if no localization exists for the requested language.
-	*
-	* @param locale the locale of the language
-	* @return the localized title of this journal article
-	*/
 	@Override
 	public java.lang.String getTitle(java.util.Locale locale) {
 		return _journalArticle.getTitle(locale);
 	}
 
-	/**
-	* Returns the localized title of this journal article in the language, optionally using the default language if no localization exists for the requested language.
-	*
-	* @param locale the local of the language
-	* @param useDefault whether to use the default language if no localization exists for the requested language
-	* @return the localized title of this journal article. If <code>useDefault</code> is <code>false</code> and no localization exists for the requested language, an empty string will be returned.
-	*/
 	@Override
 	public java.lang.String getTitle(java.util.Locale locale, boolean useDefault) {
 		return _journalArticle.getTitle(locale, useDefault);
 	}
 
 	@Override
-	public java.lang.String getTitleCurrentLanguageId() {
-		return _journalArticle.getTitleCurrentLanguageId();
+	public java.lang.String getTitleCurrentValue() {
+		return _journalArticle.getTitleCurrentValue();
 	}
 
 	@Override
-	public java.lang.String getTitleCurrentValue() {
-		return _journalArticle.getTitleCurrentValue();
+	public java.lang.String getTitleMapAsXML() {
+		return _journalArticle.getTitleMapAsXML();
 	}
 
 	/**
@@ -1048,31 +995,14 @@ public class JournalArticleWrapper implements JournalArticle,
 		return _journalArticle.getImagesFileEntries(start, end, obc);
 	}
 
-	/**
-	* Returns a map of the locales and localized descriptions of this journal article.
-	*
-	* @return the locales and localized descriptions of this journal article
-	*/
 	@Override
 	public Map<java.util.Locale, java.lang.String> getDescriptionMap() {
 		return _journalArticle.getDescriptionMap();
 	}
 
-	/**
-	* Returns a map of the locales and localized titles of this journal article.
-	*
-	* @return the locales and localized titles of this journal article
-	*/
 	@Override
 	public Map<java.util.Locale, java.lang.String> getTitleMap() {
 		return _journalArticle.getTitleMap();
-	}
-
-	@Override
-	public long getArticleImageId(java.lang.String elInstanceId,
-		java.lang.String elName, java.lang.String languageId) {
-		return _journalArticle.getArticleImageId(elInstanceId, elName,
-			languageId);
 	}
 
 	/**
@@ -1205,19 +1135,6 @@ public class JournalArticleWrapper implements JournalArticle,
 		_journalArticle.persist();
 	}
 
-	@Override
-	public void prepareLocalizedFieldsForImport()
-		throws com.liferay.portal.kernel.exception.LocaleException {
-		_journalArticle.prepareLocalizedFieldsForImport();
-	}
-
-	@Override
-	public void prepareLocalizedFieldsForImport(
-		java.util.Locale defaultImportLocale)
-		throws com.liferay.portal.kernel.exception.LocaleException {
-		_journalArticle.prepareLocalizedFieldsForImport(defaultImportLocale);
-	}
-
 	/**
 	* Sets the article ID of this journal article.
 	*
@@ -1308,73 +1225,29 @@ public class JournalArticleWrapper implements JournalArticle,
 		_journalArticle.setDDMTemplateKey(DDMTemplateKey);
 	}
 
+	/**
+	* Sets the default language ID of this journal article.
+	*
+	* @param defaultLanguageId the default language ID of this journal article
+	*/
 	@Override
 	public void setDefaultLanguageId(java.lang.String defaultLanguageId) {
 		_journalArticle.setDefaultLanguageId(defaultLanguageId);
 	}
 
 	/**
-	* Sets the description of this journal article.
-	*
-	* @param description the description of this journal article
+	* @deprecated As of 4.0.0
 	*/
+	@Deprecated
 	@Override
 	public void setDescription(java.lang.String description) {
 		_journalArticle.setDescription(description);
 	}
 
-	/**
-	* Sets the localized description of this journal article in the language.
-	*
-	* @param description the localized description of this journal article
-	* @param locale the locale of the language
-	*/
-	@Override
-	public void setDescription(java.lang.String description,
-		java.util.Locale locale) {
-		_journalArticle.setDescription(description, locale);
-	}
-
-	/**
-	* Sets the localized description of this journal article in the language, and sets the default locale.
-	*
-	* @param description the localized description of this journal article
-	* @param locale the locale of the language
-	* @param defaultLocale the default locale
-	*/
-	@Override
-	public void setDescription(java.lang.String description,
-		java.util.Locale locale, java.util.Locale defaultLocale) {
-		_journalArticle.setDescription(description, locale, defaultLocale);
-	}
-
-	@Override
-	public void setDescriptionCurrentLanguageId(java.lang.String languageId) {
-		_journalArticle.setDescriptionCurrentLanguageId(languageId);
-	}
-
-	/**
-	* Sets the localized descriptions of this journal article from the map of locales and localized descriptions.
-	*
-	* @param descriptionMap the locales and localized descriptions of this journal article
-	*/
 	@Override
 	public void setDescriptionMap(
 		Map<java.util.Locale, java.lang.String> descriptionMap) {
 		_journalArticle.setDescriptionMap(descriptionMap);
-	}
-
-	/**
-	* Sets the localized descriptions of this journal article from the map of locales and localized descriptions, and sets the default locale.
-	*
-	* @param descriptionMap the locales and localized descriptions of this journal article
-	* @param defaultLocale the default locale
-	*/
-	@Override
-	public void setDescriptionMap(
-		Map<java.util.Locale, java.lang.String> descriptionMap,
-		java.util.Locale defaultLocale) {
-		_journalArticle.setDescriptionMap(descriptionMap, defaultLocale);
 	}
 
 	/**
@@ -1619,7 +1492,7 @@ public class JournalArticleWrapper implements JournalArticle,
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #setDDMStructureKey(String)}
+	* @deprecated As of 4.0.0, replaced by {@link #setDDMStructureKey(String)}
 	*/
 	@Deprecated
 	@Override
@@ -1628,7 +1501,7 @@ public class JournalArticleWrapper implements JournalArticle,
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #setDDMTemplateKey(String)}
+	* @deprecated As of 4.0.0, replaced by {@link #setDDMTemplateKey(String)}
 	*/
 	@Deprecated
 	@Override
@@ -1637,64 +1510,17 @@ public class JournalArticleWrapper implements JournalArticle,
 	}
 
 	/**
-	* Sets the title of this journal article.
-	*
-	* @param title the title of this journal article
+	* @deprecated As of 4.0.0
 	*/
+	@Deprecated
 	@Override
 	public void setTitle(java.lang.String title) {
 		_journalArticle.setTitle(title);
 	}
 
-	/**
-	* Sets the localized title of this journal article in the language.
-	*
-	* @param title the localized title of this journal article
-	* @param locale the locale of the language
-	*/
-	@Override
-	public void setTitle(java.lang.String title, java.util.Locale locale) {
-		_journalArticle.setTitle(title, locale);
-	}
-
-	/**
-	* Sets the localized title of this journal article in the language, and sets the default locale.
-	*
-	* @param title the localized title of this journal article
-	* @param locale the locale of the language
-	* @param defaultLocale the default locale
-	*/
-	@Override
-	public void setTitle(java.lang.String title, java.util.Locale locale,
-		java.util.Locale defaultLocale) {
-		_journalArticle.setTitle(title, locale, defaultLocale);
-	}
-
-	@Override
-	public void setTitleCurrentLanguageId(java.lang.String languageId) {
-		_journalArticle.setTitleCurrentLanguageId(languageId);
-	}
-
-	/**
-	* Sets the localized titles of this journal article from the map of locales and localized titles.
-	*
-	* @param titleMap the locales and localized titles of this journal article
-	*/
 	@Override
 	public void setTitleMap(Map<java.util.Locale, java.lang.String> titleMap) {
 		_journalArticle.setTitleMap(titleMap);
-	}
-
-	/**
-	* Sets the localized titles of this journal article from the map of locales and localized titles, and sets the default locale.
-	*
-	* @param titleMap the locales and localized titles of this journal article
-	* @param defaultLocale the default locale
-	*/
-	@Override
-	public void setTitleMap(Map<java.util.Locale, java.lang.String> titleMap,
-		java.util.Locale defaultLocale) {
-		_journalArticle.setTitleMap(titleMap, defaultLocale);
 	}
 
 	/**

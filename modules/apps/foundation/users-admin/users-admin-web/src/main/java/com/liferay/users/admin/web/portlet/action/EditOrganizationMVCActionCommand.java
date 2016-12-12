@@ -79,6 +79,7 @@ import org.osgi.service.component.annotations.Reference;
 @Component(
 	immediate = true,
 	property = {
+		"javax.portlet.name=" + UsersAdminPortletKeys.MY_ORGANIZATIONS,
 		"javax.portlet.name=" + UsersAdminPortletKeys.USERS_ADMIN,
 		"mvc.command.name=/users_admin/edit_organization"
 	},
@@ -273,10 +274,10 @@ public class EditOrganizationMVCActionCommand extends BaseMVCActionCommand {
 			actionRequest, "privateLayoutSetPrototypeId");
 		boolean publicLayoutSetPrototypeLinkEnabled = ParamUtil.getBoolean(
 			actionRequest, "publicLayoutSetPrototypeLinkEnabled",
-			(publicLayoutSetPrototypeId > 0));
+			publicLayoutSetPrototypeId > 0);
 		boolean privateLayoutSetPrototypeLinkEnabled = ParamUtil.getBoolean(
 			actionRequest, "privateLayoutSetPrototypeLinkEnabled",
-			(privateLayoutSetPrototypeId > 0));
+			privateLayoutSetPrototypeId > 0);
 
 		Group organizationGroup = organization.getGroup();
 

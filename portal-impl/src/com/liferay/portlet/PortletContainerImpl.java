@@ -100,7 +100,7 @@ public class PortletContainerImpl implements PortletContainer {
 		throws PortletContainerException {
 
 		try {
-			_doPreparePortlet(request, portlet);
+			_preparePortlet(request, portlet);
 		}
 		catch (Exception e) {
 			throw new PortletContainerException(e);
@@ -114,7 +114,7 @@ public class PortletContainerImpl implements PortletContainer {
 		throws PortletContainerException {
 
 		try {
-			return _doProcessAction(request, response, portlet);
+			return _processAction(request, response, portlet);
 		}
 		catch (Exception e) {
 			throw new PortletContainerException(e);
@@ -128,7 +128,7 @@ public class PortletContainerImpl implements PortletContainer {
 		throws PortletContainerException {
 
 		try {
-			return _doProcessEvent(request, response, portlet, layout, event);
+			return _processEvent(request, response, portlet, layout, event);
 		}
 		catch (Exception e) {
 			throw new PortletContainerException(e);
@@ -142,7 +142,7 @@ public class PortletContainerImpl implements PortletContainer {
 		throws PortletContainerException {
 
 		try {
-			_doRender(request, response, portlet);
+			_render(request, response, portlet);
 		}
 		catch (Exception e) {
 			throw new PortletContainerException(e);
@@ -156,7 +156,7 @@ public class PortletContainerImpl implements PortletContainer {
 		throws PortletContainerException {
 
 		try {
-			_doServeResource(request, response, portlet);
+			_serveResource(request, response, portlet);
 		}
 		catch (Exception e) {
 			throw new PortletContainerException(e);
@@ -286,7 +286,7 @@ public class PortletContainerImpl implements PortletContainer {
 		return new EventImpl(event.getName(), event.getQName(), value);
 	}
 
-	private void _doPreparePortlet(HttpServletRequest request, Portlet portlet)
+	private void _preparePortlet(HttpServletRequest request, Portlet portlet)
 		throws Exception {
 
 		User user = PortalUtil.getUser(request);
@@ -346,10 +346,17 @@ public class PortletContainerImpl implements PortletContainer {
 		}
 	}
 
-	private ActionResult _doProcessAction(
+	private ActionResult _processAction(
 			HttpServletRequest request, HttpServletResponse response,
 			Portlet portlet)
 		throws Exception {
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
+
+		portletDisplay.setId(portlet.getPortletId());
 
 		Layout layout = (Layout)request.getAttribute(WebKeys.LAYOUT);
 
@@ -451,7 +458,7 @@ public class PortletContainerImpl implements PortletContainer {
 		}
 	}
 
-	private List<Event> _doProcessEvent(
+	private List<Event> _processEvent(
 			HttpServletRequest request, HttpServletResponse response,
 			Portlet portlet, Layout layout, Event event)
 		throws Exception {
@@ -573,7 +580,7 @@ public class PortletContainerImpl implements PortletContainer {
 		}
 	}
 
-	private void _doRender(
+	private void _render(
 			HttpServletRequest request, HttpServletResponse response,
 			Portlet portlet)
 		throws Exception {
@@ -728,7 +735,7 @@ public class PortletContainerImpl implements PortletContainer {
 		}
 	}
 
-	private void _doServeResource(
+	private void _serveResource(
 			HttpServletRequest request, HttpServletResponse response,
 			Portlet portlet)
 		throws Exception {

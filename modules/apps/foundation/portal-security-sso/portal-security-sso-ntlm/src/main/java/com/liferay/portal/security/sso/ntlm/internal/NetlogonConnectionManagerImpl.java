@@ -22,9 +22,6 @@ import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.security.SecureRandomUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.settings.CompanyServiceSettingsLocator;
-import com.liferay.portal.security.sso.ntlm.NetlogonConnectionManager;
-import com.liferay.portal.security.sso.ntlm.NtlmLogonException;
-import com.liferay.portal.security.sso.ntlm.NtlmServiceAccount;
 import com.liferay.portal.security.sso.ntlm.configuration.NtlmConfiguration;
 import com.liferay.portal.security.sso.ntlm.constants.NtlmConstants;
 import com.liferay.portal.security.sso.ntlm.internal.msrpc.NetrServerAuthenticate3;
@@ -134,6 +131,7 @@ public class NetlogonConnectionManagerImpl
 		byte[] zeroes = {0, 0, 0, 0};
 
 		messageDigest.update(zeroes, 0, 4);
+
 		messageDigest.update(clientChallenge, 0, 8);
 		messageDigest.update(serverChallenge, 0, 8);
 

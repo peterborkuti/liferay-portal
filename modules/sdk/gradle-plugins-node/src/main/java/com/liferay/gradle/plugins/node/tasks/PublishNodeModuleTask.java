@@ -14,8 +14,8 @@
 
 package com.liferay.gradle.plugins.node.tasks;
 
-import com.liferay.gradle.plugins.node.util.GradleUtil;
-import com.liferay.gradle.util.FileUtil;
+import com.liferay.gradle.plugins.node.internal.util.FileUtil;
+import com.liferay.gradle.plugins.node.internal.util.GradleUtil;
 import com.liferay.gradle.util.Validator;
 
 import groovy.json.JsonOutput;
@@ -38,7 +38,6 @@ import org.codehaus.groovy.runtime.EncodingGroovyMethods;
 
 import org.gradle.api.Project;
 import org.gradle.api.logging.Logger;
-import org.gradle.api.logging.Logging;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputDirectory;
 import org.gradle.api.tasks.Optional;
@@ -51,15 +50,15 @@ public class PublishNodeModuleTask extends ExecuteNpmTask {
 	@Override
 	public void executeNode() throws Exception {
 		try {
-			createNpmrcFile();
-			createPackageJsonFile();
+			_createNpmrcFile();
+			_createPackageJsonFile();
 
 			super.executeNode();
 		}
 		finally {
 			Project project = getProject();
 
-			project.delete(getNpmrcFile(), getPackageJsonFile());
+			project.delete(_getNpmrcFile(), _getPackageJsonFile());
 		}
 	}
 
@@ -185,17 +184,31 @@ public class PublishNodeModuleTask extends ExecuteNpmTask {
 		_npmUserName = npmUserName;
 	}
 
-	protected void createNpmrcFile() throws IOException {
+	@Override
+	protected List<String> getCompleteArgs() {
+		List<String> completeArgs = super.getCompleteArgs();
+
+		completeArgs.add("publish");
+
+		completeArgs.add("--userconfig");
+		completeArgs.add(FileUtil.getAbsolutePath(_getNpmrcFile()));
+
+		return completeArgs;
+	}
+
+	private void _createNpmrcFile() throws IOException {
 		List<String> npmrcContents = new ArrayList<>(2);
 
-		npmrcContents.add("_auth = " + getNpmAuth());
+		npmrcContents.add("_auth = " + _getNpmAuth());
 		npmrcContents.add("email = " + getNpmEmailAddress());
 		npmrcContents.add("username = " + getNpmUserName());
 
-		FileUtil.write(getNpmrcFile(), npmrcContents);
+		FileUtil.write(_getNpmrcFile(), npmrcContents);
 	}
 
-	protected void createPackageJsonFile() throws IOException {
+	private void _createPackageJsonFile() throws IOException {
+		Logger logger = getLogger();
+
 		Map<String, Object> map = new HashMap<>();
 
 		String author = getModuleAuthor();
@@ -246,29 +259,17 @@ public class PublishNodeModuleTask extends ExecuteNpmTask {
 
 		String json = JsonOutput.toJson(map);
 
-		if (_logger.isInfoEnabled()) {
-			_logger.info(json);
+		if (logger.isInfoEnabled()) {
+			logger.info(json);
 		}
 
-		File packageJsonFile = getPackageJsonFile();
+		File packageJsonFile = _getPackageJsonFile();
 
 		Files.write(
 			packageJsonFile.toPath(), json.getBytes(StandardCharsets.UTF_8));
 	}
 
-	@Override
-	protected List<String> getCompleteArgs() {
-		List<String> completeArgs = super.getCompleteArgs();
-
-		completeArgs.add("publish");
-
-		completeArgs.add("--userconfig");
-		completeArgs.add(FileUtil.getAbsolutePath(getNpmrcFile()));
-
-		return completeArgs;
-	}
-
-	protected String getNpmAuth() {
+	private String _getNpmAuth() {
 		String auth = getNpmUserName() + ":" + getNpmPassword();
 
 		Writable writable = EncodingGroovyMethods.encodeBase64(auth.getBytes());
@@ -276,16 +277,13 @@ public class PublishNodeModuleTask extends ExecuteNpmTask {
 		return writable.toString();
 	}
 
-	protected File getNpmrcFile() {
+	private File _getNpmrcFile() {
 		return new File(getTemporaryDir(), "npmrc");
 	}
 
-	protected File getPackageJsonFile() {
+	private File _getPackageJsonFile() {
 		return new File(getWorkingDir(), "package.json");
 	}
-
-	private static final Logger _logger = Logging.getLogger(
-		PublishNodeModuleTask.class);
 
 	private Object _moduleAuthor;
 	private Object _moduleBugsUrl;

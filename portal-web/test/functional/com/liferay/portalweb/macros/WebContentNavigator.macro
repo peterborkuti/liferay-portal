@@ -92,6 +92,14 @@
 		<execute function="AssertVisible" locator1="TextInput#TITLE" />
 	</command>
 
+	<command name="gotoEditStructure">
+		<var name="key_ddlDataDefinitionName" value="${structureName}" />
+
+		<execute function="AssertClick" locator1="DDMSelectStructure#DDM_STRUCTURE_TABLE_NAME_LINK" value1="${structureName}" />
+
+		<execute function="SelectFrame" value1="relative=top" />
+	</command>
+
 	<command name="gotoLocalizedEditPGViaWCD">
 		<execute macro="Portlet#gotoPortletOptions">
 			<var name="portletName" value="${localizedPortletName}" />
@@ -121,6 +129,38 @@
 		<execute macro="SiteAdmin#viewPortletTitle">
 			<var name="portletTitle" value="Templates" />
 		</execute>
+	</command>
+
+	<command name="gotoManageTemplatesViaStructures">
+		<execute macro="LexiconEntry#gotoEntryMenuItem">
+			<var name="menuItem" value="Manage Templates" />
+			<var name="rowEntry" value="${structureName}" />
+		</execute>
+
+		<execute macro="SiteAdmin#viewPortletTitle">
+			<var name="portletTitle" value="Templates for Structure: ${structureName}" />
+		</execute>
+	</command>
+
+	<command name="gotoMoreStructuresViaPlusButton">
+		<execute macro="LexiconEntry#gotoAdd" />
+
+		<var name="key_menuItem" value="More" />
+
+		<if>
+			<condition function="IsElementPresent" locator1="MenuItem#ANY_MENU_ITEM" />
+			<then>
+				<execute function="AssertTextEquals" locator1="Pagination#SHOWING_TOTAL_ITEMS" value1="Showing ${pageMod} Items">
+					<var name="key_pageMod" value="${pageMod}" />
+				</execute>
+			</then>
+		</if>
+
+		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="More">
+			<var name="key_menuItem" value="More" />
+		</execute>
+
+		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
 	</command>
 
 	<command name="gotoPreviewEntryCP">

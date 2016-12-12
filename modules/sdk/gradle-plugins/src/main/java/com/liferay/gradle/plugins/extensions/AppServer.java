@@ -14,7 +14,7 @@
 
 package com.liferay.gradle.plugins.extensions;
 
-import com.liferay.gradle.plugins.util.GradleUtil;
+import com.liferay.gradle.plugins.internal.util.GradleUtil;
 import com.liferay.gradle.util.OSDetector;
 
 import java.io.File;
@@ -57,6 +57,15 @@ public class AppServer {
 
 	public File getDir() {
 		return GradleUtil.toFile(project, _dir);
+	}
+
+	public String getFileSuffixBat() {
+		if (OSDetector.isWindows()) {
+			return ".bat";
+		}
+		else {
+			return ".sh";
+		}
 	}
 
 	public File getLibGlobalDir() {
@@ -175,15 +184,6 @@ public class AppServer {
 
 	public void setZipUrl(Object zipUrl) {
 		_zipUrl = zipUrl;
-	}
-
-	protected String getFileSuffixBat() {
-		if (OSDetector.isWindows()) {
-			return ".bat";
-		}
-		else {
-			return ".sh";
-		}
 	}
 
 	protected final Project project;

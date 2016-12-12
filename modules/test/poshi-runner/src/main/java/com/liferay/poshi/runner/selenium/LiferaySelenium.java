@@ -110,6 +110,9 @@ public interface LiferaySelenium {
 	public void assertPartialText(String locator, String pattern)
 		throws Exception;
 
+	public void assertPartialTextAceEditor(String locator, String pattern)
+		throws Exception;
+
 	public void assertSelectedLabel(String selectLocator, String pattern)
 		throws Exception;
 
@@ -238,7 +241,7 @@ public interface LiferaySelenium {
 
 	public Number getCursorPosition(String locator);
 
-	public Number getElementHeight(String locator);
+	public int getElementHeight(String locator);
 
 	public Number getElementIndex(String locator);
 
@@ -248,7 +251,7 @@ public interface LiferaySelenium {
 
 	public String getElementValue(String locator) throws Exception;
 
-	public Number getElementWidth(String locator);
+	public int getElementWidth(String locator);
 
 	public String getEmailBody(String index) throws Exception;
 
@@ -354,6 +357,8 @@ public interface LiferaySelenium {
 
 	public boolean isNotPartialText(String locator, String value);
 
+	public boolean isNotPartialTextAceEditor(String locator, String value);
+
 	public boolean isNotSelectedLabel(String selectLocator, String pattern);
 
 	public boolean isNotText(String locator, String value) throws Exception;
@@ -365,6 +370,8 @@ public interface LiferaySelenium {
 	public boolean isOrdered(String locator1, String locator2);
 
 	public boolean isPartialText(String locator, String value);
+
+	public boolean isPartialTextAceEditor(String locator, String value);
 
 	public boolean isPromptPresent();
 
@@ -387,6 +394,8 @@ public interface LiferaySelenium {
 	public boolean isValue(String locator, String value) throws Exception;
 
 	public boolean isVisible(String locator);
+
+	public void javaScriptClick(String locator);
 
 	public void javaScriptMouseDown(String locator);
 
@@ -643,6 +652,9 @@ public interface LiferaySelenium {
 	public void waitForPageToLoad(String timeout);
 
 	public void waitForPartialText(String locator, String value)
+		throws Exception;
+
+	public void waitForPartialTextAceEditor(String locator, String value)
 		throws Exception;
 
 	public void waitForPopUp(String windowID, String timeout);

@@ -31,7 +31,6 @@ import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.test.IdempotentRetryAssert;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.Sync;
@@ -50,8 +49,6 @@ import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -124,16 +121,16 @@ public class CalendarSearcherTest {
 			RandomTestUtil.randomString(), RandomTestUtil.randomString());
 
 		assertSearch("\"Two Three\" Five", 1);
-		assertSearch("\"Two Three\" Nine", 1);
-		assertSearch("\"Two  Four\" Five", 1);
+		assertSearch("\"Two Three\" Nine", 0);
+		assertSearch("\"Two  Four\" Five", 0);
 		assertSearch("\"Two  Four\" Nine", 0);
 		assertSearch("Three \"Five Six\"", 1);
-		assertSearch("Zero  \"Five Six\"", 1);
-		assertSearch("Three \"Four Six\"", 1);
+		assertSearch("Zero  \"Five Six\"", 0);
+		assertSearch("Three \"Four Six\"", 0);
 		assertSearch("Zero  \"Four Six\"", 0);
 		assertSearch("One  \"Three Four\" Six ", 1);
-		assertSearch("Zero \"Three Four\" Nine", 1);
-		assertSearch("One  \"Three Five\" Six ", 1);
+		assertSearch("Zero \"Three Four\" Nine", 0);
+		assertSearch("One  \"Three Five\" Six ", 0);
 		assertSearch("Zero \"Three Five\" Nine", 0);
 	}
 
@@ -258,28 +255,14 @@ public class CalendarSearcherTest {
 			false, serviceContext);
 	}
 
-	protected void assertSearch(final String keywords, final int length)
-		throws Exception {
+	protected void assertSearch(String keywords, int length) throws Exception {
+		_searchContext.setKeywords(StringUtil.toLowerCase(keywords));
 
-		IdempotentRetryAssert.retryAssert(
-			3, TimeUnit.SECONDS,
-			new Callable<Void>() {
+		Indexer<?> indexer = CalendarSearcher.getInstance();
 
-				@Override
-				public Void call() throws Exception {
-					_searchContext.setKeywords(
-						StringUtil.toLowerCase(keywords));
+		Hits hits = indexer.search(_searchContext);
 
-					Indexer<?> indexer = CalendarSearcher.getInstance();
-
-					Hits hits = indexer.search(_searchContext);
-
-					Assert.assertEquals(length, hits.getLength());
-
-					return null;
-				}
-
-			});
+		Assert.assertEquals(hits.toString(), length, hits.getLength());
 	}
 
 	protected boolean isExactPhraseQueryImplementedForSearchEngine() {

@@ -19,6 +19,8 @@
 <liferay-util:dynamic-include key="com.liferay.blogs.web#/blogs/view_entry.jsp#pre" />
 
 <%
+String redirect = ParamUtil.getString(request, "redirect");
+
 BlogsEntry entry = (BlogsEntry)request.getAttribute(WebKeys.BLOGS_ENTRY);
 
 long entryId = BeanParamUtil.getLong(entry, request, "entryId");
@@ -34,6 +36,15 @@ request.setAttribute(WebKeys.LAYOUT_ASSET_ENTRY, assetEntry);
 request.setAttribute("view_entry_content.jsp-entry", entry);
 
 request.setAttribute("view_entry_content.jsp-assetEntry", assetEntry);
+
+portletDisplay.setShowBackIcon(true);
+portletDisplay.setURLBack(redirect);
+
+boolean portletTitleBasedNavigation = GetterUtil.getBoolean(portletConfig.getInitParameter("portlet-title-based-navigation"));
+
+if (portletTitleBasedNavigation) {
+	renderResponse.setTitle(BlogsEntryUtil.getDisplayTitle(resourceBundle, entry));
+}
 %>
 
 <portlet:actionURL name="/blogs/edit_entry" var="editEntryURL" />
@@ -77,14 +88,14 @@ request.setAttribute("view_entry_content.jsp-assetEntry", assetEntry);
 								%>
 
 								<c:if test="<%= Validator.isNotNull(smallImageURL) %>">
-									<aui:a href="<%= previousEntryURL %>" title="<%= previousEntry.getTitle() %>">
+									<aui:a href="<%= previousEntryURL %>" title="<%= HtmlUtil.escape(BlogsEntryUtil.getDisplayTitle(resourceBundle, previousEntry)) %>">
 										<span class="small-image visible-lg-block visible-md-block" style="background-image: url(<%= HtmlUtil.escape(smallImageURL) %>)"></span>
 									</aui:a>
 								</c:if>
 
 								<div class="entry-info text-muted">
 									<small>
-										<strong><%= previousEntry.getUserName() %></strong>
+										<strong><%= HtmlUtil.escape(previousEntry.getUserName()) %></strong>
 										<span> - </span>
 										<span class="hide-accessible"><liferay-ui:message key="published-date" /></span>
 										<%= dateFormatDate.format(previousEntry.getDisplayDate()) %>
@@ -93,7 +104,7 @@ request.setAttribute("view_entry_content.jsp-assetEntry", assetEntry);
 
 								<div class="entry-content">
 									<h4>
-										<aui:a href="<%= previousEntryURL %>" title="<%= previousEntry.getTitle() %>"><%= previousEntry.getTitle() %></aui:a>
+										<aui:a href="<%= previousEntryURL %>" title="<%= HtmlUtil.escape(BlogsEntryUtil.getDisplayTitle(resourceBundle, previousEntry)) %>"><%= HtmlUtil.escape(BlogsEntryUtil.getDisplayTitle(resourceBundle, previousEntry)) %></aui:a>
 									</h4>
 
 									<p class="entry-content-body visible-lg-block">
@@ -119,14 +130,14 @@ request.setAttribute("view_entry_content.jsp-assetEntry", assetEntry);
 								%>
 
 								<c:if test="<%= Validator.isNotNull(smallImageURL) %>">
-									<aui:a href="<%= nextEntryURL %>" title="<%= nextEntry.getTitle() %>">
+									<aui:a href="<%= nextEntryURL %>" title="<%= HtmlUtil.escape(BlogsEntryUtil.getDisplayTitle(resourceBundle, nextEntry)) %>">
 										<span class="small-image visible-lg-block visible-md-block" style="background-image: url(<%= HtmlUtil.escape(smallImageURL) %>)"></span>
 									</aui:a>
 								</c:if>
 
 								<div class="entry-info text-muted">
 									<small>
-										<strong><%= nextEntry.getUserName() %></strong>
+										<strong><%= HtmlUtil.escape(nextEntry.getUserName()) %></strong>
 										<span> - </span>
 										<span class="hide-accessible"><liferay-ui:message key="published-date" /></span>
 										<%= dateFormatDate.format(nextEntry.getDisplayDate()) %>
@@ -135,7 +146,7 @@ request.setAttribute("view_entry_content.jsp-assetEntry", assetEntry);
 
 								<div class="entry-content">
 									<h4>
-										<aui:a href="<%= nextEntryURL %>" title="<%= nextEntry.getTitle() %>"><%= nextEntry.getTitle() %></aui:a>
+										<aui:a href="<%= nextEntryURL %>" title="<%= HtmlUtil.escape(BlogsEntryUtil.getDisplayTitle(resourceBundle, nextEntry)) %>"><%= HtmlUtil.escape(BlogsEntryUtil.getDisplayTitle(resourceBundle, nextEntry)) %></aui:a>
 									</h4>
 
 									<p class="visible-lg-block">
@@ -179,7 +190,7 @@ request.setAttribute("view_entry_content.jsp-assetEntry", assetEntry);
 </div>
 
 <%
-PortalUtil.setPageTitle(entry.getTitle(), request);
+PortalUtil.setPageTitle(BlogsEntryUtil.getDisplayTitle(resourceBundle, entry), request);
 PortalUtil.setPageSubtitle(entry.getSubtitle(), request);
 PortalUtil.setPageDescription(entry.getDescription(), request);
 
@@ -187,7 +198,7 @@ List<AssetTag> assetTags = AssetTagLocalServiceUtil.getTags(BlogsEntry.class.get
 
 PortalUtil.setPageKeywords(ListUtil.toString(assetTags, AssetTag.NAME_ACCESSOR), request);
 
-PortalUtil.addPortletBreadcrumbEntry(request, entry.getTitle(), currentURL);
+PortalUtil.addPortletBreadcrumbEntry(request, BlogsEntryUtil.getDisplayTitle(resourceBundle, entry), currentURL);
 %>
 
 <liferay-util:dynamic-include key="com.liferay.blogs.web#/blogs/view_entry.jsp#post" />

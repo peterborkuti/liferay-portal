@@ -14,9 +14,9 @@
 
 package com.liferay.portal.kernel.messaging;
 
-import com.liferay.registry.Registry;
-import com.liferay.registry.RegistryUtil;
-import com.liferay.registry.ServiceTracker;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 import java.util.Collection;
 
@@ -28,40 +28,30 @@ public class DestinationFactoryUtil {
 	public static Destination createDestination(
 		DestinationConfiguration destinationConfiguration) {
 
-		return _instance.getDestinationFactory().createDestination(
-			destinationConfiguration);
+		return _destinationFactory.createDestination(destinationConfiguration);
 	}
 
 	public static Collection<String> getDestinationTypes() {
-		return _instance.getDestinationFactory().getDestinationTypes();
+		return _destinationFactory.getDestinationTypes();
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	protected DestinationFactory getDestinationFactory() {
-		try {
-			while (_serviceTracker.getService() == null) {
-				Thread.sleep(500);
-			}
-
-			return _serviceTracker.getService();
-		}
-		catch (InterruptedException ie) {
-			throw new IllegalStateException(
-				"Unable to obtain reference for destination factory", ie);
-		}
+		return _destinationFactory;
 	}
 
 	private DestinationFactoryUtil() {
-		Registry registry = RegistryUtil.getRegistry();
-
-		_serviceTracker = registry.trackServices(DestinationFactory.class);
-
-		_serviceTracker.open();
 	}
 
-	private static final DestinationFactoryUtil _instance =
-		new DestinationFactoryUtil();
+	private static final Log _log = LogFactoryUtil.getLog(
+		DestinationFactoryUtil.class);
 
-	private final ServiceTracker<DestinationFactory, DestinationFactory>
-		_serviceTracker;
+	private static volatile DestinationFactory _destinationFactory =
+		ServiceProxyFactory.newServiceTrackedInstance(
+			DestinationFactory.class, DestinationFactoryUtil.class,
+			"_destinationFactory", true);
 
 }

@@ -17,6 +17,8 @@ package com.liferay.staging.configuration.web.internal.portlet.configuration.ico
 import com.liferay.exportimport.constants.ExportImportPortletKeys;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.portlet.configuration.icon.BasePortletConfigurationIcon;
 import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfigurationIcon;
@@ -64,7 +66,8 @@ public class StagingPortletConfigurationIcon
 
 		StringBundler sb = new StringBundler(11);
 
-		sb.append("Liferay.Portlet.openWindow({namespace: '");
+		sb.append("Liferay.Portlet.openWindow({bodyCssClass: ");
+		sb.append("'dialog-with-footer', namespace: '");
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
@@ -72,6 +75,7 @@ public class StagingPortletConfigurationIcon
 		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
 
 		sb.append(portletDisplay.getNamespace());
+
 		sb.append("', portlet: '#p_p_id_");
 		sb.append(portletDisplay.getId());
 		sb.append("_', portletId: '");
@@ -138,6 +142,13 @@ public class StagingPortletConfigurationIcon
 				themeDisplay.getScopeGroup(), ActionKeys.PUBLISH_PORTLET_INFO);
 		}
 		catch (PortalException pe) {
+
+			// LPS-52675
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(pe, pe);
+			}
+
 			return false;
 		}
 	}
@@ -146,5 +157,8 @@ public class StagingPortletConfigurationIcon
 	public boolean isToolTip() {
 		return false;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		StagingPortletConfigurationIcon.class);
 
 }

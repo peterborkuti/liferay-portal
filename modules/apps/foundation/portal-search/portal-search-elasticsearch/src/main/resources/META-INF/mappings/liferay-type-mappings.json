@@ -654,6 +654,7 @@
 			},
 			"geoLocation": {
 				"index": "not_analyzed",
+				"lat_lon": true,
 				"store": "yes",
 				"type": "geo_point"
 			},
@@ -805,6 +806,11 @@
 				"type": "string"
 			},
 			"scopeGroupId": {
+				"index": "not_analyzed",
+				"store": "yes",
+				"type": "string"
+			},
+			"screenName": {
 				"index": "not_analyzed",
 				"store": "yes",
 				"type": "string"

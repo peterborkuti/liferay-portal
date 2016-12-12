@@ -21,7 +21,7 @@ import com.liferay.dynamic.data.mapping.exception.NoSuchStructureException;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.storage.Fields;
-import com.liferay.journal.configuration.JournalServiceConfigurationValues;
+import com.liferay.journal.configuration.JournalServiceConfiguration;
 import com.liferay.journal.internal.verify.model.JournalArticleResourceVerifiableModel;
 import com.liferay.journal.internal.verify.model.JournalArticleVerifiableModel;
 import com.liferay.journal.internal.verify.model.JournalFeedVerifiableModel;
@@ -47,8 +47,12 @@ import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Company;
+import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.ResourceLocalService;
 import com.liferay.portal.kernel.service.SystemEventLocalService;
 import com.liferay.portal.kernel.util.CharPool;
@@ -56,6 +60,7 @@ import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
+import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringBundler;
@@ -80,6 +85,7 @@ import java.sql.Timestamp;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import javax.portlet.PortletPreferences;
 
@@ -125,11 +131,28 @@ public class JournalServiceVerifyProcess extends VerifyLayout {
 		verifyProcess.verify();
 	}
 
+	protected String getContextFromDLUrl(String url) {
+		int x = url.indexOf("/documents/");
+
+		if (x < 1) {
+			return StringPool.BLANK;
+		}
+
+		return url.substring(0, x);
+	}
+
 	@Reference(unbind = "-")
 	protected void setAssetEntryLocalService(
 		AssetEntryLocalService assetEntryLocalService) {
 
 		_assetEntryLocalService = assetEntryLocalService;
+	}
+
+	@Reference(unbind = "-")
+	protected void setCompanyLocalService(
+		CompanyLocalService companyLocalService) {
+
+		_companyLocalService = companyLocalService;
 	}
 
 	@Reference(unbind = "-")
@@ -294,6 +317,12 @@ public class JournalServiceVerifyProcess extends VerifyLayout {
 
 		String path = dynamicContentElement.getStringValue();
 
+		String context = getContextFromDLUrl(path);
+
+		if (!context.isEmpty()) {
+			path = path.replaceFirst(context, StringPool.BLANK);
+		}
+
 		String[] pathArray = StringUtil.split(path, CharPool.SLASH);
 
 		if (pathArray.length != 5) {
@@ -304,16 +333,25 @@ public class JournalServiceVerifyProcess extends VerifyLayout {
 		long folderId = GetterUtil.getLong(pathArray[3]);
 		String title = HttpUtil.decodeURL(HtmlUtil.escape(pathArray[4]));
 
+		FileEntry fileEntry = null;
+
 		try {
-			FileEntry fileEntry = _dlAppLocalService.getFileEntry(
+			fileEntry = _dlAppLocalService.getFileEntry(
 				groupId, folderId, title);
-
-			Node node = dynamicContentElement.node(0);
-
-			node.setText(path + StringPool.SLASH + fileEntry.getUuid());
 		}
 		catch (PortalException pe) {
+			_log.error(
+				"Unable to get file entry with group ID " + groupId +
+					", folder ID " + folderId + ", and title " + title,
+				pe);
+
+			return;
 		}
+
+		Node node = dynamicContentElement.node(0);
+
+			node.setText(
+				context + path + StringPool.SLASH + fileEntry.getUuid());
 	}
 
 	protected void updateDynamicElements(JournalArticle article)
@@ -328,15 +366,34 @@ public class JournalServiceVerifyProcess extends VerifyLayout {
 			PortalUtil.getClassNameId(JournalArticle.class),
 			article.getDDMStructureKey(), true);
 
-		Fields ddmFields = _journalConverter.getDDMFields(
-			ddmStructure, article.getContent());
+		Locale originalefaultLocale = LocaleThreadLocal.getDefaultLocale();
+		Locale originalSiteDefaultLocale =
+			LocaleThreadLocal.getSiteDefaultLocale();
 
-		String content = _journalConverter.getContent(ddmStructure, ddmFields);
+		try {
+			Company company = _companyLocalService.getCompany(
+				article.getCompanyId());
 
-		if (!content.equals(article.getContent())) {
-			article.setContent(content);
+			LocaleThreadLocal.setDefaultLocale(company.getLocale());
 
-			_journalArticleLocalService.updateJournalArticle(article);
+			LocaleThreadLocal.setSiteDefaultLocale(
+				PortalUtil.getSiteDefaultLocale(article.getGroupId()));
+
+			Fields ddmFields = _journalConverter.getDDMFields(
+				ddmStructure, article.getContent());
+
+			String content = _journalConverter.getContent(
+				ddmStructure, ddmFields);
+
+			if (!content.equals(article.getContent())) {
+				article.setContent(content);
+
+				_journalArticleLocalService.updateJournalArticle(article);
+			}
+		}
+		finally {
+			LocaleThreadLocal.setDefaultLocale(originalefaultLocale);
+			LocaleThreadLocal.setSiteDefaultLocale(originalSiteDefaultLocale);
 		}
 	}
 
@@ -363,8 +420,8 @@ public class JournalServiceVerifyProcess extends VerifyLayout {
 		throws Exception {
 
 		try (PreparedStatement ps = connection.prepareStatement(
-				"update JournalArticle set expirationDate = ? where " +
-					"groupId = ? and articleId = ? and status = ?")) {
+				"update JournalArticle set expirationDate = ? where groupId " +
+					"= ? and articleId = ? and status = ?")) {
 
 			ps.setTimestamp(1, expirationDate);
 			ps.setLong(2, groupId);
@@ -428,7 +485,7 @@ public class JournalServiceVerifyProcess extends VerifyLayout {
 					Property resourcePrimKey = PropertyFactoryUtil.forName(
 						"resourcePrimKey");
 
-					dynamicQuery.add(resourcePrimKey.le(0l));
+					dynamicQuery.add(resourcePrimKey.le(0L));
 				}
 
 			});
@@ -557,8 +614,8 @@ public class JournalServiceVerifyProcess extends VerifyLayout {
 		try (LoggingTimer loggingTimer = new LoggingTimer();
 			PreparedStatement ps = connection.prepareStatement(
 				"select id_ from JournalArticle where (content like " +
-					"'%document_library%' or content like '%link_to_layout%')" +
-						" and DDMStructureKey != ''");
+					"'%document_library%' or content like " +
+						"'%link_to_layout%') and DDMStructureKey != ''");
 			ResultSet rs = ps.executeQuery()) {
 
 			while (rs.next()) {
@@ -593,8 +650,14 @@ public class JournalServiceVerifyProcess extends VerifyLayout {
 
 	protected void verifyArticleExpirationDate() throws Exception {
 		try (LoggingTimer loggingTimer = new LoggingTimer()) {
-			if (!JournalServiceConfigurationValues.
-					JOURNAL_ARTICLE_EXPIRE_ALL_VERSIONS) {
+			long companyId = CompanyThreadLocal.getCompanyId();
+
+			JournalServiceConfiguration journalServiceConfiguration =
+				ConfigurationProviderUtil.getCompanyConfiguration(
+					JournalServiceConfiguration.class, companyId);
+
+			if (!journalServiceConfiguration.
+					expireAllArticleVersionsEnabled()) {
 
 				return;
 			}
@@ -650,8 +713,8 @@ public class JournalServiceVerifyProcess extends VerifyLayout {
 				long count = actionableDynamicQuery.performCount();
 
 				_log.debug(
-					"Processing " + count + " articles for invalid structures" +
-						" and dynamic elements");
+					"Processing " + count + " articles for invalid " +
+						"structures and dynamic elements");
 			}
 
 			actionableDynamicQuery.setPerformActionMethod(
@@ -871,6 +934,7 @@ public class JournalServiceVerifyProcess extends VerifyLayout {
 							groupId, articleId, normalizedURLTitle);
 
 					ps2.setString(1, normalizedURLTitle);
+
 					ps2.setString(2, urlTitle);
 
 					ps2.addBatch();
@@ -892,6 +956,7 @@ public class JournalServiceVerifyProcess extends VerifyLayout {
 		JournalServiceVerifyProcess.class);
 
 	private AssetEntryLocalService _assetEntryLocalService;
+	private CompanyLocalService _companyLocalService;
 	private DDMStructureLocalService _ddmStructureLocalService;
 	private DLAppLocalService _dlAppLocalService;
 	private JournalArticleLocalService _journalArticleLocalService;

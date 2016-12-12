@@ -29,6 +29,8 @@ import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.Type;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.StringBundler;
@@ -74,14 +76,14 @@ public class DLFolderFinderImpl
 	public static final String FIND_FS_BY_G_F_A =
 		DLFolderFinder.class.getName() + ".findFS_ByG_F_A";
 
+	public static final String JOIN_AE_BY_DL_FOLDER =
+		DLFolderFinder.class.getName() + ".joinAE_ByDLFolder";
+
 	public static final String JOIN_FE_BY_DL_FILE_VERSION =
 		DLFolderFinder.class.getName() + ".joinFE_ByDLFileVersion";
 
 	public static final String JOIN_FS_BY_DL_FILE_ENTRY =
 		DLFolderFinder.class.getName() + ".joinFS_ByDLFileEntry";
-
-	public static final String JOIN_AE_BY_DL_FOLDER =
-		DLFolderFinder.class.getName() + ".joinAE_ByDLFolder";
 
 	@Override
 	public int countF_FE_FS_ByG_F_M_M(
@@ -370,6 +372,7 @@ public class DLFolderFinderImpl
 				inlineSQLHelper);
 
 			sb.append(sql);
+
 			sb.append(") UNION ALL (");
 			sb.append(
 				getFileShortcutsSQL(
@@ -457,6 +460,7 @@ public class DLFolderFinderImpl
 				inlineSQLHelper);
 
 			sb.append(sql);
+
 			sb.append(" UNION ALL ");
 
 			sql = getFileShortcutsSQL(
@@ -464,6 +468,7 @@ public class DLFolderFinderImpl
 				inlineSQLHelper);
 
 			sb.append(sql);
+
 			sb.append(") TEMP_TABLE ORDER BY modelFolder DESC, title ASC");
 
 			sql = sb.toString();
@@ -472,6 +477,7 @@ public class DLFolderFinderImpl
 
 			sql = updateSQL(
 				sql, folderId, includeMountFolders, showHiddenMountFolders);
+
 			sql = CustomSQLUtil.replaceOrderBy(
 				sql, queryDefinition.getOrderByComparator());
 
@@ -581,6 +587,7 @@ public class DLFolderFinderImpl
 				inlineSQLHelper);
 
 			sb.append(sql);
+
 			sb.append(" UNION ALL ");
 
 			sql = getFileShortcutsSQL(
@@ -588,6 +595,7 @@ public class DLFolderFinderImpl
 				inlineSQLHelper);
 
 			sb.append(sql);
+
 			sb.append(") TEMP_TABLE ORDER BY modelFolder DESC, title ASC");
 
 			sql = sb.toString();
@@ -793,6 +801,12 @@ public class DLFolderFinderImpl
 			return dlGroupServiceSettings.isShowHiddenMountFolders();
 		}
 		catch (PortalException pe) {
+
+			// LPS-52675
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(pe, pe);
+			}
 		}
 
 		return false;
@@ -833,12 +847,14 @@ public class DLFolderFinderImpl
 			else {
 				sql = StringUtil.replace(
 					sql, "([$HIDDEN$]) AND",
-					"(DLFolder.hidden_ = ?) AND (DLFolder.mountPoint = ?) " +
-						"AND");
+					"(DLFolder.hidden_ = ?) AND (DLFolder.mountPoint = ?) AND");
 			}
 		}
 
 		return sql;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		DLFolderFinderImpl.class);
 
 }

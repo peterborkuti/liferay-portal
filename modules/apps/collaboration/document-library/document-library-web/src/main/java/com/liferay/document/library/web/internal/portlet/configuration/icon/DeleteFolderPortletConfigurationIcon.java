@@ -15,7 +15,7 @@
 package com.liferay.document.library.web.internal.portlet.configuration.icon;
 
 import com.liferay.document.library.kernel.model.DLFolderConstants;
-import com.liferay.document.library.web.internal.constants.DLPortletKeys;
+import com.liferay.document.library.web.constants.DLPortletKeys;
 import com.liferay.document.library.web.internal.portlet.action.ActionUtil;
 import com.liferay.document.library.web.internal.util.DLTrashUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -77,6 +77,7 @@ public class DeleteFolderPortletConfigurationIcon
 			getResourceBundle(getLocale(portletRequest)), key);
 	}
 
+	@Override
 	public String getURL(
 		PortletRequest portletRequest, PortletResponse portletResponse) {
 

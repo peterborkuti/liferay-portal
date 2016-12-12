@@ -27,13 +27,17 @@ import aQute.lib.io.IO;
 
 import aQute.service.reporter.Reporter;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
@@ -70,8 +74,8 @@ public abstract class Baseline {
 				!_oldJarFile.canRead()) {
 
 				baselineProcessor.warning(
-					"Baseline file %s is invalid. Check if it exists, " +
-						"is readable, and is not a directory.",
+					"Baseline file %s is invalid. Check if it exists, is " +
+						"readable, and is not a directory.",
 					_oldJarFile);
 			}
 			else {
@@ -97,6 +101,17 @@ public abstract class Baseline {
 			}
 
 			BundleInfo bundleInfo = baseline.getBundleInfo();
+
+			if (hasPackageRemoved(infos)) {
+				bundleInfo.suggestedVersion = new Version(
+					bundleInfo.olderVersion.getMajor() + 1, 0, 0);
+
+				if (bundleInfo.suggestedVersion.compareTo(
+						bundleInfo.newerVersion.getWithoutQualifier()) > 0) {
+
+					bundleInfo.mismatch = true;
+				}
+			}
 
 			if (bundleInfo.mismatch) {
 				match = false;
@@ -125,6 +140,16 @@ public abstract class Baseline {
 					match = false;
 				}
 
+				Diff packageDiff = info.packageDiff;
+
+				Delta delta = packageDiff.getDelta();
+
+				if (_forceVersionOneOnAddedPackages && (delta == Delta.ADDED) &&
+					bundleInfo.newerVersion.equals(info.newerVersion)) {
+
+					info.suggestedVersion = Version.ONE;
+				}
+
 				String warnings = "-";
 
 				Version newerVersion = info.newerVersion;
@@ -140,10 +165,6 @@ public abstract class Baseline {
 						warnings = "VERSION INCREASE REQUIRED";
 					}
 				}
-
-				Diff packageDiff = info.packageDiff;
-
-				Delta delta = packageDiff.getDelta();
 
 				if (delta == Delta.REMOVED) {
 					warnings = "PACKAGE REMOVED";
@@ -221,6 +242,12 @@ public abstract class Baseline {
 
 	public void setForcePackageInfo(boolean forcePackageInfo) {
 		_forcePackageInfo = forcePackageInfo;
+	}
+
+	public void setForceVersionOneOnAddedPackages(
+		boolean forceVersionOneOnAddedPackages) {
+
+		_forceVersionOneOnAddedPackages = forceVersionOneOnAddedPackages;
 	}
 
 	public void setLogFile(File logFile) {
@@ -389,6 +416,29 @@ public abstract class Baseline {
 		return correct;
 	}
 
+	protected Set<String> getMovedPackages() throws IOException {
+		File movedPackagesFile = new File(
+			_bndFile.getParentFile(), "moved-packages.txt");
+
+		if (!movedPackagesFile.exists()) {
+			return Collections.emptySet();
+		}
+
+		Set<String> movedPackages = new HashSet<>();
+
+		try (BufferedReader bufferedReader = new BufferedReader(
+				new FileReader(movedPackagesFile))) {
+
+			String line = null;
+
+			while ((line = bufferedReader.readLine()) != null) {
+				movedPackages.add(line);
+			}
+		}
+
+		return movedPackages;
+	}
+
 	protected String getShortDelta(Delta delta) {
 		if (delta == Delta.ADDED) {
 			return "+";
@@ -412,6 +462,22 @@ public abstract class Baseline {
 		String deltaString = delta.toString();
 
 		return String.valueOf(deltaString.charAt(0));
+	}
+
+	protected boolean hasPackageRemoved(Iterable<Info> infos)
+		throws IOException {
+
+		Set<String> movedPackages = getMovedPackages();
+
+		for (Info info : infos) {
+			if ((info.packageDiff.getDelta() == Delta.REMOVED) &&
+				!movedPackages.contains(info.packageName)) {
+
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	protected abstract void log(Reporter reporter);
@@ -464,6 +530,7 @@ public abstract class Baseline {
 
 	private File _bndFile;
 	private boolean _forcePackageInfo;
+	private boolean _forceVersionOneOnAddedPackages = true;
 	private boolean _headerPrinted;
 	private File _logFile;
 	private File _newJarFile;

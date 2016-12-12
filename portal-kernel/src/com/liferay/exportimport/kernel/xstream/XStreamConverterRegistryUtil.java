@@ -14,6 +14,8 @@
 
 package com.liferay.exportimport.kernel.xstream;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceReference;
@@ -29,6 +31,7 @@ import java.util.Set;
 /**
  * @author Daniel Kocsis
  */
+@ProviderType
 public class XStreamConverterRegistryUtil {
 
 	public static Set<XStreamConverter> getXStreamConverters() {
@@ -80,7 +83,7 @@ public class XStreamConverterRegistryUtil {
 
 	private final ServiceRegistrationMap<XStreamConverter>
 		_serviceRegistrations = new ServiceRegistrationMapImpl<>();
-	private final ServiceTracker <XStreamConverter, XStreamConverter>
+	private final ServiceTracker<XStreamConverter, XStreamConverter>
 		_serviceTracker;
 	private final Set<XStreamConverter> _xStreamConverters = new HashSet<>();
 

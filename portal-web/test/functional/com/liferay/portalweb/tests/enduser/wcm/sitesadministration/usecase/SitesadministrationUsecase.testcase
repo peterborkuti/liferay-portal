@@ -160,7 +160,7 @@
 		</execute>
 
 		<execute macro="Role#assignRegRoleCP">
-			<var name="roleName" value="Administrator" />
+			<var name="roleTitle" value="Administrator" />
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
@@ -254,6 +254,7 @@
 			<var name="orgName" value="Site Organization Name" />
 			<var name="userFirstName" value="Test" />
 			<var name="userLastName" value="Test" />
+			<var name="userName" value="Test Test" />
 			<var name="userScreenName" value="test" />
 		</execute>
 
@@ -273,7 +274,7 @@
 		</execute>
 
 		<execute macro="Role#addCP">
-			<var name="roleName" value="Roles Siterole Name" />
+			<var name="roleTitle" value="Roles Siterole Name" />
 			<var name="roleType" value="Site" />
 		</execute>
 
@@ -291,7 +292,7 @@
 			<var name="portlet" value="Site Memberships" />
 		</execute>
 
-		<execute macro="Site#addMemberUserGroupCP">
+		<execute macro="Site#assignUserGroupAsMemberCP">
 			<var name="userGroupName" value="UG UserGroup Name" />
 		</execute>
 
@@ -300,7 +301,7 @@
 		</execute>
 
 		<execute macro="Role#addCP">
-			<var name="roleName" value="Roles Regrole Name" />
+			<var name="roleTitle" value="Roles Regrole Name" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoControlPanelUsers">
@@ -310,7 +311,7 @@
 		<execute macro="Role#definePermissionCmdCP">
 			<var name="permissionDefinitionKey" value="CONTROL_PANEL_GENERAL_PERMISSIONS_GO_TO_CONTROL_PANEL_CHECKBOX" />
 			<var name="permissionDefinitionValue" value="View Control Panel Menu" />
-			<var name="roleName" value="Roles Regrole Name" />
+			<var name="roleTitle" value="Roles Regrole Name" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoControlPanelUsers">
@@ -320,7 +321,7 @@
 		<execute macro="Role#definePermissionCmdCP">
 			<var name="permissionDefinitionKey" value="CONTROL_PANEL_SITES_SITES_RESOURCE_PERMISSIONS_SITE_ASSIGN_MEMBERS_CHECKBOX" />
 			<var name="permissionDefinitionValue" value="Assign Members" />
-			<var name="roleName" value="Roles Regrole Name" />
+			<var name="roleTitle" value="Roles Regrole Name" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoControlPanelUsers">
@@ -330,7 +331,7 @@
 		<execute macro="Role#definePermissionCmdCP">
 			<var name="permissionDefinitionKey" value="CONTROL_PANEL_SITES_SITES_RESOURCE_PERMISSIONS_SITE_ASSIGN_USER_ROLES_CHECKBOX" />
 			<var name="permissionDefinitionValue" value="Assign User Roles" />
-			<var name="roleName" value="Roles Regrole Name" />
+			<var name="roleTitle" value="Roles Regrole Name" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoControlPanelUsers">
@@ -340,7 +341,7 @@
 		<execute macro="Role#definePermissionCmdCP">
 			<var name="permissionDefinitionKey" value="SITE_ADMIN_PAGES_SITE_PAGES_RESOURCE_PERMISSIONS_SITE_GO_TO_SITE_ADMINISTRATION_CHECKBOX" />
 			<var name="permissionDefinitionValue" value="Go to Site Administration" />
-			<var name="roleName" value="Roles Regrole Name" />
+			<var name="roleTitle" value="Roles Regrole Name" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoControlPanelUsers">
@@ -350,7 +351,7 @@
 		<execute macro="Role#definePermissionCmdCP">
 			<var name="permissionDefinitionKey" value="CONTROL_PANEL_USERS_ROLES_RESOURCE_PERMISSIONS_ROLE_ASSIGN_MEMBERS_CHECKBOX" />
 			<var name="permissionDefinitionValue" value="Assign Members" />
-			<var name="roleName" value="Roles Regrole Name" />
+			<var name="roleTitle" value="Roles Regrole Name" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoControlPanelUsers">
@@ -387,7 +388,7 @@
 		</execute>
 
 		<execute macro="Role#assignRegRoleCP">
-			<var name="roleName" value="Roles Regrole Name" />
+			<var name="roleTitle" value="Roles Regrole Name" />
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
@@ -402,11 +403,9 @@
 			<var name="portlet" value="Site Memberships" />
 		</execute>
 
-		<execute macro="Site#assignRoleCP">
-			<var name="roleName" value="Roles Siterole Name" />
-			<var name="userFirstName" value="userfn" />
-			<var name="userLastName" value="userln" />
-			<var name="userScreenName" value="usersn" />
+		<execute macro="Site#assignSiteRoleCP">
+			<var name="resourceName" value="userfn userln" />
+			<var name="roleTitle" value="Roles Siterole Name" />
 		</execute>
 
 		<execute macro="Navigator#openURL" />
@@ -1076,159 +1075,6 @@
 		</for>
 	</command>
 
-	<command name="SiteTeams" priority="4">
-		<execute macro="ProductMenu#gotoControlPanelSites">
-			<var name="portlet" value="Sites" />
-		</execute>
-
-		<execute macro="Site#addBlankCP">
-			<var name="siteName" value="Site Name" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#addCP">
-			<var name="userEmailAddress" value="userea1@liferay.com" />
-			<var name="userFirstName" value="userfn1" />
-			<var name="userLastName" value="userln1" />
-			<var name="userScreenName" value="usersn1" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#addCP">
-			<var name="userEmailAddress" value="userea2@liferay.com" />
-			<var name="userFirstName" value="userfn2" />
-			<var name="userLastName" value="userln2" />
-			<var name="userScreenName" value="usersn2" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="User Groups" />
-		</execute>
-
-		<execute macro="UserGroup#addCP">
-			<var name="userGroupName" value="UG UserGroup1 Name" />
-		</execute>
-
-		<execute macro="UserGroup#addCP">
-			<var name="userGroupName" value="UG UserGroup2 Name" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoSite">
-			<var name="site" value="Site Name" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoSitesMembers">
-			<var name="portlet" value="Site Memberships" />
-		</execute>
-
-		<execute macro="Site#addMemberCP">
-			<var name="siteName" value="Site Name" />
-			<var name="siteScopeName" value="Site Name" />
-			<var name="userFirstName" value="userfn1" />
-			<var name="userLastName" value="userln1" />
-			<var name="userScreenName" value="usersn1" />
-		</execute>
-
-		<execute macro="Site#addMemberUserGroupCP">
-			<var name="siteName" value="Site Name" />
-			<var name="siteScopeName" value="Site Name" />
-			<var name="userGroupName" value="UG UserGroup1 Name" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="User Groups" />
-		</execute>
-
-		<execute macro="UserGroup#assignMemberCP">
-			<var name="userGroupName" value="UG UserGroup1 Name" />
-			<var name="userScreenName" value="usersn1" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="User Groups" />
-		</execute>
-
-		<execute macro="UserGroup#assignMemberCP">
-			<var name="userGroupName" value="UG UserGroup2 Name" />
-			<var name="userScreenName" value="usersn2" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoSite">
-			<var name="site" value="Site Name" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoSitesMembers">
-			<var name="portlet" value="Site Teams" />
-		</execute>
-
-		<execute macro="Team#addCP">
-			<var name="teamDescription" value="Site Team Description" />
-			<var name="teamName" value="Site Team Name" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoSite">
-			<var name="site" value="Site Name" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoSitesMembers">
-			<var name="portlet" value="Site Teams" />
-		</execute>
-
-		<execute macro="Team#assignMembersCP">
-			<var name="teamName" value="Site Team Name" />
-			<var name="userScreenName" value="usersn1" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoSite">
-			<var name="site" value="Site Name" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoSitesMembers">
-			<var name="portlet" value="Site Teams" />
-		</execute>
-
-		<execute macro="Team#assignMembersCP">
-			<var name="teamName" value="Site Team Name" />
-			<var name="userNameIsNotFound" value="true" />
-			<var name="userScreenName" value="usersn2" />
-		</execute>
-
-		<execute macro="IFrame#closeFrame" />
-
-		<execute macro="ProductMenu#gotoSite">
-			<var name="site" value="Site Name" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoSitesMembers">
-			<var name="portlet" value="Site Teams" />
-		</execute>
-
-		<execute macro="Team#assignUserGroups">
-			<var name="teamName" value="Site Team Name" />
-			<var name="userGroupName" value="UG UserGroup1 Name" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoSite">
-			<var name="site" value="Site Name" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoSitesMembers">
-			<var name="portlet" value="Site Teams" />
-		</execute>
-
-		<execute macro="Team#assignUserGroups">
-			<var name="teamName" value="Site Team Name" />
-			<var name="userGroupName" value="UG UserGroup2 Name" />
-			<var name="userGroupsNameIsNotAvailable" value="true" />
-		</execute>
-	</command>
-
 	<command name="SiteTeamsPermissions" priority="4">
 		<execute macro="ProductMenu#gotoControlPanelSites">
 			<var name="portlet" value="Sites" />
@@ -1342,7 +1188,7 @@
 
 		<execute macro="Role#removePermissionPG">
 			<var name="permissionDefinitionKey" value="CONTENT_PERMISSIONS_VIEW_CHECKBOX" />
-			<var name="roleName" value="Guest" />
+			<var name="roleTitle" value="Guest" />
 		</execute>
 
 		<execute macro="Navigator#gotoSitePage">
@@ -1357,7 +1203,7 @@
 		<for list="CONTENT_PERMISSIONS_ADD_DISCUSSION_CHECKBOX,CONTENT_PERMISSIONS_VIEW_CHECKBOX" param="permissionsInLineUncheckListsCount" >
 			<execute macro="Role#removePermissionPG">
 				<var name="permissionDefinitionKey" value="${permissionsInLineUncheckListsCount}" />
-				<var name="roleName" value="Site Member" />
+				<var name="roleTitle" value="Site Member" />
 			</execute>
 		</for>
 

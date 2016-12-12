@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -56,7 +57,7 @@ public class MVCCommandCache {
 
 		_serviceTrackerMap = ServiceTrackerCollections.openSingleValueMap(
 			mvcCommandClass,
-			"(&(javax.portlet.name=" + portletName +")(mvc.command.name=*))",
+			"(&(javax.portlet.name=" + portletName + ")(mvc.command.name=*))",
 			new ServiceReferenceMapper<String, MVCCommand>() {
 
 				@Override
@@ -137,6 +138,10 @@ public class MVCCommandCache {
 
 			return _emptyMVCCommand;
 		}
+	}
+
+	public Set<String> getMVCCommandNames() {
+		return _serviceTrackerMap.keySet();
 	}
 
 	public List<? extends MVCCommand> getMVCCommands(String key) {

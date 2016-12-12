@@ -83,7 +83,7 @@ public class DDMFormField implements Serializable {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of 3.5.0, with no direct replacement
 	 */
 	@Deprecated
 	public void addDDMFormFieldRule(DDMFormFieldRule ddmFormFieldRule) {
@@ -131,7 +131,7 @@ public class DDMFormField implements Serializable {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of 3.5.0, with no direct replacement
 	 */
 	@Deprecated
 	public List<DDMFormFieldRule> getDDMFormFieldRules() {
@@ -239,7 +239,7 @@ public class DDMFormField implements Serializable {
 	}
 
 	public boolean isShowLabel() {
-		return MapUtil.getBoolean(_properties, "showLabel");
+		return MapUtil.getBoolean(_properties, "showLabel", true);
 	}
 
 	public boolean isTransient() {
@@ -269,7 +269,7 @@ public class DDMFormField implements Serializable {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of 3.5.0, with no direct replacement
 	 */
 	@Deprecated
 	public void setDDMFormFieldRules(List<DDMFormFieldRule> ddmFormFieldRules) {

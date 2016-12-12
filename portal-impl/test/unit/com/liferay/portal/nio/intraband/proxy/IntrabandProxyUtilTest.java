@@ -224,6 +224,7 @@ public class IntrabandProxyUtilTest {
 					type.getClassName(), TextFormatter.G);
 
 				methodName = "read".concat(name);
+
 				returnType = type;
 			}
 			else if (type.equals(Type.getType(String.class))) {
@@ -694,6 +695,7 @@ public class IntrabandProxyUtilTest {
 
 			Assert.assertEquals(
 				Opcodes.INVOKEVIRTUAL, abstractInsnNode.getOpcode());
+
 			Assert.assertEquals(
 				Type.getInternalName(Serializer.class), methodInsnNode.owner);
 
@@ -702,6 +704,7 @@ public class IntrabandProxyUtilTest {
 					type.getClassName(), TextFormatter.G);
 
 				Assert.assertEquals("write".concat(name), methodInsnNode.name);
+
 				Assert.assertEquals(
 					Type.getMethodDescriptor(Type.VOID_TYPE, type),
 					methodInsnNode.desc);
@@ -1693,6 +1696,7 @@ public class IntrabandProxyUtilTest {
 
 				Assert.assertEquals(
 					_sampleValueMap.get(returnType), rpcResponse.getResult());
+
 				Assert.assertSame(
 					mockRegistrationReference,
 					mockIntraband.getRegistrationReference());
@@ -1911,7 +1915,7 @@ public class IntrabandProxyUtilTest {
 			_assertDeclaredMethod(
 				stubClass, proxyMethod.getName(),
 				proxyMethod.getParameterTypes(),
-				(proxyMethod.getModifiers() & ~Modifier.ABSTRACT),
+				proxyMethod.getModifiers() & ~Modifier.ABSTRACT,
 				proxyMethod.getReturnType(), proxyMethod.getExceptionTypes());
 		}
 
@@ -2552,42 +2556,6 @@ public class IntrabandProxyUtilTest {
 
 	}
 
-	private static abstract class TestExtractMethodsClass5 {
-
-		@Proxy
-		public void doStuff1() {
-		}
-
-		@Proxy(name = "doStuffX")
-		public void doStuff2() {
-		}
-
-		@SuppressWarnings("unused")
-		public void doStuff3() {
-		}
-
-		public abstract void doStuff4();
-
-		@Id
-		public String getId1() {
-			return null;
-		}
-
-		@Id
-		public String getId2() {
-			return null;
-		}
-
-	}
-
-	private static abstract class TestGenerateClass1
-		extends TestProxyMethodsClass implements TestGenerateInterface1 {
-	}
-
-	private static abstract class TestGenerateClass2
-		extends TestProxyMethodsClass implements TestGenerateInterface2 {
-	}
-
 	private static class TestGenerateStubFunction1 {
 
 		@SuppressWarnings("unused")
@@ -2607,43 +2575,6 @@ public class IntrabandProxyUtilTest {
 					TestGenerateStubFunction1.class.getName() + " in <clinit>");
 			}
 		}
-
-	}
-
-	private static abstract class TestGenerateStubFunction2
-		extends TestProxyMethodsClass
-		implements TestEmptyMethodsInterface, TestIdMethodsInterface {
-
-		@SuppressWarnings("unused")
-		public void copyMethod1() {
-			if (_log.isInfoEnabled()) {
-				_log.info("copyMethod1");
-			}
-		}
-
-		@SuppressWarnings("unused")
-		protected void copyMethod2() {
-			if (_log.isInfoEnabled()) {
-				_log.info("copyMethod2");
-			}
-		}
-
-		@SuppressWarnings("unused")
-		void copyMethod3() {
-			if (_log.isInfoEnabled()) {
-				_log.info("copyMethod3");
-			}
-		}
-
-		@SuppressWarnings("unused")
-		private void copyMethod4() {
-			if (_log.isInfoEnabled()) {
-				_log.info("copyMethod4");
-			}
-		}
-
-		private static final Log _log = LogFactoryUtil.getLog(
-			TestGenerateStubFunction2.class);
 
 	}
 
@@ -2702,29 +2633,6 @@ public class IntrabandProxyUtilTest {
 
 	}
 
-	private static abstract class TestProxyMethodsClass
-		implements TestProxyMethodsInterface {
-
-		@Proxy
-		protected abstract short syncCallShort(
-				boolean z, byte b, char c, double d, float f, int i, long j,
-				short s, String string, Date date, Object obj)
-			throws InterruptedException, IOException;
-
-		@Proxy
-		abstract Object syncCallObject(
-				boolean z, byte b, char c, double d, float f, int i, long j,
-				short s, String string, Date date, Object obj)
-			throws InterruptedException, IOException;
-
-		@Proxy
-		abstract String syncCallString(
-				boolean z, byte b, char c, double d, float f, int i, long j,
-				short s, String string, Date date, Object obj)
-			throws InterruptedException, IOException;
-
-	}
-
 	private static class TestValidateClass {
 
 		@SuppressWarnings("unused")
@@ -2780,6 +2688,42 @@ public class IntrabandProxyUtilTest {
 
 	}
 
+	private abstract static class TestExtractMethodsClass5 {
+
+		@Proxy
+		public void doStuff1() {
+		}
+
+		@Proxy(name = "doStuffX")
+		public void doStuff2() {
+		}
+
+		@SuppressWarnings("unused")
+		public void doStuff3() {
+		}
+
+		public abstract void doStuff4();
+
+		@Id
+		public String getId1() {
+			return null;
+		}
+
+		@Id
+		public String getId2() {
+			return null;
+		}
+
+	}
+
+	private abstract static class TestGenerateClass1
+		extends TestProxyMethodsClass implements TestGenerateInterface1 {
+	}
+
+	private abstract static class TestGenerateClass2
+		extends TestProxyMethodsClass implements TestGenerateInterface2 {
+	}
+
 	private interface TestGenerateInterface1
 		extends Comparable<String>, Callable<String>, Runnable,
 				TestEmptyMethodsInterface, TestProxyMethodsInterface {
@@ -2789,6 +2733,43 @@ public class IntrabandProxyUtilTest {
 		extends TestIdMethodsInterface, TestGenerateInterface1 {
 	}
 
+	private abstract static class TestGenerateStubFunction2
+		extends TestProxyMethodsClass
+		implements TestEmptyMethodsInterface, TestIdMethodsInterface {
+
+		@SuppressWarnings("unused")
+		public void copyMethod1() {
+			if (_log.isInfoEnabled()) {
+				_log.info("copyMethod1");
+			}
+		}
+
+		@SuppressWarnings("unused")
+		protected void copyMethod2() {
+			if (_log.isInfoEnabled()) {
+				_log.info("copyMethod2");
+			}
+		}
+
+		@SuppressWarnings("unused")
+		void copyMethod3() {
+			if (_log.isInfoEnabled()) {
+				_log.info("copyMethod3");
+			}
+		}
+
+		@SuppressWarnings("unused")
+		private void copyMethod4() {
+			if (_log.isInfoEnabled()) {
+				_log.info("copyMethod4");
+			}
+		}
+
+		private static final Log _log = LogFactoryUtil.getLog(
+			TestGenerateStubFunction2.class);
+
+	}
+
 	private interface TestIdMethodsInterface {
 
 		@Id
@@ -2796,6 +2777,29 @@ public class IntrabandProxyUtilTest {
 
 		@Id
 		public abstract String getId2();
+
+	}
+
+	private abstract static class TestProxyMethodsClass
+		implements TestProxyMethodsInterface {
+
+		@Proxy
+		protected abstract short syncCallShort(
+				boolean z, byte b, char c, double d, float f, int i, long j,
+				short s, String string, Date date, Object obj)
+			throws InterruptedException, IOException;
+
+		@Proxy
+		abstract Object syncCallObject(
+				boolean z, byte b, char c, double d, float f, int i, long j,
+				short s, String string, Date date, Object obj)
+			throws InterruptedException, IOException;
+
+		@Proxy
+		abstract String syncCallString(
+				boolean z, byte b, char c, double d, float f, int i, long j,
+				short s, String string, Date date, Object obj)
+			throws InterruptedException, IOException;
 
 	}
 

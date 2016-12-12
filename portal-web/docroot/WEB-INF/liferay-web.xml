@@ -66,7 +66,7 @@
 		<filter-class>com.liferay.portal.servlet.filters.cache.CacheFilter</filter-class>
 		<init-param>
 			<param-name>url-regex-ignore-pattern</param-name>
-			<param-value>.+/-/.+</param-value>
+			<param-value>(.+/-/.+|/webdav/.*)</param-value>
 		</init-param>
 		<init-param>
 			<param-name>pattern</param-name>
@@ -428,6 +428,11 @@
 	<filter-mapping>
 		<filter-name>Thread Local Filter</filter-name>
 		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>Thread Local Filter</filter-name>
+		<url-pattern>/c/portal/j_login</url-pattern>
+		<dispatcher>FORWARD</dispatcher>
 	</filter-mapping>
 	<filter-mapping>
 		<filter-name>Thread Local Filter</filter-name>

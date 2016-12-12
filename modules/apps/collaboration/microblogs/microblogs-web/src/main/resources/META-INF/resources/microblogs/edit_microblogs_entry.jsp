@@ -37,25 +37,23 @@ if (microblogsEntryId > 0) {
 
 String modifiedDate = StringPool.BLANK;
 
-String receiverUserDisplayURL = StringPool.BLANK;
 String receiverUserFullName = StringPool.BLANK;
 String receiverUserScreenName = StringPool.BLANK;
 
 boolean edit = ParamUtil.getBoolean(request, "edit");
 boolean repost = ParamUtil.getBoolean(request, "repost");
 
+User receiverUser = null;
+
 if ((microblogsEntry != null) && !edit) {
 	modifiedDate = dateFormatDateTime.format(microblogsEntry.getModifiedDate());
 
 	receiverUserFullName = HtmlUtil.escape(PortalUtil.getUserName(microblogsEntry));
 
-	try {
-		User receiverUser = UserLocalServiceUtil.getUserById(microblogsEntry.getUserId());
+	receiverUser = UserLocalServiceUtil.fetchUserById(microblogsEntry.getUserId());
 
-		receiverUserDisplayURL = receiverUser.getDisplayURL(themeDisplay);
+	if (receiverUser != null) {
 		receiverUserScreenName = receiverUser.getScreenName();
-	}
-	catch (NoSuchUserException nsue) {
 	}
 }
 
@@ -90,12 +88,22 @@ if (comment) {
 		<c:otherwise>
 			<div class="microblogs-entry">
 				<span class="thumbnail">
-					<a href="<%= receiverUserDisplayURL %>">
-						<liferay-ui:user-portrait
-							imageCssClass="user-icon-lg"
-							userId="<%= (microblogsEntry != null) ? microblogsEntry.getUserId() : 0 %>"
-						/>
-					</a>
+					<c:choose>
+						<c:when test="<%= (receiverUser != null) && receiverUser.isActive() %>">
+							<a href="<%= receiverUser.getDisplayURL(themeDisplay) %>">
+								<liferay-ui:user-portrait
+									imageCssClass="user-icon-lg"
+									userId="<%= (microblogsEntry != null) ? microblogsEntry.getUserId() : 0 %>"
+								/>
+							</a>
+						</c:when>
+						<c:otherwise>
+							<liferay-ui:user-portrait
+								imageCssClass="user-icon-lg"
+								userId="<%= (microblogsEntry != null) ? microblogsEntry.getUserId() : 0 %>"
+							/>
+						</c:otherwise>
+					</c:choose>
 				</span>
 
 				<div class="entry-bubble">
@@ -202,7 +210,7 @@ if (comment) {
 			}
 			%>
 
-			<aui:select inlineLabel="<%= Boolean.TRUE.toString() %>" label="viewable-by" name="socialRelationType" value="<%= socialRelationType %>">
+			<aui:select inlineLabel="<%= Boolean.TRUE.toString() %>" label="viewable-by" name="socialRelationType" onChange='<%= renderResponse.getNamespace() + "relationTypeOnChange(event);" %>' value="<%= socialRelationType %>">
 				<aui:option label="everyone" value="<%= MicroblogsEntryConstants.TYPE_EVERYONE %>" />
 				<aui:option label="connections" value="<%= SocialRelationConstants.TYPE_BI_CONNECTION %>" />
 				<aui:option label="followers" value="<%= SocialRelationConstants.TYPE_UNI_FOLLOWER %>" />
@@ -210,6 +218,28 @@ if (comment) {
 		</c:if>
 	</div>
 </aui:form>
+
+<c:if test="<%= !repost %>">
+	<aui:script>
+		function <portlet:namespace />relationTypeOnChange(event) {
+			var form = event.currentTarget.closest('form');
+
+			var contentInput = form.getElementsByTagName('textarea')[0];
+
+			var disabled = <portlet:namespace />invalidContent(contentInput.value);
+
+			var submitButton = form.getElementsByTagName('button');
+
+			Liferay.Util.toggleDisabled(submitButton, disabled);
+		}
+
+		function <portlet:namespace />invalidContent(content) {
+			var remaining = 150 - content.length;
+
+			return remaining == 150 || content == '' || remaining < 0;
+		}
+	</aui:script>
+</c:if>
 
 <aui:script use="aui-base,aui-event-input,aui-template-deprecated,aui-form-textarea-deprecated,autocomplete,autocomplete-filters">
 	var MAP_MATCHED_USERS = {
@@ -244,20 +274,19 @@ if (comment) {
 
 	<c:if test="<%= !repost %>">
 		var countContent = function(event) {
-			var contentInput = event.currentTarget;
+			var content = event.currentTarget.val();
 
 			var countdown = form.one('.microblogs-countdown');
 			var submitButton = form.one('.microblogs-post');
 
-			var remaining = 150 - contentInput.val().length;
+			var remaining = 150 - content.length;
 
-			var disabled = remaining == 150 || contentInput.get('value') == '' || remaining < 0;
+			var disabled = <portlet:namespace />invalidContent(content);
 
 			countdown.html(remaining);
 
-			submitButton.attr('disabled', disabled);
+			Liferay.Util.toggleDisabled(submitButton, disabled);
 
-			submitButton.toggleClass('disabled', disabled);
 			submitButton.toggleClass('btn-warning', disabled);
 
 			countdown.toggleClass('microblogs-countdown-warned', disabled);

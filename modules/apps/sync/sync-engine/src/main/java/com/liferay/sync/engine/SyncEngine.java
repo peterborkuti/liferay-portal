@@ -16,17 +16,23 @@ package com.liferay.sync.engine;
 
 import com.j256.ormlite.support.ConnectionSource;
 
+import com.liferay.sync.encryptor.SyncEncryptor;
 import com.liferay.sync.engine.document.library.util.FileEventUtil;
 import com.liferay.sync.engine.document.library.util.ServerEventUtil;
 import com.liferay.sync.engine.file.system.SyncWatchEventProcessor;
 import com.liferay.sync.engine.file.system.Watcher;
 import com.liferay.sync.engine.file.system.util.WatcherManager;
+import com.liferay.sync.engine.lan.server.LanEngine;
 import com.liferay.sync.engine.model.SyncAccount;
 import com.liferay.sync.engine.model.SyncFile;
+import com.liferay.sync.engine.model.SyncProp;
 import com.liferay.sync.engine.model.SyncSite;
+import com.liferay.sync.engine.model.SyncUser;
 import com.liferay.sync.engine.service.SyncAccountService;
 import com.liferay.sync.engine.service.SyncFileService;
+import com.liferay.sync.engine.service.SyncPropService;
 import com.liferay.sync.engine.service.SyncSiteService;
+import com.liferay.sync.engine.service.SyncUserService;
 import com.liferay.sync.engine.service.SyncWatchEventService;
 import com.liferay.sync.engine.service.persistence.SyncAccountPersistence;
 import com.liferay.sync.engine.upgrade.util.UpgradeUtil;
@@ -35,14 +41,17 @@ import com.liferay.sync.engine.util.FileKeyUtil;
 import com.liferay.sync.engine.util.FileLockRetryUtil;
 import com.liferay.sync.engine.util.FileUtil;
 import com.liferay.sync.engine.util.LoggerUtil;
+import com.liferay.sync.engine.util.PropsKeys;
+import com.liferay.sync.engine.util.PropsUtil;
 import com.liferay.sync.engine.util.SyncEngineUtil;
+import com.liferay.sync.engine.util.Validator;
 
 import java.io.IOException;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -155,6 +164,82 @@ public class SyncEngine {
 		}
 	}
 
+	protected static void configureSyncAccounts() throws Exception {
+		for (int i = 0;; i++) {
+			String postfix = "." + i;
+
+			String filePathName = FileUtil.getFilePathName(
+				PropsUtil.get(PropsKeys.SYNC_ACCOUNT_FILE_PATH_NAME + postfix));
+
+			if (Validator.isBlank(filePathName)) {
+				break;
+			}
+
+			String login = PropsUtil.get(
+				PropsKeys.SYNC_ACCOUNT_LOGIN + postfix);
+			String password = PropsUtil.get(
+				PropsKeys.SYNC_ACCOUNT_PASSWORD + postfix);
+			String pluginVersion = PropsUtil.get(
+				PropsKeys.SYNC_ACCOUNT_PLUGIN_VERSION + postfix);
+			String url = PropsUtil.get(PropsKeys.SYNC_ACCOUNT_URL + postfix);
+
+			SyncAccount syncAccount =
+				SyncAccountService.fetchSyncAccountByFilePathName(filePathName);
+
+			if (syncAccount != null) {
+				syncAccount.setLogin(login);
+				syncAccount.setPassword(SyncEncryptor.encrypt(password));
+				syncAccount.setPluginVersion(pluginVersion);
+				syncAccount.setUrl(url);
+
+				SyncAccountService.update(syncAccount);
+			}
+			else {
+				syncAccount = SyncAccountService.addSyncAccount(
+					filePathName, login, password, pluginVersion, url);
+
+				SyncUser syncUser = new SyncUser();
+
+				syncUser.setSyncAccountId(syncAccount.getSyncAccountId());
+
+				SyncUserService.update(syncUser);
+			}
+
+			syncAccount = ServerEventUtil.synchronizeSyncAccount(
+				syncAccount.getSyncAccountId());
+
+			ServerEventUtil.synchronizeSyncSites(
+				syncAccount.getSyncAccountId());
+
+			String[] sites = PropsUtil.getArray(
+				PropsKeys.SYNC_ACCOUNT_SITES + postfix);
+
+			for (String site : sites) {
+				SyncSite syncSite = SyncSiteService.fetchSyncSite(
+					FileUtil.getFilePathName(
+						syncAccount.getFilePathName(), site),
+					syncAccount.getSyncAccountId());
+
+				if (syncSite == null) {
+					try {
+						syncSite = SyncSiteService.fetchSyncSite(
+							Long.valueOf(site), syncAccount.getSyncAccountId());
+					}
+					catch (NumberFormatException nfe) {
+					}
+				}
+
+				if (syncSite == null) {
+					continue;
+				}
+
+				SyncSiteService.activateSyncSite(
+					syncSite.getSyncSiteId(), Collections.<SyncFile>emptyList(),
+					false);
+			}
+		}
+	}
+
 	protected static void doScheduleSyncAccountTasks(long syncAccountId)
 		throws Exception {
 
@@ -212,7 +297,7 @@ public class SyncEngine {
 
 			Path syncSiteFilePath = Paths.get(syncSite.getFilePathName());
 
-			if (Files.notExists(syncSiteFilePath)) {
+			if (FileUtil.notExists(syncSiteFilePath)) {
 				if (_logger.isTraceEnabled()) {
 					_logger.trace(
 						"Missing sync site file path {}", syncSiteFilePath);
@@ -261,8 +346,14 @@ public class SyncEngine {
 
 		FileLockRetryUtil.init();
 
+		configureSyncAccounts();
+
 		for (SyncAccount syncAccount : SyncAccountService.findAll()) {
 			scheduleSyncAccountTasks(syncAccount.getSyncAccountId());
+		}
+
+		if (SyncPropService.getBoolean(SyncProp.KEY_LAN_ENABLED, true)) {
+			LanEngine.start();
 		}
 
 		SyncEngineUtil.fireSyncEngineStateChanged(
@@ -287,6 +378,8 @@ public class SyncEngine {
 		_remoteEventsScheduledExecutorService.shutdownNow();
 
 		FileLockRetryUtil.shutdown();
+
+		LanEngine.stop();
 
 		LoggerUtil.shutdown();
 

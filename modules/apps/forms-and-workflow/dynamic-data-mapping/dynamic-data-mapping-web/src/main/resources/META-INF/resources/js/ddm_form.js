@@ -160,7 +160,7 @@ AUI.add(
 				return instance.get('container').all('> .field-wrapper');
 			},
 
-			getRoot: function() {
+			getForm: function() {
 				var instance = this;
 
 				var root;
@@ -171,7 +171,7 @@ AUI.add(
 					}
 				);
 
-				return root;
+				return root || instance;
 			},
 
 			_getField: function(fieldNode) {
@@ -205,7 +205,9 @@ AUI.add(
 					)
 				);
 
-				field.addTarget(instance);
+				var form = instance.getForm();
+
+				field.addTarget(form);
 
 				var translationManager = instance.get('translationManager');
 
@@ -242,11 +244,14 @@ AUI.add(
 
 				var portletURL = Liferay.PortletURL.createURL(themeDisplay.getURLControlPanel());
 
+				var container = instance.get('container');
+
 				portletURL.setDoAsGroupId(instance.get('doAsGroupId'));
 				portletURL.setLifecycle(Liferay.PortletURL.RESOURCE_PHASE);
 				portletURL.setParameter('fieldName', instance.get('name'));
 				portletURL.setParameter('mode', instance.get('mode'));
 				portletURL.setParameter('namespace', instance.get('fieldsNamespace'));
+				portletURL.setParameter('p_p_auth', container.getData('ddmAuthToken'));
 				portletURL.setParameter('p_p_isolated', true);
 				portletURL.setParameter('portletNamespace', instance.get('portletNamespace'));
 				portletURL.setParameter('readOnly', instance.get('readOnly'));
@@ -262,7 +267,7 @@ AUI.add(
 				var instance = this;
 
 				if (!A.instanceOf(instance, Liferay.DDM.Form)) {
-					var form = instance.getRoot();
+					var form = instance.getForm();
 
 					translationManager = form.get('translationManager');
 				}
@@ -1011,6 +1016,8 @@ AUI.add(
 					getDocumentLibraryURL: function(criteria) {
 						var instance = this;
 
+						var container = instance.get('container');
+
 						var portletNamespace = instance.get('portletNamespace');
 
 						var portletURL = Liferay.PortletURL.createURL(themeDisplay.getURLControlPanel());
@@ -1018,6 +1025,7 @@ AUI.add(
 						portletURL.setDoAsGroupId(instance.get('doAsGroupId'));
 						portletURL.setParameter('criteria', criteria);
 						portletURL.setParameter('itemSelectedEventName', portletNamespace + 'selectDocumentLibrary');
+						portletURL.setParameter('p_p_auth', container.getData('itemSelectorAuthToken'));
 
 						var criterionJSON = {
 							desiredItemSelectorReturnTypes: 'com.liferay.item.selector.criteria.FileEntryItemSelectorReturnType,com.liferay.item.selector.criteria.FileEntryItemSelectorReturnType'
@@ -1194,10 +1202,15 @@ AUI.add(
 					},
 
 					getWebContentSelectorURL: function() {
+						var instance = this;
+
+						var container = instance.get('container');
+
 						var url = Liferay.PortletURL.createURL(themeDisplay.getURLControlPanel());
 
 						url.setParameter('eventName', 'selectContent');
 						url.setParameter('groupId', themeDisplay.getScopeGroupId());
+						url.setParameter('p_p_auth', container.getData('assetBrowserAuthToken'));
 						url.setParameter('selectedGroupIds', themeDisplay.getScopeGroupId());
 						url.setParameter('showNonindexable', true);
 						url.setParameter('showScheduled', true);
@@ -1343,9 +1356,9 @@ AUI.add(
 						valueFn: function() {
 							var instance = this;
 
-							var value = instance.getValue();
+							var layoutValue = instance.getParsedValue(instance.getValue());
 
-							var privateLayout = !!(value && value.privateLayout);
+							var privateLayout = !!(layoutValue && layoutValue.privateLayout);
 
 							var layoutsRoot = {
 								groupId: themeDisplay.getScopeGroupId(),
@@ -1371,6 +1384,8 @@ AUI.add(
 						instance._loadingAnimationNode = A.Node.create(TPL_LOADER);
 
 						instance._cache = {};
+
+						instance._clearedModal = false;
 
 						instance.after('selectedLayoutChange', instance._afterSelectedLayoutChange);
 						instance.after('selectedLayoutPathChange', instance._afterSelectedLayoutPathChange);
@@ -1658,6 +1673,10 @@ AUI.add(
 					_handleClearButtonClick: function() {
 						var instance = this;
 
+						instance._clearedModal = true;
+
+						instance._navbar.one('.active').removeClass('active');
+
 						instance.setValue('');
 
 						instance.set('selectedLayout', instance.get('selectedLayoutPath')[0]);
@@ -1795,9 +1814,14 @@ AUI.add(
 
 						currentTarget.addClass('active');
 
+						instance._currentParentLayoutId = 0;
+
 						instance._cleanSelectedLayout();
 
-						instance._renderLayoutsList(currentTarget.test('.private'));
+						var privateLayout = currentTarget.test('.private');
+
+						instance._resetBreadcrumb(privateLayout);
+						instance._renderLayoutsList(privateLayout);
 					},
 
 					_handleSelectButtonClick: function() {
@@ -1873,21 +1897,13 @@ AUI.add(
 
 							listNode.on('scroll', instance._handleModalScroll, instance);
 						}
-						else {
-							var path = instance.get('selectedLayoutPath');
+						else if (instance._clearedModal) {
+							var activeClass = privateLayout ? '.private' : '.public';
 
-							instance.set(
-								'selectedLayout',
-								{
-									groupId: value.groupId,
-									label: value.label,
-									layoutId: value.layoutId,
-									path: path.slice(),
-									privateLayout: privateLayout
-								}
-							);
-
+							instance._navbar.one(activeClass).addClass('active');
+							instance._resetBreadcrumb(privateLayout);
 							instance._renderLayoutsList(privateLayout);
+							instance._clearedModal = false;
 						}
 
 						modal.show();
@@ -2158,6 +2174,16 @@ AUI.add(
 						}
 					},
 
+					_resetBreadcrumb: function(privateLayout) {
+						var instance = this;
+
+						var selectedLayoutRoot = instance.get('selectedLayoutPath')[0];
+
+						selectedLayoutRoot.privateLayout = privateLayout;
+
+						instance.set('selectedLayoutPath', [selectedLayoutRoot]);
+					},
+
 					_setSelectedLayoutPath: function(groupId, privateLayout, response) {
 						var instance = this;
 
@@ -2312,6 +2338,8 @@ AUI.add(
 					getDocumentLibraryURL: function(criteria) {
 						var instance = this;
 
+						var container = instance.get('container');
+
 						var parsedValue = instance.getParsedValue(ImageField.superclass.getValue.apply(instance, arguments));
 
 						var portletNamespace = instance.get('portletNamespace');
@@ -2321,6 +2349,7 @@ AUI.add(
 						portletURL.setDoAsGroupId(instance.get('doAsGroupId'));
 						portletURL.setParameter('criteria', criteria);
 						portletURL.setParameter('itemSelectedEventName', portletNamespace + 'selectDocumentLibrary');
+						portletURL.setParameter('p_p_auth', container.getData('itemSelectorAuthToken'));
 
 						var journalCriterionJSON = {
 							desiredItemSelectorReturnTypes: 'com.liferay.item.selector.criteria.FileEntryItemSelectorReturnType,com.liferay.item.selector.criteria.FileEntryItemSelectorReturnType',

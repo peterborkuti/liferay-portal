@@ -20,12 +20,7 @@ import com.liferay.portal.kernel.messaging.sender.SingleDestinationMessageSender
 import com.liferay.portal.kernel.messaging.sender.SynchronousMessageSender;
 import com.liferay.portal.kernel.security.pacl.permission.PortalMessageBusPermission;
 import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-import com.liferay.portal.kernel.util.ProxyFactory;
-import com.liferay.registry.Registry;
-import com.liferay.registry.RegistryUtil;
-import com.liferay.registry.ServiceReference;
-import com.liferay.registry.ServiceTracker;
-import com.liferay.registry.ServiceTrackerCustomizer;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 /**
  * @author Michael C. Han
@@ -34,7 +29,7 @@ import com.liferay.registry.ServiceTrackerCustomizer;
 public class MessageBusUtil {
 
 	public static void addDestination(Destination destination) {
-		getMessageBus().addDestination(destination);
+		_messageBus.addDestination(destination);
 	}
 
 	public static Message createResponseMessage(Message requestMessage) {
@@ -58,11 +53,11 @@ public class MessageBusUtil {
 	}
 
 	public static Destination getDestination(String destinationName) {
-		return getMessageBus().getDestination(destinationName);
+		return _messageBus.getDestination(destinationName);
 	}
 
 	/**
-	 * @deprecated As of 7.1.0, with no direct replacement.
+	 * @deprecated As of 7.0.0, with no direct replacement
 	 */
 	@Deprecated
 	public static MessageBusUtil getInstance() {
@@ -72,25 +67,11 @@ public class MessageBusUtil {
 	}
 
 	public static MessageBus getMessageBus() {
-		try {
-			while (!_initialized && (_serviceTracker.getService() == null)) {
-				if (_log.isDebugEnabled()) {
-					_log.debug("Waiting for a PortalExecutorManager");
-				}
-
-				Thread.sleep(500);
-			}
-		}
-		catch (InterruptedException ie) {
-			throw new IllegalStateException(
-				"Unable to initialize MessageBusUtil", ie);
-		}
-
 		return _messageBus;
 	}
 
 	public static boolean hasMessageListener(String destination) {
-		return getMessageBus().hasMessageListener(destination);
+		return _messageBus.hasMessageListener(destination);
 	}
 
 	public static void registerMessageListener(
@@ -98,18 +79,17 @@ public class MessageBusUtil {
 
 		PortalMessageBusPermission.checkListen(destinationName);
 
-		getMessageBus().registerMessageListener(
-			destinationName, messageListener);
+		_messageBus.registerMessageListener(destinationName, messageListener);
 	}
 
 	public static void removeDestination(String destinationName) {
-		getMessageBus().removeDestination(destinationName);
+		_messageBus.removeDestination(destinationName);
 	}
 
 	public static void sendMessage(String destinationName, Message message) {
 		PortalMessageBusPermission.checkSend(destinationName);
 
-		getMessageBus().sendMessage(destinationName, message);
+		_messageBus.sendMessage(destinationName, message);
 	}
 
 	public static void sendMessage(String destinationName, Object payload) {
@@ -119,7 +99,7 @@ public class MessageBusUtil {
 
 		message.setPayload(payload);
 
-		getMessageBus().sendMessage(destinationName, message);
+		_messageBus.sendMessage(destinationName, message);
 	}
 
 	public static Object sendSynchronousMessage(
@@ -195,13 +175,13 @@ public class MessageBusUtil {
 	public static void shutdown() {
 		PortalRuntimePermission.checkGetBeanProperty(MessageBusUtil.class);
 
-		getMessageBus().shutdown();
+		_messageBus.shutdown();
 	}
 
 	public static void shutdown(boolean force) {
 		PortalRuntimePermission.checkGetBeanProperty(MessageBusUtil.class);
 
-		getMessageBus().shutdown(force);
+		_messageBus.shutdown(force);
 	}
 
 	public static boolean unregisterMessageListener(
@@ -209,7 +189,7 @@ public class MessageBusUtil {
 
 		PortalMessageBusPermission.checkListen(destinationName);
 
-		return getMessageBus().unregisterMessageListener(
+		return _messageBus.unregisterMessageListener(
 			destinationName, messageListener);
 	}
 
@@ -221,47 +201,9 @@ public class MessageBusUtil {
 
 	private static final Log _log = LogFactoryUtil.getLog(MessageBusUtil.class);
 
-	private static final MessageBusUtil _instance = new MessageBusUtil();
-
-	private static volatile boolean _initialized;
 	private static volatile MessageBus _messageBus =
-		ProxyFactory.newServiceTrackedInstance(
-			MessageBus.class, MessageBusUtil.class, "_messageBus");
-	private static final ServiceTracker<MessageBus, MessageBus> _serviceTracker;
+		ServiceProxyFactory.newServiceTrackedInstance(
+			MessageBus.class, MessageBusUtil.class, "_messageBus", true);
 	private static SynchronousMessageSender.Mode _synchronousMessageSenderMode;
-
-	static {
-		Registry registry = RegistryUtil.getRegistry();
-
-		_serviceTracker = registry.trackServices(
-			MessageBus.class, new MessageBusServiceTrackerCustomizer());
-
-		_serviceTracker.open();
-	}
-
-	private static class MessageBusServiceTrackerCustomizer
-		implements ServiceTrackerCustomizer<MessageBus, MessageBus> {
-
-		@Override
-		public MessageBus addingService(
-			ServiceReference<MessageBus> serviceReference) {
-
-			_initialized = true;
-
-			return null;
-		}
-
-		@Override
-		public void modifiedService(
-			ServiceReference<MessageBus> serviceReference,
-			MessageBus messageBus) {
-		}
-
-		@Override
-		public void removedService(
-			ServiceReference<MessageBus> serviceReference, MessageBus service) {
-		}
-
-	}
 
 }

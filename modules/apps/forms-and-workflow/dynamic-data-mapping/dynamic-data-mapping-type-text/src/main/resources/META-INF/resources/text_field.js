@@ -1,6 +1,10 @@
 AUI.add(
 	'liferay-ddm-form-field-text',
 	function(A) {
+		var Renderer = Liferay.DDM.Renderer;
+
+		var Util = Renderer.Util;
+
 		new A.TooltipDelegate(
 			{
 				position: 'left',
@@ -15,14 +19,16 @@ AUI.add(
 			{
 				ATTRS: {
 					displayStyle: {
+						state: true,
 						value: 'singleline'
 					},
 
-					placeholder: {
-						value: ''
+					options: {
+						value: []
 					},
 
-					tooltip: {
+					placeholder: {
+						state: true,
 						value: ''
 					},
 
@@ -36,17 +42,50 @@ AUI.add(
 				NAME: 'liferay-ddm-form-field-text',
 
 				prototype: {
-					getTemplateContext: function() {
+					initializer: function() {
 						var instance = this;
 
-						return A.merge(
-							TextField.superclass.getTemplateContext.apply(instance, arguments),
-							{
-								displayStyle: instance.get('displayStyle'),
-								placeholder: instance.getLocalizedValue(instance.get('placeholder')),
-								tooltip: instance.getLocalizedValue(instance.get('tooltip'))
-							}
+						instance._eventHandlers.push(
+							instance.after('optionsChange', instance._afterOptionsChange),
+							instance.after('valueChange', instance._onTextFieldValueChange)
 						);
+
+						instance.evaluate = A.debounce(
+							function() {
+								TextField.superclass.evaluate.apply(instance, arguments);
+							},
+							300
+						);
+					},
+
+					getAutoComplete: function() {
+						var instance = this;
+
+						var autoComplete = instance._autoComplete;
+
+						var inputNode = instance.getInputNode();
+
+						if (autoComplete) {
+							autoComplete.set('inputNode', inputNode);
+						}
+						else {
+							instance._createAutocomplete();
+							autoComplete = instance._autoComplete;
+						}
+
+						return autoComplete;
+					},
+
+					getChangeEventName: function() {
+						return 'input';
+					},
+
+					getTextHeight: function() {
+						var instance = this;
+
+						var text = instance.getValue();
+
+						return text.split('\n').length;
 					},
 
 					render: function() {
@@ -54,24 +93,23 @@ AUI.add(
 
 						TextField.superclass.render.apply(instance, arguments);
 
+						var options = instance.get('options');
+
+						if (options.length && instance.get('visible')) {
+							instance._createAutocomplete();
+						}
+
 						if (instance.get('displayStyle') === 'multiline') {
-							var textAreaNode = instance.getInputNode();
-
-							if (!textAreaNode.autosize) {
-								textAreaNode.plug(A.Plugin.Autosize);
-								textAreaNode.height(textAreaNode.get('scrollHeight'));
-							}
-
-							textAreaNode.autosize._uiAutoSize();
+							instance.syncInputHeight();
 						}
 
 						return instance;
 					},
 
-					_renderErrorMessage: function() {
+					showErrorMessage: function() {
 						var instance = this;
 
-						TextField.superclass._renderErrorMessage.apply(instance, arguments);
+						TextField.superclass.showErrorMessage.apply(instance, arguments);
 
 						var container = instance.get('container');
 
@@ -80,24 +118,70 @@ AUI.add(
 						inputGroup.insert(container.one('.help-block'), 'after');
 					},
 
-					_showFeedback: function() {
+					syncInputHeight: function() {
 						var instance = this;
 
-						TextField.superclass._showFeedback.apply(instance, arguments);
+						var inputNode = instance.getInputNode();
 
-						var container = instance.get('container');
+						var height = instance.getTextHeight();
 
-						var feedBack = container.one('.form-control-feedback');
-
-						var inputGroupAddOn = container.one('.input-group-addon');
-
-						if (inputGroupAddOn) {
-							feedBack.appendTo(inputGroupAddOn);
+						if (height < 2) {
+							inputNode.set('rows', 2);
 						}
 						else {
-							var inputGroupContainer = container.one('.input-group-container');
+							inputNode.set('rows', height);
+						}
+					},
 
-							inputGroupContainer.placeAfter(feedBack);
+					_afterOptionsChange: function(event) {
+						var instance = this;
+
+						var autoComplete = instance.getAutoComplete();
+
+						if (!Util.compare(event.newVal, event.prevVal)) {
+							autoComplete.set('source', event.newVal);
+
+							autoComplete.fire(
+								'query',
+								{
+									inputValue: instance.getValue(),
+									query: instance.getValue(),
+									src: A.AutoCompleteBase.UI_SRC
+								}
+							);
+						}
+					},
+
+					_createAutocomplete: function() {
+						var instance = this;
+
+						var inputNode = instance.getInputNode();
+
+						if (instance._autoComplete) {
+							instance._autoComplete.destroy();
+						}
+
+						instance._autoComplete = new A.AutoComplete(
+							{
+								after: {
+									select: A.bind(instance.evaluate, instance)
+								},
+								inputNode: inputNode,
+								maxResults: 10,
+								render: true,
+								resultFilters: ['charMatch', 'subWordMatch'],
+								resultHighlighter: 'subWordMatch',
+								resultTextLocator: 'label',
+								source: instance.get('options')
+							}
+						);
+					},
+
+					_onTextFieldValueChange: function() {
+						var instance = this;
+
+						if (instance.get('displayStyle') === 'multiline') {
+							instance.syncInputHeight();
 						}
 					}
 				}
@@ -108,6 +192,6 @@ AUI.add(
 	},
 	'',
 	{
-		requires: ['aui-autosize-deprecated', 'aui-tooltip', 'liferay-ddm-form-renderer-field']
+		requires: ['aui-autosize-deprecated', 'aui-tooltip', 'autocomplete', 'autocomplete-filters', 'autocomplete-highlighters', 'autocomplete-highlighters-accentfold', 'liferay-ddm-form-renderer-field']
 	}
 );

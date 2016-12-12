@@ -9,7 +9,7 @@ buildscript {
 
 Set<File> bndPrintJarFiles = null
 
-if (System.getenv("JENKINS_HOME")) {
+if (Boolean.getBoolean("build.bnd.print.enabled") && System.getenv("JENKINS_HOME")) {
 	configurations {
 		bnd
 	}
@@ -28,6 +28,24 @@ if (System.getenv("JENKINS_HOME")) {
 }
 
 buildDir = new File(rootDir.parentFile, "build")
+
+for (String gradleVersion in ["2.5", "2.14"]) {
+	String gradleDistributionURL = "https://services.gradle.org/distributions/gradle-${gradleVersion}-bin.zip"
+	String suffix = gradleVersion.replace('.', '')
+
+	tasks.create(name: "extractGradleApi${suffix}", type: Copy) {
+		description = "Extracts the Gradle ${gradleVersion} JAR files into a temporary directory."
+
+		from {
+			zipTree(FileUtil.get(project, gradleDistributionURL))
+		}
+
+		include "gradle-${gradleVersion}/lib/**/*.jar"
+
+		includeEmptyDirs = false
+		into buildDir
+	}
+}
 
 gradle.beforeProject {
 	Project project ->
@@ -124,16 +142,6 @@ gradle.beforeProject {
 				}
 			}
 		}
-
-		if (System.getenv("JENKINS_HOME")) {
-			pluginManager.withPlugin("com.liferay.node") {
-				downloadNode {
-					doFirst {
-						throw new GradleException("Unable to use Node.js on CI, please configure com.liferay.cache or update the cache")
-					}
-				}
-			}
-		}
 	}
 }
 
@@ -154,6 +162,26 @@ if (bndPrintJarFiles != null) {
 gradle.taskGraph.useFilter {
 	Task task ->
 
+	boolean skipReadOnly = Boolean.parseBoolean(GradleUtil.getTaskPrefixedProperty(task, "skipReadOnly"))
+
+	if (skipReadOnly) {
+		boolean publicBranch = GradleUtil.getProperty(task.project, "liferay.releng.public", false)
+
+		if (publicBranch && task.project.path.startsWith(":private:")) {
+			return false
+		}
+
+		File gitRepoDir = _getRootDir(task.project.projectDir, ".gitrepo")
+
+		if (gitRepoDir != null) {
+			File gitRepoFile = new File(gitRepoDir, ".gitrepo")
+
+			if (gitRepoFile.text.contains("mode = pull")) {
+				return false
+			}
+		}
+	}
+
 	if (task.name == "compileJSP") {
 		FileTree jspFileTree = fileTree(dir: task.project.projectDir, excludes: ["**/custom_jsps/**/*", "**/dependencies/**/*"], includes: ["docroot/**/*.jsp", "src/main/resources/META-INF/resources/**/*.jsp"])
 
@@ -173,6 +201,22 @@ gradle.taskGraph.useFilter {
 	}
 
 	return true
+}
+
+private File _getRootDir(File dir, String markerFileName) {
+	while (true) {
+		File markerFile = new File(dir, markerFileName);
+
+		if (markerFile.exists()) {
+			return dir;
+		}
+
+		dir = dir.getParentFile();
+
+		if (dir == null) {
+			return null;
+		}
+	}
 }
 
 private boolean _hasTestClasses(Project project, String testClassesDirName) {

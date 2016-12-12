@@ -34,13 +34,17 @@ renderResponse.setTitle(LanguageUtil.get(resourceBundle, "import"));
 		<aui:input name="mvcPath" type="hidden" value="/admin/import.jsp" />
 		<aui:input name="parentKBFolderId" type="hidden" value="<%= String.valueOf(parentKBFolderId) %>" />
 
+		<liferay-ui:error exception="<%= KBArticleImportException.MustHaveACategory.class %>">
+			<%= LanguageUtil.format(request, "an-unexpected-error-occurred-while-importing-articles-x", LanguageUtil.get(request, "there-are-one-or-more-mandatory-vocabularies-assigned-to-the-knowledge-base-article")) %>
+		</liferay-ui:error>
+
 		<liferay-ui:error exception="<%= KBArticleImportException.class %>">
 
 			<%
 			KBArticleImportException kbaie = (KBArticleImportException)errorException;
 			%>
 
-			<%= LanguageUtil.format(locale, "an-unexpected-error-occurred-while-importing-articles-x", kbaie.getLocalizedMessage()) %>
+			<%= LanguageUtil.format(request, "an-unexpected-error-occurred-while-importing-articles-x", kbaie.getLocalizedMessage()) %>
 		</liferay-ui:error>
 
 		<liferay-ui:error exception="<%= UploadRequestSizeException.class %>">

@@ -59,6 +59,7 @@ import org.osgi.service.component.annotations.Reference;
 public class DDMFormValuesExportImportContentProcessor
 	implements ExportImportContentProcessor<DDMFormValues> {
 
+	@Override
 	public DDMFormValues replaceExportContentReferences(
 			PortletDataContext portletDataContext, StagedModel stagedModel,
 			DDMFormValues ddmFormValues, boolean exportReferencedContent,
@@ -80,6 +81,7 @@ public class DDMFormValuesExportImportContentProcessor
 		return ddmFormValues;
 	}
 
+	@Override
 	public DDMFormValues replaceImportContentReferences(
 			PortletDataContext portletDataContext, StagedModel stagedModel,
 			DDMFormValues ddmFormValues)
@@ -101,8 +103,7 @@ public class DDMFormValuesExportImportContentProcessor
 
 	@Override
 	public void validateContentReferences(
-			long groupId, DDMFormValues ddmFormValues)
-		throws PortalException {
+		long groupId, DDMFormValues ddmFormValues) {
 	}
 
 	@Reference(unbind = "-")
@@ -316,7 +317,8 @@ public class DDMFormValuesExportImportContentProcessor
 					if (_log.isWarnEnabled()) {
 						_log.warn(
 							"Unable to find file entry with uuid " + uuid +
-								" and groupId " + groupId);
+								" and groupId " + groupId,
+							nsfee);
 					}
 				}
 			}

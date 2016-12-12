@@ -113,7 +113,7 @@ public class PortletInstanceFactoryImpl implements PortletInstanceFactory {
 	public InvokerPortlet create(Portlet portlet, ServletContext servletContext)
 		throws PortletException {
 
-		return create (portlet, servletContext, false);
+		return create(portlet, servletContext, false);
 	}
 
 	@Override
@@ -209,6 +209,7 @@ public class PortletInstanceFactoryImpl implements PortletInstanceFactory {
 			portlet, servletContext);
 
 		PortletContext portletContext = portletConfig.getPortletContext();
+
 		boolean checkAuthToken = rootInvokerPortletInstance.isCheckAuthToken();
 		boolean facesPortlet = rootInvokerPortletInstance.isFacesPortlet();
 		boolean strutsPortlet = rootInvokerPortletInstance.isStrutsPortlet();
@@ -246,12 +247,11 @@ public class PortletInstanceFactoryImpl implements PortletInstanceFactory {
 
 		// LPS-10473
 
+		_serviceTracker.close();
 	}
 
 	@Override
 	public void destroy(Portlet portlet) {
-		_serviceTracker.close();
-
 		clear(portlet);
 
 		destroyRelated(portlet);
@@ -280,7 +280,12 @@ public class PortletInstanceFactoryImpl implements PortletInstanceFactory {
 		PortletContext portletContext = portletConfig.getPortletContext();
 
 		InvokerFilterContainer invokerFilterContainer =
-			new InvokerFilterContainerImpl(portlet, portletContext);
+			InvokerFilterContainerImpl.EMPTY_INVOKER_FILTER_CONTAINER;
+
+		if (!portlet.isUndeployedPortlet()) {
+			invokerFilterContainer = new InvokerFilterContainerImpl(
+				portlet, portletContext);
+		}
 
 		InvokerPortlet invokerPortlet = _invokerPortletFactory.create(
 			portlet, portletInstance, portletContext, invokerFilterContainer);

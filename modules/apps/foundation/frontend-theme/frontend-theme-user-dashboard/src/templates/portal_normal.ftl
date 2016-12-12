@@ -45,14 +45,14 @@
 						</a>
 					</#if>
 
-					<#if show_site_name || page_group.isUser()>
+					<#if show_site_name>
 						<div class="pull-left site-name" title="#language_format ("go-to-x", [$site_name])">
 							${layout_set_title}
 						</div>
 					</#if>
 				</div>
 
-				<#assign VOID = freeMarkerPortletPreferences.setValue("portletSetupPortletDecoratorId", "barebone")>
+				<#assign VOID = freeMarkerPortletPreferences.setValue("portletSetupPortletDecoratorId", "barebone") />
 
 				<nav class="user-personal-bar">
 					<ul class="nav navbar-nav pull-right">
@@ -60,7 +60,7 @@
 					</ul>
 				<nav>
 
-				<#assign VOID = freeMarkerPortletPreferences.reset()>
+				<#assign VOID = freeMarkerPortletPreferences.reset() />
 			</div>
 		</div>
 	</header>

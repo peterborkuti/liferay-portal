@@ -1,16 +1,33 @@
 AUI.add(
 	'liferay-ddl-form-builder-definition-serializer',
 	function(A) {
-		var FieldTypes = Liferay.DDM.Renderer.FieldTypes;
-
 		var DefinitionSerializer = A.Component.create(
 			{
 				ATTRS: {
+					availableLanguageIds: {
+						value: [
+							themeDisplay.getDefaultLanguageId()
+						]
+					},
+
+					defaultLanguageId: {
+						value: themeDisplay.getDefaultLanguageId()
+					},
+
 					fieldHandler: {
 						valueFn: '_valueFieldHandler'
 					},
 
 					fields: {
+						validator: Array.isArray,
+						value: []
+					},
+
+					fieldTypesDefinitions: {
+						value: {}
+					},
+
+					rules: {
 						validator: Array.isArray,
 						value: []
 					}
@@ -28,9 +45,10 @@ AUI.add(
 
 						var definition = A.JSON.stringify(
 							{
-								availableLanguageIds: ['en_US'],
-								defaultLanguageId: 'en_US',
-								fields: instance.get('fields')
+								availableLanguageIds: instance.get('availableLanguageIds'),
+								defaultLanguageId: instance.get('defaultLanguageId'),
+								fields: instance.get('fields'),
+								rules: instance.get('rules')
 							}
 						);
 
@@ -44,11 +62,43 @@ AUI.add(
 
 						var config = {};
 
-						var fieldType = FieldTypes.get(field.get('type'));
+						var fieldTypesDefinitions = instance.get('fieldTypesDefinitions');
 
-						fieldType.get('settings').fields.forEach(
-							function(item, index) {
-								config[item.name] = field.get(item.name);
+						var definitionFields = fieldTypesDefinitions[field.get('type')];
+
+						var languageId = instance.get('defaultLanguageId');
+
+						definitionFields.forEach(
+							function(fieldSetting) {
+								var name = fieldSetting.name;
+
+								var value = field.get(name);
+
+								if (name === 'name') {
+									config[name] = field.get('fieldName');
+								}
+								else if (name === 'options' && value) {
+									config[name] = value.slice().map(
+										function(option) {
+											var label = {};
+
+											label[languageId] = option.label;
+
+											return {
+												label: label,
+												value: option.value
+											};
+										}
+									);
+								}
+								else if (fieldSetting.localizable) {
+									config[name] = {};
+
+									config[name][languageId] = value;
+								}
+								else {
+									config[name] = value;
+								}
 							}
 						);
 

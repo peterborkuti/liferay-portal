@@ -15,8 +15,6 @@
 package com.liferay.portlet.ratings.service.impl;
 
 import com.liferay.asset.kernel.model.AssetEntry;
-import com.liferay.blogs.kernel.model.BlogsEntry;
-import com.liferay.blogs.kernel.model.BlogsStatsUser;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -80,6 +78,7 @@ public class RatingsEntryLocalServiceImpl
 
 		int totalEntries = stats.getTotalEntries() - 1;
 		double totalScore = stats.getTotalScore() - oldScore;
+
 		double averageScore = 0;
 
 		if (totalEntries > 0) {
@@ -158,8 +157,6 @@ public class RatingsEntryLocalServiceImpl
 
 		// Entry
 
-		boolean newEntry = false;
-
 		long classNameId = classNameLocalService.getClassNameId(className);
 		double oldScore = 0;
 
@@ -191,8 +188,6 @@ public class RatingsEntryLocalServiceImpl
 			reindex(stats);
 		}
 		else {
-			newEntry = true;
-
 			User user = userPersistence.findByPrimaryKey(userId);
 
 			long entryId = counterLocalService.increment();
@@ -223,38 +218,6 @@ public class RatingsEntryLocalServiceImpl
 			// Indexer
 
 			reindex(stats);
-		}
-
-		// Blogs entry
-
-		if (className.equals(BlogsEntry.class.getName())) {
-			BlogsEntry blogsEntry = blogsEntryPersistence.findByPrimaryKey(
-				classPK);
-
-			BlogsStatsUser blogsStatsUser =
-				blogsStatsUserLocalService.getStatsUser(
-					blogsEntry.getGroupId(), blogsEntry.getUserId());
-
-			int ratingsTotalEntries = blogsStatsUser.getRatingsTotalEntries();
-			double ratingsTotalScore = blogsStatsUser.getRatingsTotalScore();
-			double ratingsAverageScore =
-				blogsStatsUser.getRatingsAverageScore();
-
-			if (newEntry) {
-				ratingsTotalEntries++;
-				ratingsTotalScore += score;
-			}
-			else {
-				ratingsTotalScore = ratingsTotalScore - oldScore + score;
-			}
-
-			ratingsAverageScore = ratingsTotalScore / ratingsTotalEntries;
-
-			blogsStatsUser.setRatingsTotalEntries(ratingsTotalEntries);
-			blogsStatsUser.setRatingsTotalScore(ratingsTotalScore);
-			blogsStatsUser.setRatingsAverageScore(ratingsAverageScore);
-
-			blogsStatsUserPersistence.update(blogsStatsUser);
 		}
 
 		// Social

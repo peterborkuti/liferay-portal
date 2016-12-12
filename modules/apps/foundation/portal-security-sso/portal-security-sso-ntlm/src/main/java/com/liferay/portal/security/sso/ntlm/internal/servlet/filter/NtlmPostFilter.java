@@ -14,8 +14,10 @@
 
 package com.liferay.portal.security.sso.ntlm.internal.servlet.filter;
 
+import com.liferay.portal.instances.service.PortalInstancesLocalService;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.servlet.BaseFilter;
 import com.liferay.portal.kernel.servlet.BrowserSnifferUtil;
@@ -25,7 +27,6 @@ import com.liferay.portal.kernel.settings.CompanyServiceSettingsLocator;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.security.sso.ntlm.configuration.NtlmConfiguration;
 import com.liferay.portal.security.sso.ntlm.constants.NtlmConstants;
-import com.liferay.portal.util.PortalInstances;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -50,12 +51,42 @@ import org.osgi.service.component.annotations.Reference;
 	configurationPid = "com.liferay.portal.security.sso.ntlm.configuration.NtlmConfiguration",
 	immediate = true,
 	property = {
-		"servlet-context-name=", "servlet-filter-name=SSO Ntlm Post Filter",
-		"url-pattern=/*"
+		"after-filter=SSO Ntlm Filter", "servlet-context-name=",
+		"servlet-filter-name=SSO Ntlm Post Filter", "url-pattern=/*"
 	},
 	service = Filter.class
 )
 public class NtlmPostFilter extends BaseFilter {
+
+	@Override
+	public boolean isFilterEnabled(
+		HttpServletRequest request, HttpServletResponse response) {
+
+		String method = request.getMethod();
+
+		if (!BrowserSnifferUtil.isIe(request) ||
+			!method.equals(HttpMethods.POST)) {
+
+			return false;
+		}
+
+		long companyId = _portalInstancesLocalService.getCompanyId(request);
+
+		try {
+			NtlmConfiguration ntlmConfiguration =
+				_configurationProvider.getConfiguration(
+					NtlmConfiguration.class,
+					new CompanyServiceSettingsLocator(
+						companyId, NtlmConstants.SERVICE_NAME));
+
+			return ntlmConfiguration.enabled();
+		}
+		catch (ConfigurationException ce) {
+			_log.error(ce, ce);
+		}
+
+		return false;
+	}
 
 	@Override
 	protected Log getLog() {
@@ -68,39 +99,28 @@ public class NtlmPostFilter extends BaseFilter {
 			FilterChain filterChain)
 		throws Exception {
 
-		long companyId = PortalInstances.getCompanyId(request);
+		String authorization = GetterUtil.getString(
+			request.getHeader(HttpHeaders.AUTHORIZATION));
 
-		NtlmConfiguration ntlmConfiguration =
-			_configurationProvider.getConfiguration(
-				NtlmConfiguration.class,
-				new CompanyServiceSettingsLocator(
-					companyId, NtlmConstants.SERVICE_NAME));
+		if (authorization.startsWith("NTLM ")) {
+			byte[] src = Base64.decode(authorization.substring(5));
 
-		if (ntlmConfiguration.enabled() && BrowserSnifferUtil.isIe(request) &&
-			request.getMethod().equals(HttpMethods.POST)) {
+			if (src[8] == 1) {
+				Type1Message type1 = new Type1Message(src);
 
-			String authorization = GetterUtil.getString(
-				request.getHeader(HttpHeaders.AUTHORIZATION));
+				Type2Message type2 = new Type2Message(type1, new byte[8], null);
 
-			if (authorization.startsWith("NTLM ")) {
-				byte[] src = Base64.decode(authorization.substring(5));
+				authorization = Base64.encode(type2.toByteArray());
 
-				if (src[8] == 1) {
-					Type1Message type1 = new Type1Message(src);
-					Type2Message type2 = new Type2Message(
-						type1, new byte[8], null);
+				response.setHeader(
+					HttpHeaders.WWW_AUTHENTICATE, "NTLM " + authorization);
 
-					authorization = Base64.encode(type2.toByteArray());
+				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+				response.setContentLength(0);
 
-					response.setHeader(
-						HttpHeaders.WWW_AUTHENTICATE, "NTLM " + authorization);
-					response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-					response.setContentLength(0);
+				response.flushBuffer();
 
-					response.flushBuffer();
-
-					return;
-				}
+				return;
 			}
 		}
 
@@ -118,5 +138,11 @@ public class NtlmPostFilter extends BaseFilter {
 	private static final Log _log = LogFactoryUtil.getLog(NtlmPostFilter.class);
 
 	private ConfigurationProvider _configurationProvider;
+
+	@Reference
+	private NtlmFilter _ntlmFilter;
+
+	@Reference
+	private PortalInstancesLocalService _portalInstancesLocalService;
 
 }

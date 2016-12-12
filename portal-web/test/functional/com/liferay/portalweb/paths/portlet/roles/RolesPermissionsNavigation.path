@@ -99,6 +99,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>SITE_ADMIN_CONTENT_FORMS</td>
+	<td>//div[contains(.,'Content') and contains(@class,'permission-navigation-item-header')]/following-sibling::ul//span[contains(@class,'permission-navigation-item')]/a[contains(.,'Forms')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>SITE_ADMIN_CONTENT_KALEO_FORMS</td>
 	<td>//div[contains(.,'Content') and contains(@class,'permission-navigation-item-header')]/following-sibling::ul//span[contains(@class,'permission-navigation-item')]/a[contains(.,'Kaleo Forms Admin')]</td>
 	<td></td>
@@ -123,15 +128,15 @@
 	<td></td>
 	<td></td>
 </tr>
-<!--SITE_ADMIN_USERS-->
+<!--SITE_ADMIN_MEMBERS-->
 <tr>
-	<td>SITE_ADMIN_USERS_SITE_MEMBERSHIPS</td>
-	<td>//div[contains(.,'Users') and contains(@class,'permission-navigation-item-header')]/following-sibling::ul//span[contains(@class,'permission-navigation-item')]/a[contains(.,'Site Memberships')]</td>
+	<td>SITE_ADMIN_MEMBERS_SITE_MEMBERSHIPS</td>
+	<td>//div[contains(.,'Members') and contains(@class,'permission-navigation-item-header')]/following-sibling::ul//span[contains(@class,'permission-navigation-item')]/a[contains(.,'Site Memberships')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>SITE_ADMIN_USERS_SITE_TEAMS</td>
-	<td>//div[contains(.,'Users') and contains(@class,'permission-navigation-item-header')]/following-sibling::ul//span[contains(@class,'permission-navigation-item')]/a[contains(.,'Site Teams')]</td>
+	<td>SITE_ADMIN_MEMBERS_SITE_TEAMS</td>
+	<td>//div[contains(.,'Members') and contains(@class,'permission-navigation-item-header')]/following-sibling::ul//span[contains(@class,'permission-navigation-item')]/a[contains(.,'Site Teams')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -140,6 +145,11 @@
 	<td></td>
 </tr>
 <!--SITE_ADMIN_CONFIGURATION-->
+<tr>
+	<td>SITE_ADMIN_CONFIGURATION_SITE_SETTINGS</td>
+	<td>//div[contains(.,'Configuration') and contains(@class,'permission-navigation-item-header')]/following-sibling::ul//span[contains(@class,'permission-navigation-item')]/a[contains(.,'Site Settings')]</td>
+	<td></td>
+</tr>
 <!--SITE_ADMIN_APPLICATIONS-->
 <tr>
 	<td>SITE_ADMIN_APPLICATIONS_ASSET_PUBLISHER</td>

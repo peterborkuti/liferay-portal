@@ -24,6 +24,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ADD_CHILD_PAGE</td>
+	<td>//a[@role='menuitem' and contains(.,'Add Child Page')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ADD_SHORTCUT</td>
 	<td>//div[contains(@class,'open')]//a[@role='menuitem' and contains(.,'Add Shortcut')]</td>
 	<td></td>
@@ -140,7 +145,7 @@
 </tr>
 <tr>
 	<td>ASSIGN_FORM</td>
-	<td>//a[@role='menuitem' and contains(.,'Assign Form')]</td>
+	<td>//a[@role='menuitem' and contains(.,'Assign Form') and contains(@onclick,'${key_workflowTask}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -404,6 +409,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>FAVORITE</td>
+	<td>//div[contains(@class,'open')]//li[contains(@class,'dropdown-header') and contains(.,'Favorite')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>FEEDS</td>
 	<td>//div[contains(@class,'open')]//a[@role='menuitem']//span[contains(.,'Feeds')] | //a[@role='menuitem' and contains(.,'Feeds')]</td>
 	<td></td>
@@ -509,6 +519,16 @@
 	<td></td>
 </tr>
 <tr>
+	<td>MANAGE_FIELD_SETS</td>
+	<td>//a[@role='menuitem']//span[contains(.,'Manage Field Sets')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MANAGE_FORMS</td>
+	<td>//div[contains(@class,'open')]//a[@role='menuitem' and contains(.,'Manage Forms')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>MANAGE_TEMPLATES</td>
 	<td>//div[contains(@class,'open')]//a[@role='menuitem' and contains(.,'Manage Templates')]</td>
 	<td></td>
@@ -609,11 +629,6 @@
 	<td></td>
 </tr>
 <tr>
-	<td>ORGANIZATION_ROLE</td>
-	<td>//li/a[contains(@id,'menuItem') and contains(.,'Organization Role')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>ORGANIZATION_ROLES</td>
 	<td>//a[@role='menuitem' and contains(.,'Organization Roles')]</td>
 	<td></td>
@@ -636,11 +651,6 @@
 <tr>
 	<td>PERMISSIONS_LEXICON</td>
 	<td>//div[contains(@class,'open')]//a[@role='menuitem' and contains(.,'Permissions')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>PLATFORM</td>
-	<td>//a[@role='menuitem' and contains(.,'Platform')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -671,11 +681,6 @@
 <tr>
 	<td>QUICK_REPLY</td>
 	<td>//a[@role='menuitem' and contains(.,'Quick Reply')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>REGULAR_ROLE</td>
-	<td>//li/a[contains(@id,'menuItem') and contains(.,'Regular Role')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -794,11 +799,6 @@
 	<td></td>
 </tr>
 <tr>
-	<td>SITE_ROLE</td>
-	<td>//li/a[contains(@id,'menuItem') and contains(.,'Site Role')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>SITE_ROLES</td>
 	<td>//a[@role='menuitem' and contains(.,'Site Roles')]</td>
 	<td></td>
@@ -901,6 +901,11 @@
 <tr>
 	<td>TRANSFORM_RESIZE</td>
 	<td>//div[@class=&quot;dropdown dropup open&quot;]//a[contains(.,'Resize')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>UNASSIGN_FORM</td>
+	<td>//tr[contains(.,'${key_workflowTask}')]//a[@role='menuitem' and contains(.,'Unassign Form')]</td>
 	<td></td>
 </tr>
 <tr>

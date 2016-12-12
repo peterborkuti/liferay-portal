@@ -1,11 +1,17 @@
 AUI.add(
 	'liferay-ddl-form-builder-util',
 	function(A) {
-		var RendererUtil = Liferay.DDM.Renderer.Util;
+		var AObject = A.Object;
+
+		var FieldTypes = Liferay.DDM.Renderer.FieldTypes;
 
 		var FormBuilderUtil = {
 			getFieldClass: function(type) {
-				var fieldClass = RendererUtil.getFieldClass(type);
+				var fieldType = FieldTypes.get(type);
+
+				var fieldClassName = fieldType.get('className');
+
+				var fieldClass = AObject.getValue(window, fieldClassName.split('.'));
 
 				return A.Component.create(
 					{
@@ -29,6 +35,6 @@ AUI.add(
 	},
 	'',
 	{
-		requires: ['liferay-ddl-form-builder-settings-support', 'liferay-ddm-form-renderer-util']
+		requires: ['liferay-ddl-form-builder-field-support', 'liferay-ddm-form-renderer-util']
 	}
 );

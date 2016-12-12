@@ -14,7 +14,7 @@
 
 package com.liferay.document.library.web.internal.portlet.action;
 
-import com.liferay.document.library.web.internal.constants.DLPortletKeys;
+import com.liferay.document.library.web.constants.DLPortletKeys;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
 
 import javax.portlet.PortletException;
@@ -38,6 +38,7 @@ import org.osgi.service.component.annotations.Component;
 public class UploadMultipleFileEntriesMVCRenderCommand
 	implements MVCRenderCommand {
 
+	@Override
 	public String render(
 			RenderRequest renderRequest, RenderResponse renderResponse)
 		throws PortletException {

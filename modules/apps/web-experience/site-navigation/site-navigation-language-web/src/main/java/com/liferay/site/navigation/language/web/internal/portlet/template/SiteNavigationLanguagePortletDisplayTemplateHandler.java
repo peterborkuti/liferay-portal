@@ -24,9 +24,8 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portlet.display.template.PortletDisplayTemplateConstants;
-import com.liferay.site.navigation.language.web.configuration.SiteNavigationLanguageWebConfigurationValues;
 import com.liferay.site.navigation.language.web.configuration.SiteNavigationLanguageWebTemplateConfiguration;
-import com.liferay.site.navigation.language.web.internal.constants.SiteNavigationLanguagePortletKeys;
+import com.liferay.site.navigation.language.web.constants.SiteNavigationLanguagePortletKeys;
 
 import java.util.List;
 import java.util.Locale;
@@ -44,7 +43,7 @@ import org.osgi.service.component.annotations.Modified;
 @Component(
 	configurationPid = "com.liferay.site.navigation.language.web.configuration.SiteNavigationLanguageWebTemplateConfiguration",
 	configurationPolicy = ConfigurationPolicy.OPTIONAL, immediate = true,
-	property = {"javax.portlet.name="+ SiteNavigationLanguagePortletKeys.SITE_NAVIGATION_LANGUAGE},
+	property = {"javax.portlet.name=" + SiteNavigationLanguagePortletKeys.SITE_NAVIGATION_LANGUAGE},
 	service = TemplateHandler.class
 )
 public class SiteNavigationLanguagePortletDisplayTemplateHandler
@@ -109,8 +108,8 @@ public class SiteNavigationLanguagePortletDisplayTemplateHandler
 
 	@Override
 	protected String getTemplatesConfigPath() {
-		return SiteNavigationLanguageWebConfigurationValues.
-			DISPLAY_TEMPLATES_CONFIG;
+		return "com/liferay/site/navigation/language/web/portlet/template" +
+			"/dependencies/portlet-display-templates.xml";
 	}
 
 	private volatile SiteNavigationLanguageWebTemplateConfiguration

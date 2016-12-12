@@ -15,6 +15,7 @@
 package com.liferay.knowledge.base.item.selector.web.internal;
 
 import com.liferay.item.selector.ItemSelectorReturnType;
+import com.liferay.item.selector.ItemSelectorReturnTypeResolverHandler;
 import com.liferay.item.selector.ItemSelectorView;
 import com.liferay.item.selector.criteria.FileEntryItemSelectorReturnType;
 import com.liferay.item.selector.criteria.URLItemSelectorReturnType;
@@ -88,6 +89,7 @@ public class KBAttachmentItemSelectorView
 		return true;
 	}
 
+	@Override
 	public boolean isVisible(ThemeDisplay themeDisplay) {
 		return true;
 	}
@@ -103,6 +105,7 @@ public class KBAttachmentItemSelectorView
 			kbAttachmentItemSelectorViewDisplayContext =
 				new KBAttachmentItemSelectorViewDisplayContext(
 					kbAttachmentItemSelectorCriterion, this,
+					_itemSelectorReturnTypeResolverHandler,
 					itemSelectedEventName, search, portletURL);
 
 		request.setAttribute(
@@ -115,6 +118,15 @@ public class KBAttachmentItemSelectorView
 			servletContext.getRequestDispatcher("/kb_article_attachments.jsp");
 
 		requestDispatcher.include(request, response);
+	}
+
+	@Reference(unbind = "-")
+	public void setItemSelectorReturnTypeResolverHandler(
+		ItemSelectorReturnTypeResolverHandler
+			itemSelectorReturnTypeResolverHandler) {
+
+		_itemSelectorReturnTypeResolverHandler =
+			itemSelectorReturnTypeResolverHandler;
 	}
 
 	@Reference(
@@ -144,6 +156,8 @@ public class KBAttachmentItemSelectorView
 					new URLItemSelectorReturnType()
 				}));
 
+	private ItemSelectorReturnTypeResolverHandler
+		_itemSelectorReturnTypeResolverHandler;
 	private ResourceBundleLoader _resourceBundleLoader;
 	private ServletContext _servletContext;
 

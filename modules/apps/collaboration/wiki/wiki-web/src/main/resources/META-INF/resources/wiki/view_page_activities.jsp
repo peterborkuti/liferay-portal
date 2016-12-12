@@ -71,9 +71,16 @@ iteratorURL.setParameter("title", wikiPage.getTitle());
 
 			JSONObject extraDataJSONObject = JSONFactoryUtil.createJSONObject(socialActivity.getExtraData());
 
-			double version = extraDataJSONObject.getDouble("version");
+			double version = extraDataJSONObject.getDouble("version", 0);
 
-			WikiPage socialActivityWikiPage = WikiPageLocalServiceUtil.fetchPage(wikiPage.getNodeId(), wikiPage.getTitle(), version);
+			WikiPage socialActivityWikiPage = null;
+
+			if (version == 0) {
+				socialActivityWikiPage = WikiPageLocalServiceUtil.fetchPage(wikiPage.getNodeId(), wikiPage.getTitle());
+			}
+			else {
+				socialActivityWikiPage = WikiPageLocalServiceUtil.fetchPage(wikiPage.getNodeId(), wikiPage.getTitle(), version);
+			}
 			%>
 
 			<liferay-ui:search-container-column-text
@@ -136,22 +143,3 @@ iteratorURL.setParameter("title", wikiPage.getTitle());
 		<liferay-ui:search-iterator />
 	</liferay-ui:search-container>
 </div>
-
-<portlet:actionURL name="/wiki/edit_page_attachment" var="checkEntryURL">
-	<portlet:param name="<%= Constants.CMD %>" value="<%= Constants.CHECK %>" />
-</portlet:actionURL>
-
-<portlet:renderURL var="duplicateEntryURL" windowState="<%= LiferayWindowState.EXCLUSIVE.toString() %>">
-	<portlet:param name="mvcRenderCommandName" value="/wiki/restore_entry" />
-	<portlet:param name="redirect" value="<%= currentURL %>" />
-</portlet:renderURL>
-
-<aui:script use="liferay-restore-entry">
-	new Liferay.RestoreEntry(
-		{
-			checkEntryURL: '<%= checkEntryURL.toString() %>',
-			duplicateEntryURL: '<%= duplicateEntryURL.toString() %>',
-			namespace: '<portlet:namespace />'
-		}
-	);
-</aui:script>

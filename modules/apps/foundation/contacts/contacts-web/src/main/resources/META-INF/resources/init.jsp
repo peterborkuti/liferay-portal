@@ -34,7 +34,7 @@ page import="com.liferay.contacts.model.Entry" %><%@
 page import="com.liferay.contacts.service.EntryLocalServiceUtil" %><%@
 page import="com.liferay.contacts.util.ContactsExtensionsUtil" %><%@
 page import="com.liferay.contacts.util.ContactsUtil" %><%@
-page import="com.liferay.contacts.web.constants.ContactsPortletKeys" %><%@
+page import="com.liferay.contacts.web.internal.constants.ContactsPortletKeys" %><%@
 page import="com.liferay.portal.kernel.dao.orm.QueryUtil" %><%@
 page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
 page import="com.liferay.portal.kernel.language.UnicodeLanguageUtil" %><%@
@@ -86,7 +86,6 @@ page import="com.liferay.social.kernel.model.SocialRequestConstants" %><%@
 page import="com.liferay.social.kernel.service.SocialActivityLocalServiceUtil" %><%@
 page import="com.liferay.social.kernel.service.SocialRelationLocalServiceUtil" %><%@
 page import="com.liferay.social.kernel.service.SocialRequestLocalServiceUtil" %><%@
-page import="com.liferay.social.privatemessaging.constants.PrivateMessagingPortletKeys" %><%@
 page import="com.liferay.users.admin.kernel.util.UsersAdminUtil" %>
 
 <%@ page import="java.util.ArrayList" %><%@

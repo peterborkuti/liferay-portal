@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -198,7 +199,7 @@ public class ToolsUtil {
 				if (c == delimeter) {
 					int precedingBackSlashCount = 0;
 
-					for (int j = (i - 1); j >= 0; j--) {
+					for (int j = i - 1; j >= 0; j--) {
 						if (line.charAt(j) == CharPool.BACK_SLASH) {
 							precedingBackSlashCount += 1;
 						}
@@ -428,6 +429,11 @@ public class ToolsUtil {
 
 		env.set("author", author);
 
+		// Fail on format error
+
+		boolean failOnFormatError = MapUtil.getBoolean(
+			jalopySettings, "failOnFormatError");
+
 		// File name
 
 		env.set("fileName", file.getName());
@@ -444,7 +450,7 @@ public class ToolsUtil {
 			ConventionKeys.COMMENT_JAVADOC_TEMPLATE_INTERFACE,
 			env.interpolate(classMask));
 
-		jalopy.format();
+		boolean formatSuccess = jalopy.format();
 
 		String newContent = sb.toString();
 
@@ -454,8 +460,7 @@ public class ToolsUtil {
 			"(?m)^[ \t]*((?:package|import) .*;)\\s*^[ \t]*/\\*\\*",
 			"$1\n\n/**");
 
-		/*
-		// Remove blank lines after try {
+		/*// Remove blank lines after try {
 
 		newContent = StringUtil.replace(newContent, "try {\n\n", "try {\n");
 
@@ -469,12 +474,16 @@ public class ToolsUtil {
 
 		// Add space to last }
 
-		newContent = newContent.substring(0, newContent.length() - 2) + "\n\n}";
-		*/
+		newContent =
+			newContent.substring(0, newContent.length() - 2) + "\n\n}";*/
 
 		writeFileRaw(file, newContent, modifiedFileNames);
 
 		tempFile.deleteOnExit();
+
+		if (failOnFormatError && !formatSuccess) {
+			throw new IOException("Unable to beautify " + file);
+		}
 	}
 
 	public static void writeFile(

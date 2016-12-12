@@ -33,6 +33,7 @@ import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Provides the remote service interface for JournalFolder. Methods of this
@@ -157,6 +158,11 @@ public interface JournalFolderService extends BaseService {
 		OrderByComparator<?> obc);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<java.lang.Object> getFoldersAndArticles(long groupId,
+		long userId, long folderId, int status, Locale locale, int start,
+		int end, OrderByComparator<?> obc);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<java.lang.Long> getSubfolderIds(long groupId, long folderId,
 		boolean recurse);
 
@@ -166,7 +172,7 @@ public interface JournalFolderService extends BaseService {
 		throws PortalException;
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #getSubfolderIds(List, long,
+	* @deprecated As of 4.0.0, replaced by {@link #getSubfolderIds(List, long,
 	long, boolean)}
 	*/
 	@java.lang.Deprecated

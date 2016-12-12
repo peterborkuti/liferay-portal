@@ -137,7 +137,7 @@ public class DDMFormJSONDeserializerTest
 	}
 
 	protected void setUpDefaultDDMFormFieldType() {
-		when (
+		when(
 			_defaultDDMFormFieldType.getDDMFormFieldTypeSettings()
 		).then(
 			new Answer<Class<? extends DDMFormFieldTypeSettings>>() {
@@ -167,6 +167,7 @@ public class DDMFormJSONDeserializerTest
 		Assert.assertEquals(
 			"You must check this box to continue.",
 			ddmFormFieldValidation.getErrorMessage());
+
 		Assert.assertEquals("true", ddmFormField.getVisibilityExpression());
 	}
 

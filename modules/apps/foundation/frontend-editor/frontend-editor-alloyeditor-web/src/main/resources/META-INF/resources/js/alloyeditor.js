@@ -33,24 +33,33 @@ AUI.add(
 					},
 
 					onBlurMethod: {
-						validator: Lang.isFunction
+						getter: '_getEditorMethod',
+						validator: '_validateEditorMethod'
 					},
 
 					onChangeMethod: {
-						validator: Lang.isFunction
+						getter: '_getEditorMethod',
+						validator: '_validateEditorMethod'
 					},
 
 					onFocusMethod: {
-						validator: Lang.isFunction
+						getter: '_getEditorMethod',
+						validator: '_validateEditorMethod'
 					},
 
 					onInitMethod: {
-						validator: Lang.isFunction
+						getter: '_getEditorMethod',
+						validator: '_validateEditorMethod'
 					},
 
 					textMode: {
 						validator: Lang.isBoolean,
 						value: {}
+					},
+
+					useCustomDataProcessor: {
+						validator: Lang.isBoolean,
+						value: false
 					}
 				},
 
@@ -102,6 +111,10 @@ AUI.add(
 							nativeEditor.on('focus', instance._onFocus, instance);
 						}
 
+						if (instance.get('useCustomDataProcessor')) {
+							nativeEditor.on('customDataProcessorLoaded', instance._onCustomDataProcessorLoaded, instance);
+						}
+
 						var editorConfig = instance.get('editorConfig');
 
 						if (editorConfig.disallowedContent && editorConfig.disallowedContent.indexOf('br') !== -1) {
@@ -128,7 +141,12 @@ AUI.add(
 					focus: function() {
 						var instance = this;
 
-						instance.getNativeEditor().focus();
+						if (instance.instanceReady) {
+							instance.getNativeEditor().focus();
+						}
+						else {
+							instance.pendingFocus = true;
+						}
 					},
 
 					getCkData: function() {
@@ -180,7 +198,12 @@ AUI.add(
 					setHTML: function(value) {
 						var instance = this;
 
-						instance.getNativeEditor().setData(value);
+						if (instance.instanceReady) {
+							instance.getNativeEditor().setData(value);
+						}
+						else {
+							instance.set('contents', value);
+						}
 					},
 
 					_afterGet: function(attrName) {
@@ -202,31 +225,11 @@ AUI.add(
 						}
 					},
 
-					_onBlur: function(event) {
-						var instance = this;
-
-						var blurFn = instance.get('onBlurMethod');
-
-						blurFn(event.editor);
+					_getEditorMethod: function(method) {
+						return Lang.isFunction(method) ? method : (window[method] || method);
 					},
 
-					_onChange: function() {
-						var instance = this;
-
-						var changeFn = instance.get('onChangeMethod');
-
-						changeFn(instance.getText());
-					},
-
-					_onFocus: function(event) {
-						var instance = this;
-
-						var focusFn = instance.get('onFocusMethod');
-
-						focusFn(event.editor);
-					},
-
-					_onInstanceReady: function() {
+					_initializeData: function() {
 						var instance = this;
 
 						var contents = instance.get('contents');
@@ -237,13 +240,67 @@ AUI.add(
 
 						var onInitFn = instance.get('onInitMethod');
 
-						if (onInitFn) {
+						if (Lang.isFunction(onInitFn)) {
 							onInitFn();
 						}
+
+						if (instance.pendingFocus) {
+							instance.pendingFocus = false;
+
+							instance.focus();
+						}
+					},
+
+					_onBlur: function(event) {
+						var instance = this;
+
+						var blurFn = instance.get('onBlurMethod');
+
+						if (Lang.isFunction(blurFn)) {
+							blurFn(event.editor);
+						}
+					},
+
+					_onChange: function() {
+						var instance = this;
+
+						var changeFn = instance.get('onChangeMethod');
+
+						if (Lang.isFunction(changeFn)) {
+							changeFn(instance.getText());
+						}
+					},
+
+					_onCustomDataProcessorLoaded: function() {
+						var instance = this;
+
+						instance.customDataProcessorLoaded = true;
+
+						if (instance.instanceReady) {
+							instance._initializeData();
+						}
+					},
+
+					_onFocus: function(event) {
+						var instance = this;
+
+						var focusFn = instance.get('onFocusMethod');
+
+						if (Lang.isFunction(focusFn)) {
+							focusFn(event.editor);
+						}
+					},
+
+					_onInstanceReady: function() {
+						var instance = this;
 
 						instance.instanceReady = true;
 
 						window[instance.get('namespace')].instanceReady = true;
+
+						if (instance.customDataProcessorLoaded || !instance.get('useCustomDataProcessor')) {
+							instance._initializeData();
+						}
 					},
 
 					_onKey: function(event) {
@@ -262,6 +319,10 @@ AUI.add(
 						fragment.writeHtml(writer);
 
 						event.data.dataValue = writer.getHtml();
+					},
+
+					_validateEditorMethod: function(method) {
+						return Lang.isString(method) || Lang.isFunction(method);
 					}
 				}
 			}

@@ -212,17 +212,17 @@ public class JenkinsPerformanceDataUtil {
 		}
 
 		private void _setAxis(JSONObject childJSONObject) throws Exception {
-			String _url = childJSONObject.getString("url");
+			String url = childJSONObject.getString("url");
 
-			_url = URLDecoder.decode(_url, "UTF-8");
+			url = URLDecoder.decode(url, "UTF-8");
 
-			int x = _url.indexOf("AXIS_VARIABLE");
+			int x = url.indexOf("AXIS_VARIABLE");
 
-			_url = _url.substring(x);
+			url = url.substring(x);
 
-			int y = _url.indexOf(",");
+			int y = url.indexOf(",");
 
-			_axis = _url.substring(0, y);
+			_axis = url.substring(0, y);
 		}
 
 		private void _setUrl(JSONObject childJSONObject) throws Exception {
@@ -236,6 +236,7 @@ public class JenkinsPerformanceDataUtil {
 			int x = _className.lastIndexOf(".");
 
 			sb.append(_className.substring(0, x));
+
 			sb.append("/");
 			sb.append(_className.substring(x + 1));
 			sb.append("/");
@@ -343,9 +344,9 @@ public class JenkinsPerformanceDataUtil {
 			return;
 		}
 
-		List<?> subList = list.subList(maxSize, list.size());
+		List<?> sublist = list.subList(maxSize, list.size());
 
-		subList.clear();
+		sublist.clear();
 	}
 
 	private static boolean _broken;

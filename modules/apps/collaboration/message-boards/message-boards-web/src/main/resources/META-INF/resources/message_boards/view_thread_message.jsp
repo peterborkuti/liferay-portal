@@ -55,8 +55,8 @@ MBThread thread = (MBThread)request.getAttribute("edit_message.jsp-thread");
 				String userDisplayText = LanguageUtil.format(request, "x-modified-x-ago", new Object[] {messageUserName, modifiedDateDescription});
 				%>
 
-				<h5 class="message-user-display text-default" title="<%= userDisplayText %>">
-					<%= userDisplayText %>
+				<h5 class="message-user-display text-default" title="<%= HtmlUtil.escapeAttribute(userDisplayText) %>">
+					<%= HtmlUtil.escape(userDisplayText) %>
 				</h5>
 
 				<h4 title="<%= HtmlUtil.escape(message.getSubject()) %>">
@@ -108,6 +108,7 @@ MBThread thread = (MBThread)request.getAttribute("edit_message.jsp-thread");
 					<c:if test="<%= showRecentPosts %>">
 						<portlet:renderURL var="recentPostsURL">
 							<portlet:param name="mvcRenderCommandName" value="/message_boards/view_recent_posts" />
+							<portlet:param name="redirect" value="<%= currentURL %>" />
 							<portlet:param name="groupThreadsUserId" value="<%= String.valueOf(messageUser.getUserId()) %>" />
 						</portlet:renderURL>
 
@@ -207,7 +208,7 @@ MBThread thread = (MBThread)request.getAttribute("edit_message.jsp-thread");
 							<c:if test="<%= hasReplyPermission && !thread.isLocked() %>">
 
 								<%
-								String taglibReplyToMessageURL = "javascript:" + liferayPortletResponse.getNamespace() + "addReplyToMessage('" + message.getMessageId() + "');";
+								String taglibReplyToMessageURL = "javascript:" + liferayPortletResponse.getNamespace() + "addReplyToMessage('" + message.getMessageId() + "', '');";
 								%>
 
 								<liferay-ui:icon
@@ -225,9 +226,24 @@ MBThread thread = (MBThread)request.getAttribute("edit_message.jsp-thread");
 									<portlet:param name="quote" value="<%= Boolean.TRUE.toString() %>" />
 								</portlet:renderURL>
 
+								<%
+								String quoteText = null;
+
+								if (messageFormat.equals("bbcode")) {
+									quoteText = MBUtil.getBBCodeQuoteBody(request, message);
+								}
+								else {
+									quoteText = MBUtil.getHtmlQuoteBody(request, message);
+								}
+
+								quoteText = HtmlUtil.escapeJS(quoteText);
+
+								String taglibReplyWithQuoteToMessageURL = "javascript:" + liferayPortletResponse.getNamespace() + "addReplyToMessage('" + message.getMessageId() + "', '" + quoteText + "');";
+								%>
+
 								<liferay-ui:icon
 									message="reply-with-quote"
-									url="<%= quoteURL %>"
+									url="<%= taglibReplyWithQuoteToMessageURL %>"
 								/>
 							</c:if>
 
@@ -435,6 +451,7 @@ MBThread thread = (MBThread)request.getAttribute("edit_message.jsp-thread");
 									label="<%= true %>"
 									markupView="lexicon"
 									message="<%= sb.toString() %>"
+									method="get"
 									url="<%= PortletFileRepositoryUtil.getDownloadPortletFileEntryURL(themeDisplay, fileEntry, StringPool.BLANK) %>"
 								/>
 							</li>

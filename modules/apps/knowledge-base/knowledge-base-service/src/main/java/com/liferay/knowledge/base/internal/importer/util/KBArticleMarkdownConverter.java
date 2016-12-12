@@ -25,6 +25,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.ModelHintsUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
@@ -76,7 +77,15 @@ public class KBArticleMarkdownConverter {
 				"Missing title heading ID in file: " + fileEntryName);
 		}
 
-		_title = HtmlUtil.unescape(stripIds(heading));
+		String title = HtmlUtil.unescape(heading);
+
+		int x = title.indexOf("[](id=");
+
+		if (x != -1) {
+			title = title.substring(0, x);
+		}
+
+		_title = title;
 
 		html = stripIds(html);
 
@@ -179,7 +188,8 @@ public class KBArticleMarkdownConverter {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
 							"Unable to obtain image URL from file entry " +
-								imageFileEntry.getFileEntryId());
+								imageFileEntry.getFileEntryId(),
+							pe);
 					}
 				}
 
@@ -227,7 +237,7 @@ public class KBArticleMarkdownConverter {
 			sb.append(StringPool.SLASH);
 		}
 
-		sb.append(fileEntryName);
+		sb.append(FileUtil.replaceSeparator(fileEntryName));
 
 		return sb.toString();
 	}
@@ -311,10 +321,19 @@ public class KBArticleMarkdownConverter {
 
 		do {
 			int x = content.indexOf(StringPool.EQUAL, index);
+
 			int y = content.indexOf(StringPool.CLOSE_PARENTHESIS, x);
 
 			if (y != -1) {
-				sb.append(StringUtil.trimTrailing(content.substring(0, index)));
+				int z = content.indexOf("</h", y);
+
+				if (z != (y + 1)) {
+					sb.append(content.substring(0, y + 1));
+				}
+				else {
+					sb.append(
+						StringUtil.trimTrailing(content.substring(0, index)));
+				}
 
 				content = content.substring(y + 1);
 			}

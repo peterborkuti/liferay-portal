@@ -48,9 +48,7 @@ public class CSSBuilderInvoker {
 				_getAbsolutePath(baseDir, cssBuilderArgs.getDocrootDirName()));
 		args.add(
 			"sass.generate.source.map=" + cssBuilderArgs.isGenerateSourceMap());
-		args.add(
-			"sass.output.dir=" +
-				_getAbsolutePath(baseDir, cssBuilderArgs.getOutputDirName()));
+		args.add("sass.output.dir=" + cssBuilderArgs.getOutputDirName());
 		args.add(
 			"sass.portal.common.path=" +
 				_getAbsolutePath(
@@ -76,7 +74,11 @@ public class CSSBuilderInvoker {
 	}
 
 	private static String _getAbsolutePath(File baseDir, String fileName) {
-		File file = new File(baseDir, fileName);
+		File file = new File(fileName);
+
+		if (!file.isAbsolute()) {
+			file = new File(baseDir, fileName);
+		}
 
 		return StringUtil.replace(
 			file.getAbsolutePath(), CharPool.BACK_SLASH, CharPool.SLASH);

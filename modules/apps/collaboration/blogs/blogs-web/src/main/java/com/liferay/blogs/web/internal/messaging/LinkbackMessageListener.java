@@ -15,6 +15,7 @@
 package com.liferay.blogs.web.internal.messaging;
 
 import com.liferay.blogs.configuration.BlogsConfiguration;
+import com.liferay.blogs.linkback.LinkbackConsumer;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.messaging.BaseSchedulerEntryMessageListener;
 import com.liferay.portal.kernel.messaging.DestinationNames;
@@ -24,9 +25,7 @@ import com.liferay.portal.kernel.scheduler.SchedulerEngineHelper;
 import com.liferay.portal.kernel.scheduler.TimeUnit;
 import com.liferay.portal.kernel.scheduler.TriggerFactory;
 import com.liferay.portal.kernel.scheduler.TriggerFactoryUtil;
-import com.liferay.portlet.blogs.linkback.LinkbackConsumer;
-import com.liferay.portlet.blogs.linkback.LinkbackConsumerUtil;
-import com.liferay.portlet.blogs.util.LinkbackProducerUtil;
+import com.liferay.portal.linkback.LinkbackProducerUtil;
 
 import java.util.Map;
 
@@ -90,8 +89,10 @@ public class LinkbackMessageListener extends BaseSchedulerEntryMessageListener {
 	}
 
 	private volatile BlogsConfiguration _blogsConfiguration;
-	private final LinkbackConsumer _linkbackConsumer =
-		LinkbackConsumerUtil.getLinkbackConsumer();
+
+	@Reference
+	private LinkbackConsumer _linkbackConsumer;
+
 	private SchedulerEngineHelper _schedulerEngineHelper;
 
 }

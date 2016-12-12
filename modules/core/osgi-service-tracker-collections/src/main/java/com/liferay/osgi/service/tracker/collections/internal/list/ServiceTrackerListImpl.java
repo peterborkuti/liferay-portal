@@ -163,7 +163,7 @@ public class ServiceTrackerListImpl<S, T> implements ServiceTrackerList<S, T> {
 			ServiceReferenceServiceTuple<S, T> serviceReferenceServiceTuple =
 				new ServiceReferenceServiceTuple<>(serviceReference, service);
 
-			synchronized(_services) {
+			synchronized (_services) {
 				int index = Collections.binarySearch(
 					_services, serviceReferenceServiceTuple, _comparator);
 
@@ -173,7 +173,7 @@ public class ServiceTrackerListImpl<S, T> implements ServiceTrackerList<S, T> {
 					}
 				}
 				else if (index < 0) {
-					_services.add(((-index) - 1), serviceReferenceServiceTuple);
+					_services.add((-index) - 1, serviceReferenceServiceTuple);
 				}
 			}
 

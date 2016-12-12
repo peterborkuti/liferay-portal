@@ -88,6 +88,7 @@ public class WabBundleProcessor {
 		BundleWiring bundleWiring = _bundle.adapt(BundleWiring.class);
 
 		_bundleClassLoader = bundleWiring.getClassLoader();
+
 		_bundleContext = _bundle.getBundleContext();
 	}
 
@@ -363,11 +364,9 @@ public class WabBundleProcessor {
 		// The following supported listener is omitted on purpose because it is
 		// registered individually.
 
-		/*
-		if (ServletContextListener.class.isInstance(eventListener)) {
+		/*if (ServletContextListener.class.isInstance(eventListener)) {
 			classNamesList.add(ServletContextListener.class.getName());
-		}
-		*/
+		}*/
 
 		if (ServletRequestAttributeListener.class.isInstance(eventListener)) {
 			classNamesList.add(ServletRequestAttributeListener.class.getName());
@@ -430,8 +429,7 @@ public class WabBundleProcessor {
 				HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_SELECT,
 				_contextName);
 			properties.put(
-				HttpWhiteboardConstants.
-					HTTP_WHITEBOARD_FILTER_ASYNC_SUPPORTED,
+				HttpWhiteboardConstants.HTTP_WHITEBOARD_FILTER_ASYNC_SUPPORTED,
 				filterDefinition.isAsyncSupported());
 			properties.put(
 				HttpWhiteboardConstants.HTTP_WHITEBOARD_FILTER_DISPATCHER,
@@ -669,7 +667,7 @@ public class WabBundleProcessor {
 		Class<?>[] handledTypesArray = handledTypes.value();
 
 		if (handledTypesArray == null) {
-			handledTypesArray = new Class[0];
+			handledTypesArray = new Class<?>[0];
 		}
 
 		Collection<String> classResources = bundleWiring.listResources(
@@ -749,7 +747,7 @@ public class WabBundleProcessor {
 
 		@Override
 		public Class<?>[] value() {
-			return new Class[0];
+			return new Class<?>[0];
 		}
 
 	};

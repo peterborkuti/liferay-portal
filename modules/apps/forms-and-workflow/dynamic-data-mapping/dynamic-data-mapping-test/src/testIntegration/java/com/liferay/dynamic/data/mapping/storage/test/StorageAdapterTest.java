@@ -17,7 +17,6 @@ package com.liferay.dynamic.data.mapping.storage.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.service.DLAppLocalServiceUtil;
-import com.liferay.dynamic.data.mapping.form.evaluator.DDMFormFieldEvaluationResult;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldValidation;
@@ -85,7 +84,7 @@ public class StorageAdapterTest extends BaseDDMServiceTestCase {
 
 	@BeforeClass
 	public static void setUpClass() {
-		_CLASS_NAME_ID = PortalUtil.getClassNameId(
+		_classNameId = PortalUtil.getClassNameId(
 			"com.liferay.dynamic.data.lists.model.DDLRecordSet");
 
 		_enLocale = LocaleUtil.fromLanguageId("en_US");
@@ -107,7 +106,7 @@ public class StorageAdapterTest extends BaseDDMServiceTestCase {
 		String definition = read("ddm-structure-boolean-field.xsd");
 
 		DDMStructure structure = addStructure(
-			_CLASS_NAME_ID, null, "Boolean Field Structure", definition,
+			_classNameId, null, "Boolean Field Structure", definition,
 			StorageType.JSON.getValue(), DDMStructureConstants.TYPE_DEFAULT);
 
 		Fields fields = new Fields();
@@ -139,10 +138,10 @@ public class StorageAdapterTest extends BaseDDMServiceTestCase {
 		validate(structure.getStructureId(), fields);
 	}
 
-	@Test
+	@Test(expected = DDMFormValuesValidationException.MustSetValidValue.class)
 	public void testCreateWithInvalidDDMFieldValue() throws Exception {
 		DDMStructure structure = addStructure(
-			_CLASS_NAME_ID, "Default Structure");
+			_classNameId, "Default Structure");
 
 		DDMForm ddmForm = DDMFormTestUtil.createDDMForm();
 
@@ -169,34 +168,16 @@ public class StorageAdapterTest extends BaseDDMServiceTestCase {
 
 		ddmFormValues.addDDMFormFieldValue(ddmFormFieldValue);
 
-		try {
-			_jsonStorageAdapter.create(
-				TestPropsValues.getCompanyId(), structure.getStructureId(),
-				ddmFormValues,
-				ServiceContextTestUtil.getServiceContext(group.getGroupId()));
-
-			Assert.fail();
-		}
-		catch (DDMFormValuesValidationException.MustSetValidValues msvv) {
-			List<DDMFormFieldEvaluationResult> ddmFormFieldEvaluationResults =
-				msvv.getDDMFormFieldEvaluationResults();
-
-			Assert.assertEquals(1, ddmFormFieldEvaluationResults.size());
-
-			DDMFormFieldEvaluationResult ddmFormFieldEvaluationResult =
-				ddmFormFieldEvaluationResults.get(0);
-
-			Assert.assertEquals("text", ddmFormFieldEvaluationResult.getName());
-			Assert.assertEquals(
-				"custom validation error message",
-				ddmFormFieldEvaluationResult.getErrorMessage());
-		}
+		_jsonStorageAdapter.create(
+			TestPropsValues.getCompanyId(), structure.getStructureId(),
+			ddmFormValues,
+			ServiceContextTestUtil.getServiceContext(group.getGroupId()));
 	}
 
 	@Test(expected = DDMFormValuesValidationException.RequiredValue.class)
 	public void testCreateWithInvalidDDMFormValues() throws Exception {
 		DDMStructure structure = addStructure(
-			_CLASS_NAME_ID, "Default Structure");
+			_classNameId, "Default Structure");
 
 		DDMForm ddmForm = DDMFormTestUtil.createDDMForm();
 
@@ -217,7 +198,7 @@ public class StorageAdapterTest extends BaseDDMServiceTestCase {
 	@Test
 	public void testCreateWithValidDDMFieldValue() throws Exception {
 		DDMStructure structure = addStructure(
-			_CLASS_NAME_ID, "Default Structure");
+			_classNameId, "Default Structure");
 
 		DDMForm ddmForm = DDMFormTestUtil.createDDMForm();
 
@@ -255,7 +236,7 @@ public class StorageAdapterTest extends BaseDDMServiceTestCase {
 		String definition = read("ddm-structure-date-field.xsd");
 
 		DDMStructure structure = addStructure(
-			_CLASS_NAME_ID, null, "Date Field Structure", definition,
+			_classNameId, null, "Date Field Structure", definition,
 			StorageType.JSON.getValue(), DDMStructureConstants.TYPE_DEFAULT);
 
 		Fields fields = new Fields();
@@ -297,7 +278,7 @@ public class StorageAdapterTest extends BaseDDMServiceTestCase {
 		String definition = read("ddm-structure-decimal-field.xsd");
 
 		DDMStructure structure = addStructure(
-			_CLASS_NAME_ID, null, "Decimal Field Structure", definition,
+			_classNameId, null, "Decimal Field Structure", definition,
 			StorageType.JSON.getValue(), DDMStructureConstants.TYPE_DEFAULT);
 
 		Fields fields = new Fields();
@@ -334,7 +315,7 @@ public class StorageAdapterTest extends BaseDDMServiceTestCase {
 		String definition = read("ddm-structure-doc-lib-field.xsd");
 
 		DDMStructure structure = addStructure(
-			_CLASS_NAME_ID, null, "Documents and Media Field Structure",
+			_classNameId, null, "Documents and Media Field Structure",
 			definition, StorageType.JSON.getValue(),
 			DDMStructureConstants.TYPE_DEFAULT);
 
@@ -393,7 +374,7 @@ public class StorageAdapterTest extends BaseDDMServiceTestCase {
 		String definition = read("ddm-structure-integer-field.xsd");
 
 		DDMStructure structure = addStructure(
-			_CLASS_NAME_ID, null, "Integer Field Structure", definition,
+			_classNameId, null, "Integer Field Structure", definition,
 			StorageType.JSON.getValue(), DDMStructureConstants.TYPE_DEFAULT);
 
 		Fields fields = new Fields();
@@ -430,7 +411,7 @@ public class StorageAdapterTest extends BaseDDMServiceTestCase {
 		String definition = read("ddm-structure-link-to-page-field.xsd");
 
 		DDMStructure structure = addStructure(
-			_CLASS_NAME_ID, null, "Link to Page Field Structure", definition,
+			_classNameId, null, "Link to Page Field Structure", definition,
 			StorageType.JSON.getValue(), DDMStructureConstants.TYPE_DEFAULT);
 
 		Fields fields = new Fields();
@@ -467,7 +448,7 @@ public class StorageAdapterTest extends BaseDDMServiceTestCase {
 		String definition = read("ddm-structure-number-field.xsd");
 
 		DDMStructure structure = addStructure(
-			_CLASS_NAME_ID, null, "Number Field Structure", definition,
+			_classNameId, null, "Number Field Structure", definition,
 			StorageType.JSON.getValue(), DDMStructureConstants.TYPE_DEFAULT);
 
 		Fields fields = new Fields();
@@ -491,8 +472,7 @@ public class StorageAdapterTest extends BaseDDMServiceTestCase {
 
 		Field fieldsDisplayField = createFieldsDisplayField(
 			structure.getStructureId(),
-			"number_INSTANCE_rztm,number_INSTANCE_ovho," +
-				"number_INSTANCE_krvx");
+			"number_INSTANCE_rztm,number_INSTANCE_ovho,number_INSTANCE_krvx");
 
 		fields.put(fieldsDisplayField);
 
@@ -504,7 +484,7 @@ public class StorageAdapterTest extends BaseDDMServiceTestCase {
 		String definition = read("ddm-structure-radio-field.xsd");
 
 		DDMStructure structure = addStructure(
-			_CLASS_NAME_ID, null, "Radio Field Structure", definition,
+			_classNameId, null, "Radio Field Structure", definition,
 			StorageType.JSON.getValue(), DDMStructureConstants.TYPE_DEFAULT);
 
 		Fields fields = new Fields();
@@ -540,7 +520,7 @@ public class StorageAdapterTest extends BaseDDMServiceTestCase {
 		String definition = read("ddm-structure-select-field.xsd");
 
 		DDMStructure structure = addStructure(
-			_CLASS_NAME_ID, null, "Select Field Structure", definition,
+			_classNameId, null, "Select Field Structure", definition,
 			StorageType.JSON.getValue(), DDMStructureConstants.TYPE_DEFAULT);
 
 		Fields fields = new Fields();
@@ -576,7 +556,7 @@ public class StorageAdapterTest extends BaseDDMServiceTestCase {
 		String definition = read("ddm-structure-text-field.xsd");
 
 		DDMStructure structure = addStructure(
-			_CLASS_NAME_ID, null, "Text Field Structure", definition,
+			_classNameId, null, "Text Field Structure", definition,
 			StorageType.JSON.getValue(), DDMStructureConstants.TYPE_DEFAULT);
 
 		Fields fields = new Fields();
@@ -610,7 +590,7 @@ public class StorageAdapterTest extends BaseDDMServiceTestCase {
 	@Test(expected = DDMFormValuesValidationException.RequiredValue.class)
 	public void testUpdateWithInvalidDDMFormValues() throws Exception {
 		DDMStructure structure = addStructure(
-			_CLASS_NAME_ID, "Default Structure");
+			_classNameId, "Default Structure");
 
 		DDMForm ddmForm = DDMFormTestUtil.createDDMForm();
 
@@ -737,8 +717,7 @@ public class StorageAdapterTest extends BaseDDMServiceTestCase {
 			expectedFieldsString, jsonSerializer.serializeDeep(actualFields));
 	}
 
-	private static long _CLASS_NAME_ID;
-
+	private static long _classNameId;
 	private static Locale _enLocale;
 	private static Locale _ptLocale;
 

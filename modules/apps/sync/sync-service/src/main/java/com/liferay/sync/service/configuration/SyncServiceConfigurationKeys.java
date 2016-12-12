@@ -28,6 +28,9 @@ public class SyncServiceConfigurationKeys {
 	public static final String SYNC_CLIENT_BATCH_FILE_MAX_SIZE =
 		"sync.client.batch.file.max.size";
 
+	public static final String SYNC_CLIENT_FORCE_SECURITY_MODE =
+		"sync.client.force.security.mode";
+
 	public static final String SYNC_CLIENT_MAX_CONNECTIONS =
 		"sync.client.max.connections";
 
@@ -60,6 +63,8 @@ public class SyncServiceConfigurationKeys {
 
 	public static final String SYNC_FILE_DIFF_CACHE_EXPIRATION_TIME =
 		"sync.file.diff.cache.expiration.time";
+
+	public static final String SYNC_LAN_ENABLED = "sync.lan.enabled";
 
 	public static final String SYNC_MAC_PACKAGE_FOLDER_EXTENSIONS =
 		"sync.mac.package.folder.extensions";

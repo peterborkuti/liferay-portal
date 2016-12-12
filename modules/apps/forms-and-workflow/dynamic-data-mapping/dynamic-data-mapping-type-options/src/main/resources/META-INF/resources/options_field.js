@@ -3,6 +3,10 @@ AUI.add(
 	function(A) {
 		var AArray = A.Array;
 
+		var Renderer = Liferay.DDM.Renderer;
+
+		var Util = Renderer.Util;
+
 		var TPL_DRAG_HANDLE = '<div class="drag-handle icon-reorder"><span aria-hidden="true"></span></div>';
 
 		var TPL_DRAG_HELPER = '<div class="drag-helper"></div>';
@@ -26,6 +30,10 @@ AUI.add(
 
 					type: {
 						value: 'options'
+					},
+
+					value: {
+						value: []
 					}
 				},
 
@@ -40,78 +48,79 @@ AUI.add(
 						var sortableList = instance.get('sortableList');
 
 						instance._eventHandlers.push(
+							instance.on('liferay-ddm-form-field-key-value:destroy', instance._onDestroyOption),
+							instance.after('liferay-ddm-form-field-key-value:render', instance._afterRenderOption),
+							instance.after('liferay-ddm-form-field-key-value:valueChange', instance._afterOptionValueChange),
 							sortableList.after('drag:end', A.bind('_afterSortableListDragEnd', instance)),
 							sortableList.after('drag:start', A.bind('_afterSortableListDragStart', instance))
 						);
 
-						instance._createMainField();
+						instance._createMainOption();
 					},
 
-					addField: function() {
+					addOption: function() {
 						var instance = this;
 
-						var lastField = instance.getLastField();
+						var lastOption = instance.getLastOption();
 
-						var repeatedField = lastField.repeat();
+						var repeatedOption = lastOption.repeat();
 
-						instance._bindFieldUI(repeatedField);
-						instance._renderFieldUI(repeatedField);
-						instance._syncFieldUI(repeatedField);
-						instance._syncFieldUI(lastField);
+						instance._bindOptionUI(repeatedOption);
+						instance._renderOptionUI(repeatedOption);
+						instance._syncOptionUI(repeatedOption);
+						instance._syncOptionUI(lastOption);
 
-						instance.fire('addField');
+						repeatedOption.addTarget(instance);
 
-						return repeatedField;
+						instance.fire('addOption');
+
+						return repeatedOption;
 					},
 
 					clearValidationStatus: function() {
 						var instance = this;
 
-						instance.eachRepetition(
-							function(field) {
-								field.clearValidationStatus();
+						instance.eachOption(
+							function(option) {
+								option.clearValidationStatus();
 							}
 						);
 
 						OptionsField.superclass.clearValidationStatus.apply(instance, arguments);
 					},
 
-					eachRepetition: function(fn) {
+					eachOption: function(fn) {
 						var instance = this;
 
-						var field = instance._mainField;
+						var mainOption = instance._mainOption;
 
-						field.get('repetitions').forEach(fn, instance);
+						mainOption.getRepeatedSiblings().forEach(fn, instance);
 					},
 
-					getContextValue: function() {
+					empty: function() {
 						var instance = this;
 
-						return instance.getOptionsValues();
+						var mainOption = instance._mainOption;
+
+						var options = mainOption.getRepeatedSiblings();
+
+						while (options.length > 1) {
+							var option = options[options.length - 1];
+
+							if (option !== mainOption) {
+								option.remove();
+							}
+						}
+
+						mainOption.set('key', '');
 					},
 
-					getLastField: function() {
+					getLastOption: function() {
 						var instance = this;
 
-						var repetitions = instance._mainField.get('repetitions');
+						var repetitions = instance._mainOption.getRepeatedSiblings();
 
 						return repetitions[repetitions.length - 1];
-					},
-
-					getOptionsValues: function() {
-						var instance = this;
-
-						return A.map(
-							instance.get('value'),
-							function(item) {
-								var label = instance.getLocalizedValue(item.label) || '';
-
-								return {
-									label: label,
-									value: item.value
-								};
-							}
-						);
 					},
 
 					getValue: function() {
@@ -119,18 +128,14 @@ AUI.add(
 
 						var values = [];
 
-						instance.eachRepetition(
+						instance.eachOption(
 							function(item) {
 								var key = item.get('key');
 
-								var label = {};
-
 								if (key) {
-									label[instance.get('locale')] = item.getValue();
-
 									values.push(
 										{
-											label: label,
+											label: item.getValue(),
 											value: key
 										}
 									);
@@ -146,13 +151,15 @@ AUI.add(
 
 						var hasErrors = false;
 
-						instance.eachRepetition(
-							function(field) {
-								if (field.hasErrors()) {
-									hasErrors = true;
+						if (instance.get('visible')) {
+							instance.eachOption(
+								function(option) {
+									if (option.hasErrors()) {
+										hasErrors = true;
+									}
 								}
-							}
-						);
+							);
+						}
 
 						return hasErrors;
 					},
@@ -160,38 +167,40 @@ AUI.add(
 					hideErrorMessage: function() {
 						var instance = this;
 
-						instance.eachRepetition(
-							function(field) {
-								field.hideErrorMessage();
+						instance.eachOption(
+							function(option) {
+								option.hideErrorMessage();
 							}
 						);
 					},
 
-					moveField: function(field, oldIndex, newIndex) {
+					moveOption: function(option, oldIndex, newIndex) {
 						var instance = this;
 
-						var repetitions = field.get('repetitions');
+						var repetitions = option.getRepeatedSiblings();
 
-						repetitions.splice(newIndex, 0, repetitions.splice(oldIndex, 1)[0]);
+						var value = instance.get('value');
 
-						repetitions.forEach(A.bind('_syncRepeatableField', field));
+						instance._reorderOptions(repetitions, newIndex, oldIndex);
+
+						repetitions.forEach(A.bind('_syncRepeatableField', option));
+
+						instance._reorderOptions(value, newIndex, oldIndex);
+
+						instance.set('value', value);
 					},
 
-					processValidation: function() {
+					processEvaluationContext: function(context) {
 						var instance = this;
 
 						var value = instance.getValue();
 
 						if (value.length === 0 && instance.get('required')) {
-							instance.showErrorMessage(Liferay.Language.get('please-add-at-least-one-option'));
-
-							instance.showValidationStatus();
-
-							instance._mainField.focus();
+							context.valid = false;
+							context.errorMessage = Liferay.Language.get('please-add-at-least-one-option');
 						}
-						else {
-							OptionsField.superclass.processValidation.apply(instance, arguments);
-						}
+
+						return context;
 					},
 
 					render: function() {
@@ -199,36 +208,26 @@ AUI.add(
 
 						OptionsField.superclass.render.apply(instance, arguments);
 
-						instance._clearRepetitions();
-
-						instance._renderFields(instance.getOptionsValues());
+						instance._renderOptions(instance.get('value'));
 
 						return instance;
 					},
 
-					setValue: function(optionsValues) {
+					setValue: function(value) {
 						var instance = this;
 
-						instance._clearRepetitions();
-						instance._renderFields(optionsValues);
+						if (!Util.compare(value, instance.get('value'))) {
+							instance.set('value', value);
+							instance._renderOptions(value);
+						}
 					},
 
-					showErrorMessage: function(errorMessage) {
+					showErrorMessage: function() {
 						var instance = this;
 
-						var mainField = instance._mainField;
+						var mainOption = instance._mainOption;
 
-						mainField.showErrorMessage(errorMessage);
-					},
-
-					showValidationStatus: function() {
-						var instance = this;
-
-						var hasErrors = instance.hasErrors();
-
-						var mainField = instance._mainField;
-
-						mainField.get('container').toggleClass('has-error', hasErrors);
+						mainOption.showErrorMessage();
 					},
 
 					updateContainer: function() {
@@ -236,18 +235,49 @@ AUI.add(
 
 						OptionsField.superclass.updateContainer.apply(instance, arguments);
 
-						instance.eachRepetition(
-							function(field) {
-								field.updateContainer();
+						instance.eachOption(
+							function(option) {
+								option.updateContainer();
 							}
 						);
 					},
 
-					_afterRender: function(field) {
+					_afterErrorMessageChange: function(event) {
 						var instance = this;
 
+						var mainOption = instance._mainOption;
+
+						mainOption.set('errorMessage', event.newVal);
+					},
+
+					_afterOptionValueChange: function(event) {
+						var instance = this;
+
+						var option = event.target;
+
+						var repetitions = option.getRepeatedSiblings();
+
+						if (option.get('repeatedIndex') === repetitions.length - 1) {
+							instance.addOption();
+						}
+
+						var value = instance.getValue();
+
+						if (value.length > 0 && instance.get('required')) {
+							instance.set('errorMessage', '');
+							instance.set('valid', true);
+						}
+
+						instance.set('value', value);
+					},
+
+					_afterRenderOption: function(event) {
+						var instance = this;
+
+						var option = event.target;
+
 						instance._bindListEvents();
-						instance._renderFieldUI(field);
+						instance._renderOptionUI(option);
 					},
 
 					_afterSortableListDragEnd: function(event) {
@@ -260,16 +290,16 @@ AUI.add(
 						var dragStartIndex = instance._dragStartIndex;
 
 						if (dragEndIndex !== dragStartIndex) {
-							var mainField = instance._mainField;
+							var mainOption = instance._mainOption;
 
-							var field = AArray.find(
-								mainField.get('repetitions'),
+							var option = AArray.find(
+								mainOption.getRepeatedSiblings(),
 								function(item) {
 									return item.get('container') === dragNode;
 								}
 							);
 
-							instance.moveField(field, dragStartIndex, dragEndIndex);
+							instance.moveOption(option, dragStartIndex, dragEndIndex);
 						}
 					},
 
@@ -287,23 +317,28 @@ AUI.add(
 						placeholderNode.setContent(dragNode.clone().show());
 					},
 
-					_bindFieldUI: function(field) {
+					_afterValidChange: function(event) {
 						var instance = this;
 
-						field.after('render', A.bind('_afterRender', instance, field));
+						var mainOption = instance._mainOption;
 
-						field.bindContainerEvent('click', A.bind('_onFieldClickClose', instance, field), '.close');
-						field.bindInputEvent('valuechange', A.bind('_onFieldValueChange', instance, field));
+						mainOption.set('valid', event.newVal);
 					},
 
 					_bindListEvents: function() {
 						var instance = this;
 
-						var options = instance._getOptionsNode();
+						var optionsNode = instance._getOptionsNode();
 
 						instance._eventHandlers.push(
-							options.delegate('focus', A.bind('_onFocusOption', instance), '.last-option .field')
+							optionsNode.delegate('focus', A.bind('_onFocusOption', instance), '.last-option .field')
 						);
+					},
+
+					_bindOptionUI: function(option) {
+						var instance = this;
+
+						option.bindContainerEvent('click', A.bind('_onOptionClickClose', instance, option), '.close');
 					},
 
 					_canSortNode: function(event) {
@@ -312,52 +347,43 @@ AUI.add(
 						var dragNode = event.drag.get('node');
 						var dropNode = event.drop.get('node');
 
-						var lastField = instance.getLastField();
-						var lastFieldContainer = lastField.get('container');
+						var lastOption = instance.getLastOption();
+						var lastOptionContainer = lastOption.get('container');
 
-						return lastFieldContainer !== dropNode && lastFieldContainer !== dragNode;
+						return lastOptionContainer !== dropNode && lastOptionContainer !== dragNode;
 					},
 
-					_clearRepetitions: function() {
-						var instance = this;
-
-						var mainField = instance._mainField;
-
-						mainField.get('repetitions').forEach(
-							function(field) {
-								if (field !== mainField) {
-									field.remove();
-								}
-							}
-						);
-
-						mainField.set('repetitions', [mainField]);
-					},
-
-					_createMainField: function() {
+					_createMainOption: function() {
 						var instance = this;
 
 						var strings = instance.get('strings');
 
-						instance._mainField = new Liferay.DDM.Field.KeyValue(
-							{
-								enableEvaluations: false,
-								placeholder: strings.addOptionMessage,
-								repeatable: true,
-								showLabel: false,
-								visibilityExpression: 'true'
-							}
-						);
+						var config = {
+							enableEvaluations: false,
+							fieldName: instance.get('fieldName') + 'Option',
+							placeholder: strings.addOptionMessage,
+							repeatable: true,
+							repeatedIndex: 0,
+							showLabel: false,
+							value: '',
+							visible: true
+						};
 
-						instance._bindFieldUI(instance._mainField);
+						config.context = A.clone(config);
+
+						instance._mainOption = new Liferay.DDM.Field.KeyValue(config);
+
+						instance._mainOption.addTarget(instance);
+
+						instance._bindOptionUI(instance._mainOption);
 					},
 
 					_getNodeIndex: function(node) {
 						var instance = this;
 
-						var options = instance._getOptionsNode();
+						var optionsNode = instance._getOptionsNode();
 
-						var siblings = options.all('> .lfr-ddm-form-field-container');
+						var siblings = optionsNode.all('> .lfr-ddm-form-field-container');
 
 						return siblings.indexOf(node);
 					},
@@ -370,89 +396,90 @@ AUI.add(
 						return container.one('.options');
 					},
 
-					_onFieldClickClose: function(field) {
+					_onDestroyOption: function(event) {
 						var instance = this;
 
-						if (field === instance._mainField) {
-							var repetitions = field.get('repetitions');
+						var option = event.target;
 
-							var index = repetitions.indexOf(field);
-
-							instance._mainField = repetitions[index + 1];
-						}
-
-						field.remove();
-
-						instance.fire('removeField');
-					},
-
-					_onFieldValueChange: function(field) {
-						var instance = this;
-
-						var repetitions = field.get('repetitions');
-
-						if (field.get('repeatedIndex') === repetitions.length - 1) {
-							instance.addField();
-						}
+						A.DD.DDM.getDrag(option.get('container')).destroy();
 					},
 
 					_onFocusOption: function(event) {
 						event.target.scrollIntoView();
 					},
 
-					_renderFields: function(optionsValues) {
+					_onOptionClickClose: function(option) {
+						var instance = this;
+
+						if (option === instance._mainOption) {
+							var repetitions = option.getRepeatedSiblings();
+
+							var index = repetitions.indexOf(option);
+
+							instance._mainOption = repetitions[index + 1];
+						}
+
+						option.remove();
+
+						instance.set('value', instance.getValue());
+					},
+
+					_renderOptions: function(optionsValues) {
 						var instance = this;
 
 						var container = instance.get('container');
 
-						var mainField = instance._mainField;
+						var mainOption = instance._mainOption;
 
-						mainField.render(container.one('.options'));
+						instance.empty();
 
-						instance._syncFieldUI(mainField);
+						mainOption.render(container.one('.options'));
 
-						var hasOptionValues = !!optionsValues.length;
-
-						if (hasOptionValues) {
-							var optionValue = optionsValues.shift();
-
-							instance._restoreField(mainField, optionValue);
-						}
+						instance._syncOptionUI(mainOption);
 
 						optionsValues.forEach(
-							function(optionValue) {
-								var newField = instance.addField();
+							function(optionValue, index) {
+								if (index === 0) {
+									instance._restoreOption(mainOption, optionValue);
+								}
+								else {
+									var newOption = instance.addOption();
 
-								instance._restoreField(newField, optionValue);
+									instance._restoreOption(newOption, optionValue);
+								}
 							}
 						);
 
-						if (hasOptionValues) {
-							instance.addField();
+						if (optionsValues.length) {
+							instance.addOption();
 						}
 					},
 
-					_renderFieldUI: function(field) {
+					_renderOptionUI: function(option) {
 						var instance = this;
 
-						var container = field.get('container');
+						var container = option.get('container');
 
 						container.append(TPL_DRAG_HANDLE + TPL_REMOVE_BUTTON);
 					},
 
-					_restoreField: function(field, contextValue) {
-						field.set('value', contextValue.label);
-						field.set('key', contextValue.value);
+					_reorderOptions: function(options, newIndex, oldIndex) {
+						options.splice(newIndex, 0, options.splice(oldIndex, 1)[0]);
 					},
 
-					_syncFieldUI: function(field) {
+					_restoreOption: function(option, contextValue) {
+						option.setValue(contextValue.label);
+						option.set('key', contextValue.value);
+					},
+
+					_syncOptionUI: function(option) {
 						var instance = this;
 
-						var addLastFieldClass = instance.getLastField() === field;
+						var addLastOptionClass = instance.getLastOption() === option;
 
-						var container = field.get('container');
+						var container = option.get('container');
 
-						container.toggleClass('last-option', addLastFieldClass);
+						container.toggleClass('last-option', addLastOptionClass);
 
 						var sortableList = instance.get('sortableList');
 

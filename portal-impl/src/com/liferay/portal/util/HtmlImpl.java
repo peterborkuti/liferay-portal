@@ -109,15 +109,77 @@ public class HtmlImpl implements Html {
 		// http://www.owasp.org/index.php/Cross_Site_Scripting
 		// #How_to_Protect_Yourself
 
-		return StringUtil.replace(
-			text,
-			new char[] {
-				'<', '>', '&', '"', '\'', '\u00bb', '\u2013', '\u2014', '\u2028'
-			},
-			new String[] {
-				"&lt;", "&gt;", "&amp;", "&#34;", "&#39;", "&#187;", "&#x2013;",
-				"&#x2014;", "&#x2028;"
-			});
+		StringBundler sb = null;
+
+		int lastReplacementIndex = 0;
+
+		for (int i = 0; i < text.length(); i++) {
+			char c = text.charAt(i);
+
+			String replacement = null;
+
+			if ((c < 256) && ((c >= 128) || _VALID_CHARS[c])) {
+				continue;
+			}
+
+			if (c == '<') {
+				replacement = "&lt;";
+			}
+			else if (c == '>') {
+				replacement = "&gt;";
+			}
+			else if (c == '&') {
+				replacement = "&amp;";
+			}
+			else if (c == '"') {
+				replacement = "&#34;";
+			}
+			else if (c == '\'') {
+				replacement = "&#39;";
+			}
+			else if (c == '\u00bb') {
+				replacement = "&#187;";
+			}
+			else if (c == '\u2013') {
+				replacement = "&#8211;";
+			}
+			else if (c == '\u2014') {
+				replacement = "&#8212;";
+			}
+			else if (c == '\u2028') {
+				replacement = "&#8232;";
+			}
+			else if (!_isValidXmlCharacter(c) ||
+					 _isUnicodeCompatibilityCharacter(c)) {
+
+				replacement = StringPool.SPACE;
+			}
+			else {
+				continue;
+			}
+
+			if (sb == null) {
+				sb = new StringBundler();
+			}
+
+			if (i > lastReplacementIndex) {
+				sb.append(text.substring(lastReplacementIndex, i));
+			}
+
+			sb.append(replacement);
+
+			lastReplacementIndex = i + 1;
+		}
+
+		if (sb == null) {
+			return text;
+		}
+
+		if (lastReplacementIndex < text.length()) {
+			sb.append(text.substring(lastReplacementIndex));
+		}
+
+		return sb.toString();
 	}
 
 	/**
@@ -168,48 +230,62 @@ public class HtmlImpl implements Html {
 
 		StringBuilder sb = new StringBuilder(text.length());
 
+		char[] hexBuffer = new char[4];
+
+		boolean modified = false;
+
 		for (int i = 0; i < text.length(); i++) {
 			char c = text.charAt(i);
 
-			if ((c > 255) || (c == CharPool.DASH) ||
-				(c == CharPool.UNDERLINE) || Character.isLetterOrDigit(c)) {
+			if (c < _VALID_CHARS.length) {
+				if (_VALID_CHARS[c]) {
+					sb.append(c);
+				}
+				else {
+					sb.append(prefix);
 
-				sb.append(c);
+					_appendHexChars(sb, hexBuffer, c);
+
+					sb.append(postfix);
+
+					if ((mode == ESCAPE_MODE_CSS) &&
+						(i < (text.length() - 1))) {
+
+						char nextChar = text.charAt(i + 1);
+
+						if ((nextChar >= CharPool.NUMBER_0) &&
+							(nextChar <= CharPool.NUMBER_9)) {
+
+							sb.append(CharPool.SPACE);
+						}
+					}
+
+					modified = true;
+				}
+			}
+			else if ((mode == ESCAPE_MODE_ATTRIBUTE) &&
+					 (!_isValidXmlCharacter(c) ||
+					  _isUnicodeCompatibilityCharacter(c))) {
+
+				sb.append(CharPool.SPACE);
+
+				modified = true;
 			}
 			else {
-				sb.append(prefix);
-
-				String hexString = StringUtil.toHexString(c);
-
-				if (hexString.length() == 1) {
-					sb.append(StringPool.ASCII_TABLE[48]);
-				}
-
-				sb.append(hexString);
-				sb.append(postfix);
-
-				if ((mode == ESCAPE_MODE_CSS) && (i < (text.length() - 1))) {
-					char nextChar = text.charAt(i + 1);
-
-					if ((nextChar >= CharPool.NUMBER_0) &&
-						(nextChar <= CharPool.NUMBER_9)) {
-
-						sb.append(StringPool.SPACE);
-					}
-				}
+				sb.append(c);
 			}
 		}
 
-		if (sb.length() == text.length()) {
-			return text;
+		if (modified) {
+			return sb.toString();
 		}
 
-		return sb.toString();
+		return text;
 	}
 
 	/**
-	 * Escapes the attribute value so that it is safe to use as an attribute
-	 * value.
+	 * Escapes the attribute value so that it is safe to use within a quoted
+	 * attribute.
 	 *
 	 * @param  attribute the attribute to escape
 	 * @return the escaped attribute value, or <code>null</code> if the
@@ -334,7 +410,7 @@ public class HtmlImpl implements Html {
 			}
 
 			if (hasToken) {
-				sb.append(StringPool.UNDERLINE);
+				sb.append(CharPool.UNDERLINE);
 			}
 			else {
 				sb.append(c);
@@ -424,13 +500,13 @@ public class HtmlImpl implements Html {
 				sb.append(text.substring(lastReplacementIndex, i));
 			}
 
-			sb.append(CharPool.UNDERLINE);
+			sb.append(StringPool.UNDERLINE);
 
 			if (c != CharPool.UNDERLINE) {
 				sb.append(StringUtil.toHexString(c));
 			}
 
-			sb.append(CharPool.UNDERLINE);
+			sb.append(StringPool.UNDERLINE);
 
 			lastReplacementIndex = i + 1;
 		}
@@ -557,7 +633,6 @@ public class HtmlImpl implements Html {
 
 		while (y != -1) {
 			sb.append(text.substring(x, y));
-			sb.append(StringPool.SPACE);
 
 			// Look for text enclosed by <abc></abc>
 
@@ -719,7 +794,7 @@ public class HtmlImpl implements Html {
 	}
 
 	protected int stripTag(char[] tag, String text, int pos) {
-		int x = pos + _TAG_SCRIPT.length;
+		int x = pos + tag.length;
 
 		// Find end of the tag
 
@@ -731,7 +806,7 @@ public class HtmlImpl implements Html {
 
 		// Check if preceding character is / (i.e. is this instance of <abc/>)
 
-		if (text.charAt(x-1) == '/') {
+		if (text.charAt(x - 1) == '/') {
 			return pos;
 		}
 
@@ -761,6 +836,56 @@ public class HtmlImpl implements Html {
 		return pos;
 	}
 
+	private static void _appendHexChars(
+		StringBuilder sb, char[] buffer, char c) {
+
+		int index = buffer.length;
+
+		do {
+			buffer[--index] = _HEX_DIGITS[c & 15];
+
+			c >>>= 4;
+		}
+		while (c != 0);
+
+		if (index == (buffer.length - 1)) {
+			sb.append(CharPool.NUMBER_0);
+			sb.append(buffer[index]);
+
+			return;
+		}
+
+		sb.append(buffer, index, buffer.length - index);
+	}
+
+	private boolean _isUnicodeCompatibilityCharacter(char c) {
+		if (((c >= '\u007f') && (c <= '\u0084')) ||
+			((c >= '\u0086') && (c <= '\u009f')) ||
+			((c >= '\ufdd0') && (c <= '\ufdef'))) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	private boolean _isValidXmlCharacter(char c) {
+		if (((c >= CharPool.SPACE) && (c <= '\ud7ff')) ||
+			((c >= '\ue000') && (c <= '\ufffd')) || Character.isSurrogate(c) ||
+			(c == CharPool.TAB) || (c == CharPool.NEW_LINE) ||
+			(c == CharPool.RETURN)) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	private static final char[] _HEX_DIGITS = {
+		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd',
+		'e', 'f'
+	};
+
 	private static final String[] _MS_WORD_HTML = new String[] {
 		"&reg;", StringPool.APOSTROPHE, StringPool.QUOTE, StringPool.QUOTE
 	};
@@ -772,6 +897,8 @@ public class HtmlImpl implements Html {
 
 	private static final char[] _TAG_STYLE = {'s', 't', 'y', 'l', 'e'};
 
+	private static final boolean[] _VALID_CHARS = new boolean[256];
+
 	// See http://www.w3.org/TR/xpath20/#lexical-structure
 
 	private static final char[] _XPATH_TOKENS = {
@@ -782,21 +909,30 @@ public class HtmlImpl implements Html {
 	private static final Map<String, String> _unescapeMap = new HashMap<>();
 
 	static {
-		_unescapeMap.put("lt", "<");
-		_unescapeMap.put("gt", ">");
-		_unescapeMap.put("amp", "&");
-		_unescapeMap.put("rsquo", "\u2019");
 		_unescapeMap.put("#34", "\"");
+		_unescapeMap.put("#35", "#");
+		_unescapeMap.put("#37", "%");
 		_unescapeMap.put("#39", "'");
 		_unescapeMap.put("#40", "(");
 		_unescapeMap.put("#41", ")");
+		_unescapeMap.put("#43", "+");
 		_unescapeMap.put("#44", ",");
-		_unescapeMap.put("#35", "#");
-		_unescapeMap.put("#37", "%");
+		_unescapeMap.put("#45", "-");
 		_unescapeMap.put("#59", ";");
 		_unescapeMap.put("#61", "=");
-		_unescapeMap.put("#43", "+");
-		_unescapeMap.put("#45", "-");
+		_unescapeMap.put("amp", "&");
+		_unescapeMap.put("gt", ">");
+		_unescapeMap.put("lt", "<");
+		_unescapeMap.put("rsquo", "\u2019");
+
+		for (int i = 0; i < _VALID_CHARS.length; i++) {
+			if (Character.isLetterOrDigit(i)) {
+				_VALID_CHARS[i] = true;
+			}
+		}
+
+		_VALID_CHARS['-'] = true;
+		_VALID_CHARS['_'] = true;
 	}
 
 	private final Pattern _pattern = Pattern.compile("([\\s<&]|$)");

@@ -908,44 +908,16 @@ public class PoshiRunnerValidationTest extends TestCase {
 
 		testClassNames.add(invalidClassName);
 		testClassNames.add(validClassName);
-		testClassNames.add(validClassName);
-		testClassNames.add(validClassName);
-		testClassNames.add(validClassName);
 
 		List<String> testMethodNames = new ArrayList<>();
 
 		testMethodNames.add(validMethodName);
 		testMethodNames.add(invalidMethodName);
-		testMethodNames.add(validMethodName);
-		testMethodNames.add(validMethodName);
-		testMethodNames.add(validMethodName);
 
 		List<List<String>> testArguments = new ArrayList<>();
 
 		testArguments.add(new ArrayList<String>());
 		testArguments.add(new ArrayList<String>());
-
-		List<String> testArgumentsSet = new ArrayList<>();
-
-		testArgumentsSet.add("too-few-argument");
-
-		testArguments.add(testArgumentsSet);
-
-		testArgumentsSet = new ArrayList<>();
-
-		testArgumentsSet.add("correct");
-		testArgumentsSet.add("arguments");
-
-		testArguments.add(testArgumentsSet);
-
-		testArgumentsSet = new ArrayList<>();
-
-		testArgumentsSet.add("way");
-		testArgumentsSet.add("too");
-		testArgumentsSet.add("many");
-		testArgumentsSet.add("arguments");
-
-		testArguments.add(testArgumentsSet);
 
 		List<String> expectedMessages = new ArrayList<>();
 
@@ -953,13 +925,6 @@ public class PoshiRunnerValidationTest extends TestCase {
 		expectedMessages.add(
 			"Unable to find method " + validClassName + "#" +
 				invalidMethodName);
-		expectedMessages.add(
-			"Mismatched argument in method " + validClassName + "#" +
-				validMethodName);
-		expectedMessages.add("");
-		expectedMessages.add(
-			"Mismatched argument in method " + validClassName + "#" +
-				validMethodName);
 
 		for (int i = 0; i < testClassNames.size(); i++) {
 			Document document = DocumentHelper.createDocument();
@@ -1419,6 +1384,126 @@ public class PoshiRunnerValidationTest extends TestCase {
 
 		Assert.assertEquals(
 			"validateThenElement is failing", "Too many then elements",
+			getExceptionMessage());
+	}
+
+	@Test
+	public void testValidateToggleElement() {
+		Document document = DocumentHelper.createDocument();
+
+		Element toggleElement = document.addElement("toggle");
+
+		toggleElement.addAttribute("name", "LRQA-TOGGLE");
+		toggleElement.addAttribute("line-number", "1");
+
+		Element onElement = toggleElement.addElement("on");
+
+		onElement.addAttribute("line-number", "2");
+
+		Element onChildElement = onElement.addElement("execute");
+
+		onChildElement.addAttribute("function", "Click");
+		onChildElement.addAttribute("locator1", "//here");
+		onChildElement.addAttribute("line-number", "3");
+
+		PoshiRunnerValidation.validateToggleElement(
+			toggleElement, "ValidateToggleElement.macro");
+
+		Assert.assertEquals(
+			"ValidateToggleElement is failing", "", getExceptionMessage());
+
+		Element onElement2 = toggleElement.addElement("on");
+
+		onElement2.addAttribute("line-number", "5");
+
+		Element onChildElement2 = onElement2.addElement("execute");
+
+		onChildElement2.addAttribute("function", "Click");
+		onChildElement2.addAttribute("locator1", "//here");
+		onChildElement2.addAttribute("line-number", "6");
+
+		PoshiRunnerValidation.validateToggleElement(
+			toggleElement, "ValidateToggleElement.macro");
+
+		Assert.assertEquals(
+			"ValidateToggleElement is failing", "Too many on elements",
+			getExceptionMessage());
+
+		document = DocumentHelper.createDocument();
+
+		toggleElement = document.addElement("toggle");
+
+		toggleElement.addAttribute("name", "LRQA-TOGGLE");
+		toggleElement.addAttribute("line-number", "1");
+
+		Element offElement = toggleElement.addElement("off");
+
+		offElement.addAttribute("line-number", "2");
+
+		Element offChildElement = offElement.addElement("execute");
+
+		offChildElement.addAttribute("function", "Click");
+		offChildElement.addAttribute("locator1", "//here");
+		offChildElement.addAttribute("line-number", "3");
+
+		PoshiRunnerValidation.validateToggleElement(
+			toggleElement, "ValidateToggleElement.macro");
+
+		Assert.assertEquals(
+			"ValidateToggleElement is failing", "", getExceptionMessage());
+
+		Element offElement2 = toggleElement.addElement("off");
+
+		offElement2.addAttribute("line-number", "5");
+
+		Element offChildElement2 = offElement2.addElement("execute");
+
+		offChildElement2.addAttribute("function", "Click");
+		offChildElement2.addAttribute("locator1", "//here");
+		offChildElement2.addAttribute("line-number", "6");
+
+		PoshiRunnerValidation.validateToggleElement(
+			toggleElement, "ValidateToggleElement.macro");
+
+		Assert.assertEquals(
+			"ValidateToggleElement is failing", "Too many off elements",
+			getExceptionMessage());
+
+		document = DocumentHelper.createDocument();
+
+		toggleElement = document.addElement("toggle");
+
+		toggleElement.addAttribute("name", "LRQA-TOGGLE");
+		toggleElement.addAttribute("line-number", "1");
+
+		PoshiRunnerValidation.validateToggleElement(
+			toggleElement, "ValidateToggleElement.macro");
+
+		Assert.assertEquals(
+			"ValidateToggleElement is failing", "Missing child elements",
+			getExceptionMessage());
+
+		document = DocumentHelper.createDocument();
+
+		toggleElement = document.addElement("toggle");
+
+		toggleElement.addAttribute("line-number", "1");
+
+		onElement = toggleElement.addElement("on");
+
+		onElement.addAttribute("line-number", "2");
+
+		onChildElement = onElement.addElement("execute");
+
+		onChildElement.addAttribute("function", "Click");
+		onChildElement.addAttribute("locator1", "//here");
+		onChildElement.addAttribute("line-number", "3");
+
+		PoshiRunnerValidation.validateToggleElement(
+			toggleElement, "ValidateToggleElement.macro");
+
+		Assert.assertEquals(
+			"ValidateToggleElement is failing", "Missing name attribute",
 			getExceptionMessage());
 	}
 

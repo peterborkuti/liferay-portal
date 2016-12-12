@@ -15,7 +15,7 @@
 package com.liferay.source.formatter;
 
 import com.liferay.portal.kernel.util.CharPool;
-import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -56,7 +56,7 @@ public class BaseSourceProcessorTestCase {
 
 		sb.append(_DIR_NAME);
 
-		_temporaryFolder = new File (sb.toString());
+		_temporaryFolder = new File(sb.toString());
 	}
 
 	@AfterClass
@@ -144,9 +144,8 @@ public class BaseSourceProcessorTestCase {
 		}
 
 		List<SourceFormatterMessage> sourceFormatterMessages =
-			sourceFormatter.getSourceFormatterMessages();
-
-		Collections.sort(sourceFormatterMessages);
+			ListUtil.fromCollection(
+				sourceFormatter.getSourceFormatterMessages());
 
 		if (!sourceFormatterMessages.isEmpty() ||
 			(expectedMessages.length > 0)) {
@@ -165,8 +164,8 @@ public class BaseSourceProcessorTestCase {
 
 				if (lineCount > -1) {
 					Assert.assertEquals(
-						GetterUtil.getString(lineNumbers[i]),
-						GetterUtil.getString(lineCount));
+						String.valueOf(lineNumbers[i]),
+						String.valueOf(lineCount));
 				}
 
 				String absolutePath = StringUtil.replace(

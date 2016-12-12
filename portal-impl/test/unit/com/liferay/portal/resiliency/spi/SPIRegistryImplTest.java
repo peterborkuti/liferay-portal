@@ -134,17 +134,17 @@ public class SPIRegistryImplTest {
 		MockSPI mockSPI = new MockSPI() {
 
 			@Override
+			public boolean equals(Object object) {
+				return super.equals(object);
+			}
+
+			@Override
 			public int hashCode() {
 				if (throwException.get()) {
 					throw new RuntimeException();
 				}
 
 				return super.hashCode();
-			}
-
-			@Override
-			public boolean equals(Object object) {
-				return super.equals(object);
 			}
 
 		};
@@ -318,8 +318,8 @@ public class SPIRegistryImplTest {
 		}
 
 		@Around(
-			"execution(public static com.liferay.portal.kernel.model.Portlet" +
-				" com.liferay.portal.kernel.service.PortletLocalServiceUtil." +
+			"execution(public static com.liferay.portal.kernel.model.Portlet " +
+				"com.liferay.portal.kernel.service.PortletLocalServiceUtil." +
 					"getPortletById(String)) && args(portletId)"
 		)
 		public Portlet getPortletById(String portletId) {

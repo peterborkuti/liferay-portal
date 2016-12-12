@@ -462,6 +462,16 @@ public class JournalArticleLocalServiceUtil {
 		return getService().fetchArticle(groupId, articleId, version);
 	}
 
+	/**
+	* Returns the web content article with the ID.
+	*
+	* @param id the primary key of the web content article
+	* @return the web content article with the ID
+	*/
+	public static com.liferay.journal.model.JournalArticle fetchArticle(long id) {
+		return getService().fetchArticle(id);
+	}
+
 	public static com.liferay.journal.model.JournalArticle fetchArticleByUrlTitle(
 		long groupId, java.lang.String urlTitle) {
 		return getService().fetchArticleByUrlTitle(groupId, urlTitle);
@@ -880,7 +890,7 @@ public class JournalArticleLocalServiceUtil {
 	folder
 	* @return the updated web content article, which was moved to a new
 	folder
-	* @deprecated As of 7.0.0, replaced by {@link #moveArticle(long, String,
+	* @deprecated As of 4.0.0, replaced by {@link #moveArticle(long, String,
 	long, ServiceContext)}
 	*/
 	@Deprecated
@@ -1856,7 +1866,7 @@ public class JournalArticleLocalServiceUtil {
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #search(long, long, List,
+	* @deprecated As of 4.0.0, replaced by {@link #search(long, long, List,
 	long, String, String, String, String, int, String, String,
 	LinkedHashMap, boolean, int, int, Sort)}
 	*/
@@ -2377,7 +2387,7 @@ public class JournalArticleLocalServiceUtil {
 	* @param languageId the primary key of the language translation to get
 	* @param themeDisplay the theme display
 	* @return the web content from the matching web content article
-	* @deprecated As of 7.0.0, replaced by {@link
+	* @deprecated As of 4.0.0, replaced by {@link
 	#getArticleContent(JournalArticle, String, String, String,
 	PortletRequestModel,ThemeDisplay)}
 	*/
@@ -2435,7 +2445,7 @@ public class JournalArticleLocalServiceUtil {
 	* @param languageId the primary key of the language translation to get
 	* @param themeDisplay the theme display
 	* @return the web content from the matching web content article
-	* @deprecated As of 7.0.0, replaced by {@link #getArticleContent(long,
+	* @deprecated As of 4.0.0, replaced by {@link #getArticleContent(long,
 	String, double, String, String, String, PortletRequestModel,
 	ThemeDisplay)}
 	*/
@@ -2461,7 +2471,7 @@ public class JournalArticleLocalServiceUtil {
 	* @param languageId the primary key of the language translation to get
 	* @param themeDisplay the theme display
 	* @return the web content from the matching web content article
-	* @deprecated As of 7.0.0, replaced by {@link #getArticleContent(long,
+	* @deprecated As of 4.0.0, replaced by {@link #getArticleContent(long,
 	String, double, String, String, String, PortletRequestModel,
 	ThemeDisplay)}
 	*/
@@ -2514,7 +2524,7 @@ public class JournalArticleLocalServiceUtil {
 	* @param languageId the primary key of the language translation to get
 	* @param themeDisplay the theme display
 	* @return the latest web content from the matching web content article
-	* @deprecated As of 7.0.0, replaced by {@link #getArticleContent(long,
+	* @deprecated As of 4.0.0, replaced by {@link #getArticleContent(long,
 	String, String, String, String, PortletRequestModel,
 	ThemeDisplay)}
 	*/
@@ -2539,7 +2549,7 @@ public class JournalArticleLocalServiceUtil {
 	* @param languageId the primary key of the language translation to get
 	* @param themeDisplay the theme display
 	* @return the latest web content from the matching web content article
-	* @deprecated As of 7.0.0, replaced by {@link #getArticleContent(long,
+	* @deprecated As of 4.0.0, replaced by {@link #getArticleContent(long,
 	String, String, String, String, PortletRequestModel,
 	ThemeDisplay)}
 	*/
@@ -2552,6 +2562,26 @@ public class JournalArticleLocalServiceUtil {
 		return getService()
 				   .getArticleContent(groupId, articleId, viewMode, languageId,
 			themeDisplay);
+	}
+
+	public static java.lang.String getArticleDescription(long articlePK,
+		java.lang.String languageId) {
+		return getService().getArticleDescription(articlePK, languageId);
+	}
+
+	public static java.lang.String getArticleDescription(long articlePK,
+		java.util.Locale locale) {
+		return getService().getArticleDescription(articlePK, locale);
+	}
+
+	public static java.lang.String getArticleTitle(long articlePK,
+		java.lang.String languageId) {
+		return getService().getArticleTitle(articlePK, languageId);
+	}
+
+	public static java.lang.String getArticleTitle(long articlePK,
+		java.util.Locale locale) {
+		return getService().getArticleTitle(articlePK, locale);
 	}
 
 	/**
@@ -2625,6 +2655,11 @@ public class JournalArticleLocalServiceUtil {
 		com.liferay.portal.kernel.util.OrderByComparator<T> orderByComparator) {
 		return getService()
 				   .dynamicQuery(dynamicQuery, start, end, orderByComparator);
+	}
+
+	public static java.util.List<java.lang.String> getArticleLocalizationLanguageIds(
+		long articlePK) {
+		return getService().getArticleLocalizationLanguageIds(articlePK);
 	}
 
 	/**
@@ -3396,6 +3431,16 @@ public class JournalArticleLocalServiceUtil {
 		return getService().search(groupId, folderId, status, start, end);
 	}
 
+	public static java.util.Map<java.util.Locale, java.lang.String> getArticleDescriptionMap(
+		long articlePK) {
+		return getService().getArticleDescriptionMap(articlePK);
+	}
+
+	public static java.util.Map<java.util.Locale, java.lang.String> getArticleTitleMap(
+		long articlePK) {
+		return getService().getArticleTitleMap(articlePK);
+	}
+
 	/**
 	* Returns the number of rows matching the dynamic query.
 	*
@@ -3709,7 +3754,7 @@ public class JournalArticleLocalServiceUtil {
 	* @param assetTagNames the new asset tag names
 	* @param assetLinkEntryIds the primary keys of the new asset link
 	entries
-	* @deprecated As of 7.0.0, replaced by {@link #updateAsset(long,
+	* @deprecated As of 4.0.0, replaced by {@link #updateAsset(long,
 	JournalArticle, long[], String[], long[], Double)}
 	*/
 	@Deprecated
@@ -3781,7 +3826,7 @@ public class JournalArticleLocalServiceUtil {
 	article's old DDM template
 	* @param newDDMTemplateKey the primary key of the web content
 	article's new DDM template
-	* @deprecated As of 7.0.0, replaced by {@link #updateDDMTemplateKey}
+	* @deprecated As of 4.0.0, replaced by {@link #updateDDMTemplateKey}
 	*/
 	@Deprecated
 	public static void updateTemplateId(long groupId, long classNameId,

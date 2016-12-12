@@ -87,6 +87,7 @@ import org.osgi.service.component.annotations.Reference;
 		"com.liferay.portlet.autopropagated-parameters=scopeTitle",
 		"com.liferay.portlet.autopropagated-parameters=showAncestorScopes",
 		"com.liferay.portlet.autopropagated-parameters=showBackURL",
+		"com.liferay.portlet.autopropagated-parameters=showCacheableInput",
 		"com.liferay.portlet.autopropagated-parameters=showHeader",
 		"com.liferay.portlet.autopropagated-parameters=showManageTemplates",
 		"com.liferay.portlet.css-class-wrapper=portlet-dynamic-data-mapping",
@@ -105,7 +106,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.copy-request-parameters=true",
 		"javax.portlet.init-param.template-path=/",
 		"javax.portlet.init-param.view-template=/view.jsp",
-		"javax.portlet.name="+ DDMPortletKeys.DYNAMIC_DATA_MAPPING,
+		"javax.portlet.name=" + DDMPortletKeys.DYNAMIC_DATA_MAPPING,
 		"javax.portlet.resource-bundle=content.Language",
 		"javax.portlet.security-role-ref=power-user,user",
 		"javax.portlet.supports.mime-type=text/html"
@@ -208,7 +209,7 @@ public class DDMPortlet extends MVCPortlet {
 	@Activate
 	@Modified
 	protected void activate(Map<String, Object> properties) {
-		this.ddmWebConfiguration = ConfigurableUtil.createConfigurable(
+		ddmWebConfiguration = ConfigurableUtil.createConfigurable(
 			DDMWebConfiguration.class, properties);
 	}
 

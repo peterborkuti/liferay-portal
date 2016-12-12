@@ -68,6 +68,24 @@ public class HtmlImplTest {
 	}
 
 	@Test
+	public void testEscapeExtendedASCIICharacters() {
+		StringBuilder sb = new StringBuilder(256);
+
+		for (int i = 0; i < 256; i++) {
+			if (Character.isLetterOrDigit(i)) {
+				sb.append((char)i);
+			}
+		}
+
+		String value = sb.toString();
+
+		Assert.assertEquals(value, _htmlImpl.escape(value));
+
+		Assert.assertEquals(
+			value, _htmlImpl.escape(value, HtmlImpl.ESCAPE_MODE_ATTRIBUTE));
+	}
+
+	@Test
 	public void testEscapeHREF() {
 		Assert.assertNull(_htmlImpl.escapeHREF(null));
 		Assert.assertEquals(
@@ -82,6 +100,17 @@ public class HtmlImplTest {
 				"data:text/html;base64,PHNjcmlwdD5hbGVydCgndGVzdDMnKTwvc2NyaX" +
 					"B0Pg"));
 		assertUnchangedEscape("http://localhost:8080");
+	}
+
+	@Test
+	public void testEscapeHtmlAttributeMultiline() {
+		String original = "\tThis is\na multi-line\ntitle\r";
+
+		String escaped = _htmlImpl.escapeAttribute(original);
+
+		String extracted = _htmlImpl.extractText(escaped);
+
+		Assert.assertEquals(original, extracted);
 	}
 
 	@Test
@@ -151,6 +180,11 @@ public class HtmlImplTest {
 	@Test
 	public void testEscapeText() {
 		assertUnchangedEscape("text");
+	}
+
+	@Test
+	public void testEscapeUTF8SupplementaryCharacter() {
+		assertUnchangedEscape("\uD83D\uDC31");
 	}
 
 	@Test
@@ -309,6 +343,30 @@ public class HtmlImplTest {
 	}
 
 	@Test
+	public void testStripHtml() {
+		Assert.assertEquals(
+			"Hello World!",
+			_htmlImpl.stripHtml(
+				"<html><body><h1>Hello World!</h1></body></html>"));
+	}
+
+	@Test
+	public void testStripHtmlWithScripTag() {
+		Assert.assertEquals(
+			"Hello World!",
+			_htmlImpl.stripHtml(
+				"<body>Hello<script>alert('xss');</script> World!</body>"));
+	}
+
+	@Test
+	public void testStripHtmlWithStyleTag() {
+		Assert.assertEquals(
+			"Hello World!",
+			_htmlImpl.stripHtml(
+				"<body>Hello<style>p{color:#000000}</style> World!</body>"));
+	}
+
+	@Test
 	public void testStripMultipleComments() {
 		Assert.assertEquals(
 			"test",
@@ -324,6 +382,17 @@ public class HtmlImplTest {
 	@Test
 	public void testStripNullComments() {
 		Assert.assertNull(_htmlImpl.stripComments(null));
+	}
+
+	@Test
+	public void testStripTag() {
+		char[] tag = {'t', 'a', 'g'};
+
+		Assert.assertEquals(
+			17, _htmlImpl.stripTag(tag, "<tag>Hello World!</tag>", 0));
+
+		Assert.assertEquals(
+			0, _htmlImpl.stripTag(tag, "<gat>Hello World!</gat>", 0));
 	}
 
 	@Test

@@ -25,6 +25,8 @@ import com.liferay.exportimport.staged.model.repository.base.BaseStagedModelRepo
 import com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.trash.TrashHandler;
 
@@ -187,6 +189,9 @@ public class BookmarksEntryStagedModelRepository
 
 		_bookmarksEntryLocalService = bookmarksEntryLocalService;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		BookmarksEntryStagedModelRepository.class);
 
 	private BookmarksEntryLocalService _bookmarksEntryLocalService;
 

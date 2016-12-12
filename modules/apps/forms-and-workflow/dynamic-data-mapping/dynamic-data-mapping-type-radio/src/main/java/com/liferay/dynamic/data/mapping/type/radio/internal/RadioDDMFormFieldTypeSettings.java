@@ -29,7 +29,7 @@ import com.liferay.dynamic.data.mapping.model.DDMFormFieldValidation;
  */
 @DDMForm
 @DDMFormLayout(
-	paginationMode = com.liferay.dynamic.data.mapping.model.DDMFormLayout.SETTINGS_MODE,
+	paginationMode = com.liferay.dynamic.data.mapping.model.DDMFormLayout.TABBED_MODE,
 	value = {
 		@DDMFormLayoutPage(
 			title = "basic",
@@ -45,7 +45,7 @@ import com.liferay.dynamic.data.mapping.model.DDMFormFieldValidation;
 			}
 		),
 		@DDMFormLayoutPage(
-			title = "advanced",
+			title = "properties",
 			value = {
 				@DDMFormLayoutRow(
 					{
@@ -67,7 +67,10 @@ import com.liferay.dynamic.data.mapping.model.DDMFormFieldValidation;
 public interface RadioDDMFormFieldTypeSettings
 	extends DefaultDDMFormFieldTypeSettings {
 
-	@DDMFormField(label = "%inline", properties = {"showAsSwitcher=true"})
+	@DDMFormField(
+		label = "%inline", predefinedValue = "true",
+		properties = {"showAsSwitcher=true"}
+	)
 	public boolean inline();
 
 	@DDMFormField(

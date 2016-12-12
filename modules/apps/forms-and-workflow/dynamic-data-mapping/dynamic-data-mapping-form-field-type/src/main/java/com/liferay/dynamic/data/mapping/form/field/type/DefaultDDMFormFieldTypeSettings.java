@@ -46,7 +46,7 @@ import com.liferay.portal.kernel.util.StringPool;
 			}
 		),
 		@DDMFormLayoutPage(
-			title = "advanced",
+			title = "properties",
 			value = {
 				@DDMFormLayoutRow(
 					{
@@ -74,7 +74,8 @@ public interface DefaultDDMFormFieldTypeSettings
 		optionLabels = {
 			"%not-indexable", "%indexable-keyword", "%indexable-text"
 		},
-		optionValues = {StringPool.BLANK, "keyword", "text"}, type = "select",
+		optionValues = {StringPool.BLANK, "keyword", "text"},
+		predefinedValue = "keyword", type = "select",
 		visibilityExpression = "FALSE"
 	)
 	public String indexType();
@@ -85,7 +86,7 @@ public interface DefaultDDMFormFieldTypeSettings
 			"placeholder=%enter-a-field-label",
 			"tooltip=%enter-a-descriptive-field-label-that-guides-users-to-enter-the-information-you-want"
 		},
-		required = true, type = "key-value"
+		type = "key_value"
 	)
 	public LocalizedValue label();
 
@@ -113,7 +114,10 @@ public interface DefaultDDMFormFieldTypeSettings
 	)
 	public boolean required();
 
-	@DDMFormField(label = "%show-label", properties = {"showAsSwitcher=true"})
+	@DDMFormField(
+		label = "%show-label", predefinedValue = "true",
+		properties = {"showAsSwitcher=true"}
+	)
 	public boolean showLabel();
 
 	@DDMFormField(
@@ -131,13 +135,18 @@ public interface DefaultDDMFormFieldTypeSettings
 	)
 	public DDMFormFieldValidation validation();
 
+	/**
+	 * @deprecated As of 2.0.0
+	 */
 	@DDMFormField(
 		label = "%field-visibility-expression",
 		properties = {
 			"placeholder=%equals(Country, \"US\")",
 			"tooltip=%write-a-conditional-expression-to-control-whether-this-field-is-displayed"
-		}
+		},
+		visibilityExpression = "FALSE"
 	)
+	@Deprecated
 	public String visibilityExpression();
 
 }

@@ -64,7 +64,7 @@ public class DDMExpressionImplTest {
 	@Test
 	public void testGetVariableNames2() throws Exception {
 		DDMExpressionImpl ddmExpressionImpl = new DDMExpressionImpl<>(
-			"(((1+2)*(1-2/x))+log(1*6-y))", Number.class);
+			"(((1 + 2) * (1 - 2 / x)) + log(1 * 6 - y))", Number.class);
 
 		Set<String> expectedVariableNames = new HashSet<>(
 			Arrays.asList("x", "y"));
@@ -163,7 +163,7 @@ public class DDMExpressionImplTest {
 
 		long result = (long)ddmExpression.toRetunType(1.2);
 
-		Assert.assertEquals(1l, result);
+		Assert.assertEquals(1L, result);
 	}
 
 	@Test(expected = DDMExpressionException.IncompatipleReturnType.class)

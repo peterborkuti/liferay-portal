@@ -102,7 +102,7 @@ public class DefaultElasticsearchDocumentFactory
 			List<String> valuesList = new ArrayList<>(values.length);
 
 			for (String value : values) {
-				if (Validator.isNull(value)) {
+				if (value == null) {
 					continue;
 				}
 
@@ -172,9 +172,9 @@ public class DefaultElasticsearchDocumentFactory
 			xContentBuilder.startArray();
 		}
 
-		if (fieldName.equals(Field.GEO_LOCATION)) {
-			GeoLocationPoint geoLocationPoint = field.getGeoLocationPoint();
+		GeoLocationPoint geoLocationPoint = field.getGeoLocationPoint();
 
+		if (geoLocationPoint != null) {
 			GeoPoint geoPoint = new GeoPoint(
 				geoLocationPoint.getLatitude(),
 				geoLocationPoint.getLongitude());

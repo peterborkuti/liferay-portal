@@ -36,17 +36,7 @@ public class GroovySourceProcessor extends JavaSourceProcessor {
 	}
 
 	@Override
-	protected void checkMissingAuthor(
-		String content, String fileName, String className) {
-
-		if (Character.isUpperCase(className.charAt(0))) {
-			super.checkMissingAuthor(content, fileName, className);
-		}
-	}
-
-	@Override
-	protected void checkPackagePath(
-		String content, String fileName, String packagePath) {
+	protected void checkPackagePath(String fileName, String packagePath) {
 	}
 
 	@Override
@@ -70,6 +60,10 @@ public class GroovySourceProcessor extends JavaSourceProcessor {
 		}
 
 		return content;
+	}
+
+	@Override
+	protected void postFormat() throws Exception {
 	}
 
 	private static final String[] _INCLUDES = new String[] {"**/*.groovy"};

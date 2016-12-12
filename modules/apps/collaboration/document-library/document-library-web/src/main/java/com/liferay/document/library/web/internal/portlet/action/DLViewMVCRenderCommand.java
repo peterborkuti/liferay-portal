@@ -18,8 +18,8 @@ import com.liferay.document.library.kernel.model.DLFolder;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.document.library.kernel.service.DLFolderLocalService;
-import com.liferay.document.library.web.internal.constants.DLPortletKeys;
-import com.liferay.document.library.web.internal.constants.DLWebKeys;
+import com.liferay.document.library.web.constants.DLPortletKeys;
+import com.liferay.document.library.web.constants.DLWebKeys;
 import com.liferay.document.library.web.internal.portlet.toolbar.contributor.DLPortletToolbarContributor;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
 import com.liferay.portal.kernel.servlet.SessionErrors;
@@ -59,9 +59,9 @@ public class DLViewMVCRenderCommand extends GetFolderMVCRenderCommand {
 			pingFolderRepository(renderRequest);
 		}
 		catch (Exception e) {
-			SessionErrors.add(renderRequest, e.getClass(), e);
+			SessionErrors.add(renderRequest, "repositoryPingFailed", e);
 
-			return getPath();
+			return "/document_library/error.jsp";
 		}
 
 		return super.render(renderRequest, renderResponse);

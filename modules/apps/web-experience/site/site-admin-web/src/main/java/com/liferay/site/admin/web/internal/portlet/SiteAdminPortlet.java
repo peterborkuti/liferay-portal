@@ -14,10 +14,6 @@
 
 package com.liferay.site.admin.web.internal.portlet;
 
-import com.liferay.application.list.PanelAppRegistry;
-import com.liferay.application.list.PanelCategoryRegistry;
-import com.liferay.application.list.constants.ApplicationListWebKeys;
-import com.liferay.application.list.display.context.logic.PanelCategoryHelper;
 import com.liferay.asset.kernel.exception.AssetCategoryException;
 import com.liferay.asset.kernel.exception.AssetTagException;
 import com.liferay.exportimport.kernel.exception.RemoteExportException;
@@ -41,6 +37,8 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.RemoteOptionsException;
 import com.liferay.portal.kernel.exception.RequiredGroupException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.Layout;
@@ -95,6 +93,7 @@ import com.liferay.portal.liveusers.LiveUsers;
 import com.liferay.site.admin.web.internal.constants.SiteAdminPortletKeys;
 import com.liferay.site.constants.SiteWebKeys;
 import com.liferay.site.util.GroupSearchProvider;
+import com.liferay.site.util.GroupURLProvider;
 import com.liferay.sites.kernel.util.Sites;
 import com.liferay.sites.kernel.util.SitesUtil;
 
@@ -325,11 +324,8 @@ public class SiteAdminPortlet extends MVCPortlet {
 		renderRequest.setAttribute(
 			SiteWebKeys.GROUP_SEARCH_PROVIDER, groupSearchProvider);
 
-		PanelCategoryHelper panelCategoryHelper = new PanelCategoryHelper(
-			panelAppRegistry, panelCategoryRegistry);
-
 		renderRequest.setAttribute(
-			ApplicationListWebKeys.PANEL_CATEGORY_HELPER, panelCategoryHelper);
+			SiteWebKeys.GROUP_URL_PROVIDER, groupURLProvider);
 
 		if (SessionErrors.contains(
 				renderRequest, NoSuchBackgroundTaskException.class.getName()) ||
@@ -398,6 +394,12 @@ public class SiteAdminPortlet extends MVCPortlet {
 			refererGroupId = refererLayout.getGroupId();
 		}
 		catch (NoSuchLayoutException nsle) {
+
+			// LPS-52675
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(nsle, nsle);
+			}
 		}
 
 		return refererGroupId;
@@ -493,6 +495,11 @@ public class SiteAdminPortlet extends MVCPortlet {
 	}
 
 	@Reference(unbind = "-")
+	protected void setGroupURLProvider(GroupURLProvider groupURLProvider) {
+		this.groupURLProvider = groupURLProvider;
+	}
+
+	@Reference(unbind = "-")
 	protected void setLayoutLocalService(
 		LayoutLocalService layoutLocalService) {
 
@@ -530,18 +537,6 @@ public class SiteAdminPortlet extends MVCPortlet {
 		MembershipRequestService membershipRequestService) {
 
 		this.membershipRequestService = membershipRequestService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setPanelAppRegistry(PanelAppRegistry panelAppRegistry) {
-		this.panelAppRegistry = panelAppRegistry;
-	}
-
-	@Reference(unbind = "-")
-	protected void setPanelCategoryRegistry(
-		PanelCategoryRegistry panelCategoryRegistry) {
-
-		this.panelCategoryRegistry = panelCategoryRegistry;
 	}
 
 	@Reference(unbind = "-")
@@ -880,7 +875,7 @@ public class SiteAdminPortlet extends MVCPortlet {
 				actionRequest, "layoutSetVisibility");
 			boolean layoutSetPrototypeLinkEnabled = ParamUtil.getBoolean(
 				actionRequest, "layoutSetPrototypeLinkEnabled",
-				(layoutSetPrototypeId > 0));
+				layoutSetPrototypeId > 0);
 
 			if (layoutSetVisibility == _LAYOUT_SET_VISIBILITY_PRIVATE) {
 				privateLayoutSetPrototypeId = layoutSetPrototypeId;
@@ -925,20 +920,22 @@ public class SiteAdminPortlet extends MVCPortlet {
 	protected GroupLocalService groupLocalService;
 	protected GroupSearchProvider groupSearchProvider;
 	protected GroupService groupService;
+	protected GroupURLProvider groupURLProvider;
 	protected LayoutLocalService layoutLocalService;
 	protected LayoutSetLocalService layoutSetLocalService;
 	protected LayoutSetPrototypeService layoutSetPrototypeService;
 	protected LayoutSetService layoutSetService;
 	protected MembershipRequestLocalService membershipRequestLocalService;
 	protected MembershipRequestService membershipRequestService;
-	protected PanelAppRegistry panelAppRegistry;
-	protected PanelCategoryRegistry panelCategoryRegistry;
 	protected RoleLocalService roleLocalService;
 	protected TeamLocalService teamLocalService;
 	protected UserLocalService userLocalService;
 	protected UserService userService;
 
 	private static final int _LAYOUT_SET_VISIBILITY_PRIVATE = 1;
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		SiteAdminPortlet.class);
 
 	private static final TransactionConfig _transactionConfig =
 		TransactionConfig.Factory.create(

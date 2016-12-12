@@ -14,12 +14,11 @@ create table JournalArticle (
 	treePath STRING null,
 	articleId VARCHAR(75) null,
 	version DOUBLE,
-	title STRING null,
 	urlTitle VARCHAR(150) null,
-	description TEXT null,
 	content TEXT null,
 	DDMStructureKey VARCHAR(75) null,
 	DDMTemplateKey VARCHAR(75) null,
+	defaultLanguageId VARCHAR(75) null,
 	layoutUuid VARCHAR(75) null,
 	displayDate DATE null,
 	expirationDate DATE null,
@@ -35,16 +34,13 @@ create table JournalArticle (
 	statusDate DATE null
 );
 
-create table JournalArticleImage (
-	articleImageId LONG not null primary key,
-	groupId LONG,
+create table JournalArticleLocalization (
+	articleLocalizationId LONG not null primary key,
 	companyId LONG,
-	articleId VARCHAR(75) null,
-	version DOUBLE,
-	elInstanceId VARCHAR(75) null,
-	elName VARCHAR(75) null,
-	languageId VARCHAR(75) null,
-	tempImage BOOLEAN
+	articlePK LONG,
+	title VARCHAR(400) null,
+	description STRING null,
+	languageId VARCHAR(75) null
 );
 
 create table JournalArticleResource (

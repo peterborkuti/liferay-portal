@@ -29,7 +29,6 @@ import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
-import com.liferay.portal.kernel.test.rule.TransactionalTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.util.IntegerWrapper;
@@ -38,6 +37,7 @@ import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
+import com.liferay.portal.test.rule.TransactionalTestRule;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -66,7 +66,8 @@ public class MicroblogsEntryPersistenceTest {
 	@Rule
 	public static final AggregateTestRule aggregateTestRule = new AggregateTestRule(new LiferayIntegrationTestRule(),
 			PersistenceTestRule.INSTANCE,
-			new TransactionalTestRule(Propagation.REQUIRED));
+			new TransactionalTestRule(Propagation.REQUIRED,
+				"com.liferay.microblogs.service"));
 
 	@Before
 	public void setUp() {
@@ -228,6 +229,29 @@ public class MicroblogsEntryPersistenceTest {
 	}
 
 	@Test
+	public void testCountByC_CCNI_CCPK() throws Exception {
+		_persistence.countByC_CCNI_CCPK(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong());
+
+		_persistence.countByC_CCNI_CCPK(0L, 0L, 0L);
+	}
+
+	@Test
+	public void testCountByC_CCNI_CCPKArrayable() throws Exception {
+		_persistence.countByC_CCNI_CCPK(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(),
+			new long[] { RandomTestUtil.nextLong(), 0L });
+	}
+
+	@Test
+	public void testCountByC_CCNI_T() throws Exception {
+		_persistence.countByC_CCNI_T(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), RandomTestUtil.nextInt());
+
+		_persistence.countByC_CCNI_T(0L, 0L, 0);
+	}
+
+	@Test
 	public void testCountByCCNI_CCPK_T() throws Exception {
 		_persistence.countByCCNI_CCPK_T(RandomTestUtil.nextLong(),
 			RandomTestUtil.nextLong(), RandomTestUtil.nextInt());
@@ -238,6 +262,23 @@ public class MicroblogsEntryPersistenceTest {
 	@Test
 	public void testCountByCCNI_CCPK_TArrayable() throws Exception {
 		_persistence.countByCCNI_CCPK_T(RandomTestUtil.nextLong(),
+			new long[] { RandomTestUtil.nextLong(), 0L },
+			RandomTestUtil.nextInt());
+	}
+
+	@Test
+	public void testCountByC_CCNI_CCPK_T() throws Exception {
+		_persistence.countByC_CCNI_CCPK_T(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
+			RandomTestUtil.nextInt());
+
+		_persistence.countByC_CCNI_CCPK_T(0L, 0L, 0L, 0);
+	}
+
+	@Test
+	public void testCountByC_CCNI_CCPK_TArrayable() throws Exception {
+		_persistence.countByC_CCNI_CCPK_T(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(),
 			new long[] { RandomTestUtil.nextLong(), 0L },
 			RandomTestUtil.nextInt());
 	}

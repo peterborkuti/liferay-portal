@@ -120,7 +120,7 @@ public class ReflectionServiceTracker implements Closeable {
 		}
 
 		_unavailableServiceProxy = Proxy.newProxyInstance(
-			classLoader, interfaceClasses.toArray(new Class[0]),
+			classLoader, interfaceClasses.toArray(new Class<?>[0]),
 			_invocationHandler);
 
 		List<InjectionPoint> injectionPoints = new ArrayList<InjectionPoint>();
@@ -146,8 +146,7 @@ public class ReflectionServiceTracker implements Closeable {
 		}
 		catch (Exception e) {
 			throw new RuntimeException(
-				"Unable to unset " + injectionPoint.getName() +
-					" on "+ target,
+				"Unable to unset " + injectionPoint.getName() + " on " + target,
 				e);
 		}
 
@@ -175,8 +174,7 @@ public class ReflectionServiceTracker implements Closeable {
 						catch (Exception e) {
 							throw new RuntimeException(
 								"Unable to set service reference using " +
-									injectionPoint.getName() + " on "+
-										target,
+									injectionPoint.getName() + " on " + target,
 								e);
 						}
 					}

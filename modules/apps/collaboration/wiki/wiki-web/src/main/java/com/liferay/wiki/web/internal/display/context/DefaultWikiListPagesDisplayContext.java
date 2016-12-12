@@ -22,6 +22,8 @@ import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
@@ -247,11 +249,50 @@ public class DefaultWikiListPagesDisplayContext
 					searchContainer.getOrderByCol(),
 					searchContainer.getOrderByType());
 
-			results = WikiPageServiceUtil.getPages(
+			List<WikiPage> pages = WikiPageServiceUtil.getPages(
 				themeDisplay.getScopeGroupId(), _wikiNode.getNodeId(), true,
 				themeDisplay.getUserId(), true,
 				WorkflowConstants.STATUS_APPROVED, searchContainer.getStart(),
 				searchContainer.getEnd(), obc);
+
+			PermissionChecker permissionChecker =
+				_wikiRequestHelper.getPermissionChecker();
+
+			results = new ArrayList<>(results.size());
+
+			for (WikiPage curPage : pages) {
+				WikiPage resultPage = curPage;
+
+				if (permissionChecker.isContentReviewer(
+						_wikiRequestHelper.getCompanyId(),
+						_wikiRequestHelper.getScopeGroupId()) ||
+					WikiPagePermissionChecker.contains(
+						permissionChecker, curPage, ActionKeys.UPDATE)) {
+
+					WikiPage lastPage = null;
+
+					try {
+						lastPage = WikiPageLocalServiceUtil.getPage(
+							curPage.getResourcePrimKey(), false);
+					}
+					catch (PortalException pe) {
+
+						// LPS-52675
+
+						if (_log.isDebugEnabled()) {
+							_log.debug(pe, pe);
+						}
+					}
+
+					if ((lastPage != null) &&
+						(curPage.getVersion() < lastPage.getVersion())) {
+
+						resultPage = lastPage;
+					}
+				}
+
+				results.add(resultPage);
+			}
 		}
 		else if (navigation.equals("categorized-pages") ||
 				 navigation.equals("tagged-pages")) {
@@ -390,7 +431,8 @@ public class DefaultWikiListPagesDisplayContext
 			List<MenuItem> menuItems, WikiPage wikiPage)
 		throws PortalException {
 
-		if (!WikiNodePermissionChecker.contains(
+		if (Validator.isNull(wikiPage.getContent()) ||
+			!WikiNodePermissionChecker.contains(
 				_wikiRequestHelper.getPermissionChecker(), wikiPage.getNodeId(),
 				ActionKeys.ADD_PAGE)) {
 
@@ -765,6 +807,9 @@ public class DefaultWikiListPagesDisplayContext
 
 	private static final UUID _UUID = UUID.fromString(
 		"628C435B-DB39-4E46-91DF-CEA763CF79F5");
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		DefaultWikiListPagesDisplayContext.class);
 
 	private final HttpServletRequest _request;
 	private final WikiNode _wikiNode;

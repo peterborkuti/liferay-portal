@@ -40,6 +40,8 @@
 				<execute macro="PortalInstances#tearDownCP" />
 			</then>
 			<else>
+				<execute macro="Workflow#tearDownSiteWorkflow" />
+
 				<execute macro="BlogsEntry#tearDownCP" />
 
 				<execute macro="KBArticle#tearDownCP" />
@@ -203,7 +205,7 @@
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute function="AssertTextEquals" locator1="KnowledgeBase#LINK_THERE_ARE_SUGGESTIONS" value1="There are 3 suggestions. (3 Pending)" />
+		<execute function="AssertTextEquals#assertPartialText" locator1="KnowledgeBase#LINK_THERE_ARE_SUGGESTIONS" value1="There are 3 suggestions. (3 Pending)" />
 
 		<for list="${kbSuggestionCounterList}" param="suggestionCount" >
 			<execute macro="KBArticleSuggestion#viewPG">
@@ -214,7 +216,13 @@
 		</for>
 	</command>
 
-	<command name="CancelKBArticleSuggestion" priority="4">
+	<command name="CancelAddChildArticle" priority="4">
+		<var name="kbArticleContent" value="Knowledge Base Article Content" />
+		<var name="kbArticleTitle" value="Knowledge Base Article Title" />
+		<var name="kbChildArticleContent" value="Child Article Content" />
+		<var name="kbChildArticleTitle" value="Child Article Title" />
+		<var name="pageName" value="Knowledge Base Display Page" />
+
 		<execute macro="Navigator#openURL" />
 
 		<execute macro="ProductMenu#gotoSitesContent">
@@ -222,19 +230,30 @@
 		</execute>
 
 		<execute macro="KBArticle#addCP">
-			<var name="kbArticleContent" value="Knowledge Base Article Content" />
-			<var name="kbArticleTitle" value="Knowledge Base Article Title" />
+			<var name="kbArticleContent" value="${kbArticleContent}" />
+			<var name="kbArticleTitle" value="${kbArticleTitle}" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Knowledge Base Display Page" />
+			<var name="pageName" value="${pageName}" />
 		</execute>
 
-		<execute macro="KBArticleSuggestion#cancelSuggestionPG">
+		<execute macro="KBArticle#addChildPGViaKBDisplay">
+			<var name="cancel" value="true" />
+			<var name="kbArticleContent" value="${kbChildArticleContent}" />
+			<var name="kbArticleTitle" value="${kbChildArticleTitle}" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
+			<var name="pageName" value="${pageName}" />
+		</execute>
+
+		<execute macro="KBArticle#viewPG">
 			<var name="kbArticleContent" value="Knowledge Base Article Content" />
 			<var name="kbArticleTitle" value="Knowledge Base Article Title" />
-			<var name="kbSuggestionBody" value="Knowledge Base Article Suggestion" />
 		</execute>
+
+		<execute function="AssertElementNotPresent" locator1="KnowledgeBase#HIERARCHY_NAVIGATION_CHILD" />
 	</command>
 
 	<command name="CannotViewDuplicateBreadcrumbsWhenAddingParentArticle" priority="3" >
@@ -301,7 +320,7 @@
 		</execute>
 
 		<execute macro="KBArticle#configureKBSocialBookmarkSites">
-			<var name="enableSocialBookmarkSites" value="twitter,facebook,plusone,addthis,blinklist,delicious,digg,evernote,linkedin,newsvine,reddit,slashdot,stumbleupon,technorati,tuenti" />
+			<var name="enableSocialBookmarkSites" value="twitter,facebook,plusone,addthis,delicious,digg,evernote,linkedin,newsvine,reddit,slashdot,stumbleupon,tuenti" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -310,7 +329,7 @@
 
 		<execute function="Click" locator1="Icon#SHARE" />
 
-		<for list="Twitter,Facebook,Google+,LinkedIn,BlinkList,Delicious,Digg,Evernote,Newsvine,Reddit,Slashdot,StumbleUpon,Technorati,Tuenti" param="socialBookmarkSites" >
+		<for list="Twitter,Facebook,Google+,LinkedIn,Delicious,Digg,Evernote,Newsvine,Reddit,Slashdot,StumbleUpon,Tuenti" param="socialBookmarkSites" >
 			<execute macro="KBArticle#viewEnabledKBSocialBookmarkSites">
 				<var name="socialBookmarkSite" value="${socialBookmarkSites}" />
 			</execute>
@@ -326,25 +345,65 @@
 		</execute>
 
 		<execute macro="KBArticle#configureKBSocialBookmarkSites">
-			<var name="disableSocialBookmarkSites" value="twitter,newsvine,reddit,slashdot,stumbleupon,technorati,tuenti" />
-			<var name="enableSocialBookmarkSites" value="facebook,plusone,addthis,blinklist,delicious,digg,evernote,linkedin" />
+			<var name="disableSocialBookmarkSites" value="twitter,newsvine,reddit,slashdot,stumbleupon,tuenti" />
+			<var name="enableSocialBookmarkSites" value="facebook,plusone,addthis,delicious,digg,evernote,linkedin" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<for list="Facebook,Google+,AddThis,LinkedIn,BlinkList,Delicious,Digg,Evernote" param="socialBookmarkSites" >
+		<for list="Facebook,Google+,AddThis,LinkedIn,Delicious,Digg,Evernote" param="socialBookmarkSites" >
 			<execute macro="KBArticle#viewEnabledKBSocialBookmarkSites">
 				<var name="socialBookmarkSite" value="${socialBookmarkSites}" />
 			</execute>
 		</for>
 
-		<for list="Twitter,Newsvine,Reddit,Slashdot,StumbleUpon,Technorati,Tuenti" param="socialBookmarkSites" >
+		<for list="Twitter,Newsvine,Reddit,Slashdot,StumbleUpon,Tuenti" param="socialBookmarkSites" >
 			<execute macro="KBArticle#viewDisabledKBSocialBookmarkSites">
 				<var name="socialBookmarkSite" value="${socialBookmarkSites}" />
 			</execute>
 		</for>
+	</command>
+
+	<command name="DeleteChildArticle" priority="4">
+		<var name="kbArticleContent" value="Knowledge Base Article Content" />
+		<var name="kbArticleTitle" value="Knowledge Base Article Title" />
+		<var name="kbChildArticleContent" value="Child Article Content" />
+		<var name="kbChildArticleTitle" value="Child Article Title" />
+		<var name="pageName" value="Knowledge Base Display Page" />
+
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoSitesContent">
+			<var name="portlet" value="Knowledge Base" />
+		</execute>
+
+		<execute macro="KBArticle#addCP">
+			<var name="kbArticleContent" value="${kbArticleContent}" />
+			<var name="kbArticleTitle" value="${kbArticleTitle}" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
+			<var name="pageName" value="${pageName}" />
+		</execute>
+
+		<execute macro="KBArticle#addChildPGViaKBDisplay">
+			<var name="kbArticleContent" value="${kbChildArticleContent}" />
+			<var name="kbArticleTitle" value="${kbChildArticleTitle}" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
+			<var name="pageName" value="${pageName}" />
+		</execute>
+
+		<execute macro="KBArticle#viewChildArticlePG">
+			<var name="kbArticleTitle" value="${kbArticleTitle}" />
+			<var name="kbChildArticleContent" value="${kbChildArticleContent}" />
+			<var name="kbChildArticleTitle" value="${kbChildArticleTitle}" />
+		</execute>
+
+		<execute macro="KBArticle#deletePG" />
 	</command>
 
 	<command name="DeleteKBArticleViaKBDisplay" priority="4">
@@ -409,6 +468,10 @@
 			<var name="kbArticleTitleEdit" value="Knowledge Base Article Parent Title Edited 1" />
 		</execute>
 
+		<execute macro="Navigator#gotoPage">
+			<var name="pageName" value="Knowledge Base Display Page" />
+		</execute>
+
 		<execute macro="KBArticle#gotoKBChildArticleViaKBDisplayHierarchyNavigationPG">
 			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title Edited 1" />
 			<var name="kbChildArticleTitle" value="Knowledge Base Article Parent Title 1 Child 1" />
@@ -417,6 +480,10 @@
 		<execute macro="KBArticle#editPGViaKBDisplay">
 			<var name="kbArticleContentEdit" value="Knowledge Base Child Article Content Edited 1" />
 			<var name="kbArticleTitleEdit" value="Knowledge Base Article Parent Title Edited 1 Child 1" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
+			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
 		<execute macro="KBArticle#viewParentArticleHierarchyViaKBDisplayPG">
@@ -606,50 +673,9 @@
 		<execute macro="KBArticle#viewArticleHistoryPG">
 			<var name="kbArticleContent" value="KB Article Content Edit" />
 			<var name="kbArticleContentAddedDiff" value="Edit" />
-			<var name="kbArticleHistorySource" value="1 (Source)" />
-			<var name="kbArticleHistoryTarget" value="2 (Target)" />
-			<var name="kbArticleTitle" value="KB Article Title Edit" />
-			<var name="kbArticleTitleAddedDiff" value="Edit" />
+			<var name="kbArticleVersionNew" value="2" />
+			<var name="kbArticleVersionOld" value="1" />
 			<var name="viewNoXMLInTitle" value="true" />
-		</execute>
-	</command>
-
-	<command name="ViewKBArticleByPriority" priority="4">
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Knowledge Base" />
-		</execute>
-
-		<execute macro="KBArticle#addCP">
-			<var name="kbArticleContent" value="Knowledge Base Article1 Content" />
-			<var name="kbArticleTitle" value="Knowledge Base Article1 Title" />
-		</execute>
-
-		<execute macro="KBArticle#addCP">
-			<var name="kbArticleContent" value="Knowledge Base Article2 Content" />
-			<var name="kbArticleTitle" value="Knowledge Base Article2 Title" />
-		</execute>
-
-		<execute macro="KBArticle#setPriorityCP">
-			<var name="kbArticleContent" value="Knowledge Base Article2 Content" />
-			<var name="kbArticleTitle" value="Knowledge Base Article2 Title" />
-			<var name="kbPriority" value="1.0" />
-		</execute>
-
-		<execute macro="KBArticle#setPriorityCP">
-			<var name="kbArticleContent" value="Knowledge Base Article1 Content" />
-			<var name="kbArticleTitle" value="Knowledge Base Article1 Title" />
-			<var name="kbPriority" value="2.0" />
-		</execute>
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Knowledge Base Display Page" />
-		</execute>
-
-		<execute macro="KBArticle#viewViaKBDisplayPG">
-			<var name="kbArticleContent" value="Knowledge Base Article2 Content" />
-			<var name="kbArticleTitle" value="Knowledge Base Article2 Title" />
 		</execute>
 	</command>
 
@@ -863,7 +889,7 @@
 	<command name="ViewKBArticleWithAllSocialBookmarkSites" priority="3">
 		<property name="hook.plugins.includes" value="social-bookmarks-hook" />
 
-		<var name="socialBookmarkSites" value="twitter,facebook,plusone,addthis,blinklist,delicious,digg,evernote,linkedin,newsvine,reddit,slashdot,stumbleupon,technorati,tuenti" />
+		<var name="socialBookmarkSites" value="twitter,facebook,plusone,addthis,delicious,digg,evernote,linkedin,newsvine,reddit,slashdot,stumbleupon,tuenti" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -893,7 +919,7 @@
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<for list="Twitter,Facebook,Google+,AddThis,LinkedIn,BlinkList,Delicious,Digg,Evernote,Newsvine,Reddit,Slashdot,StumbleUpon,Technorati,Tuenti" param="socialBookmarkSites" >
+		<for list="Twitter,Facebook,Google+,AddThis,LinkedIn,Delicious,Digg,Evernote,Newsvine,Reddit,Slashdot,StumbleUpon,Tuenti" param="socialBookmarkSites" >
 			<execute macro="KBArticle#viewEnabledKBSocialBookmarkSites">
 				<var name="socialBookmarkSite" value="${socialBookmarkSites}" />
 			</execute>
@@ -1187,6 +1213,7 @@
 			<var name="kbArticleContent" value="Knowledge Base Article Content" />
 			<var name="kbArticleFriendlyURL" value="Title" />
 			<var name="kbArticleTitle"><![CDATA[><img onerror="alert('xss')" src="xx" /><]]></var>
+			<var name="specialCharacters" value="true" />
 		</execute>
 
 		<execute macro="Navigator#openURL" />

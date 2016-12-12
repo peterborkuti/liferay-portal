@@ -39,6 +39,7 @@ import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapDictionary;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Dictionary;
@@ -73,6 +74,8 @@ public class ResourcesImporterHotDeployMessageListener
 
 	@Activate
 	protected void activate(final BundleContext bundleContext) {
+		_bundleContext = bundleContext;
+
 		_serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
 			bundleContext, ServletContext.class, null,
 			new ServiceReferenceMapper<String, ServletContext>() {
@@ -98,26 +101,13 @@ public class ResourcesImporterHotDeployMessageListener
 
 			});
 
-		if (_destinationFactory != null) {
-			DestinationConfiguration destinationConfiguration =
-				new DestinationConfiguration(
-					DestinationConfiguration.DESTINATION_TYPE_SERIAL,
-					ResourcesImporterDestinationNames.RESOURCES_IMPORTER);
-
-			_destination = _destinationFactory.createDestination(
-				destinationConfiguration);
-
-			Dictionary<String, Object> dictionary = new HashMapDictionary<>();
-
-			dictionary.put("destination.name", _destination.getName());
-
-			_serviceRegistration = bundleContext.registerService(
-				Destination.class, _destination, dictionary);
-		}
+		registerDestination();
 	}
 
 	@Deactivate
 	protected void deactivate() {
+		_bundleContext = null;
+
 		if (_serviceRegistration != null) {
 			_serviceRegistration.unregister();
 
@@ -174,6 +164,27 @@ public class ResourcesImporterHotDeployMessageListener
 		initialize(message);
 	}
 
+	protected synchronized void registerDestination() {
+		if ((_bundleContext != null) && (_serviceRegistration == null) &&
+			(_destinationFactory != null)) {
+
+			DestinationConfiguration destinationConfiguration =
+				new DestinationConfiguration(
+					DestinationConfiguration.DESTINATION_TYPE_SERIAL,
+					ResourcesImporterDestinationNames.RESOURCES_IMPORTER);
+
+			_destination = _destinationFactory.createDestination(
+				destinationConfiguration);
+
+			Dictionary<String, Object> dictionary = new HashMapDictionary<>();
+
+			dictionary.put("destination.name", _destination.getName());
+
+			_serviceRegistration = _bundleContext.registerService(
+				Destination.class, _destination, dictionary);
+		}
+	}
+
 	@Reference(unbind = "-")
 	protected void setCompanyLocalService(
 		CompanyLocalService companyLocalService) {
@@ -197,6 +208,8 @@ public class ResourcesImporterHotDeployMessageListener
 		DestinationFactory destinationFactory) {
 
 		_destinationFactory = destinationFactory;
+
+		registerDestination();
 	}
 
 	@Reference(unbind = "-")
@@ -231,8 +244,8 @@ public class ResourcesImporterHotDeployMessageListener
 
 				if (_log.isInfoEnabled()) {
 					_log.info(
-						"Group or layout set prototype already exists " +
-							"for company " + company.getWebId());
+						"Group or layout set prototype already exists for " +
+							"company " + company.getWebId());
 				}
 
 				return;
@@ -247,13 +260,21 @@ public class ResourcesImporterHotDeployMessageListener
 			importer.importResources();
 
 			if (_log.isInfoEnabled()) {
+				StringBundler sb = new StringBundler(7);
+
+				sb.append("Importing resources from ");
+				sb.append(servletContext.getServletContextName());
+				sb.append(" to group ");
+				sb.append(importer.getGroupId());
+				sb.append(" takes ");
+
 				long endTime = System.currentTimeMillis() - startTime;
 
-				_log.info(
-					"Importing resources from " +
-						servletContext.getServletContextName() +
-						" to group " + importer.getGroupId() + " takes " +
-							endTime + " ms");
+				sb.append(endTime);
+
+				sb.append(" ms");
+
+				_log.info(sb.toString());
 			}
 
 			Message message = new Message();
@@ -298,6 +319,7 @@ public class ResourcesImporterHotDeployMessageListener
 	private static final Log _log = LogFactoryUtil.getLog(
 		ResourcesImporterHotDeployMessageListener.class);
 
+	private BundleContext _bundleContext;
 	private CompanyLocalService _companyLocalService;
 	private Destination _destination;
 	private DestinationFactory _destinationFactory;

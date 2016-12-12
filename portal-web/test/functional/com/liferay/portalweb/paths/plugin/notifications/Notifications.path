@@ -41,7 +41,7 @@
 <!--NOTIFICATIONS-->
 <tr>
 	<td>MARK_AS_READ</td>
-	<td>//span[contains(.,'Mark as Read')]</td>
+	<td>//a[contains(.,'Mark as Read')]/span[1]</td>
 	<td></td>
 </tr>
 <tr>
@@ -56,6 +56,11 @@
 </tr>
 <tr>
 	<td>NOTIFICATIONS_CONTENT</td>
+	<td>//div[@class='body-container']//div[@class='body' and contains(.,'${key_contentBody}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>NOTIFICATIONS_CONTENT_GENERIC</td>
 	<td>//div[@class='body-container']//div[@class='body']</td>
 	<td></td>
 </tr>
@@ -134,6 +139,16 @@
 <tr>
 	<td>NOTIFICATION_DELIVERY_TEXT_4</td>
 	<td>//div[contains(@id,'${key_contentType}')]//table//tr[5]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>NOTIFICATION_DELIVERY_CONTACTS_CENTER_WEBSITE_CHECKBOX</td>
+	<td>//table[contains(.,'Contacts Center')]//tr[contains(.,'sends you a social relationship request.')]//label[contains(.,'Website')]/input[@type='checkbox' and contains(@class,'disabled')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>NOTIFICATION_DELIVERY_INVITE_MEMBERS_WEBSITE_CHECKBOX</td>
+	<td>//table[contains(.,'Invite Members')]//tr[contains(.,'sends you a membership request.')]//label[contains(.,'Website')]/input[@type='checkbox' and contains(@class,'disabled')]</td>
 	<td></td>
 </tr>
 <tr>

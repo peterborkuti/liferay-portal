@@ -21,22 +21,22 @@ import com.liferay.portal.kernel.configuration.ConfigurationFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.security.permission.ResourceActions;
+import com.liferay.portal.kernel.service.ResourceActionLocalService;
+import com.liferay.portal.kernel.service.ServiceComponentLocalService;
+import com.liferay.portal.kernel.service.configuration.ServiceComponentConfiguration;
+import com.liferay.portal.kernel.service.configuration.configurator.ServiceConfigurator;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
-import com.liferay.portal.kernel.service.ResourceActionLocalServiceUtil;
-import com.liferay.portal.kernel.service.ServiceComponentLocalService;
-import com.liferay.portal.kernel.service.configuration.ServiceComponentConfiguration;
-import com.liferay.portal.kernel.service.configuration.configurator.ServiceConfigurator;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceRegistrar;
 
 import java.net.URL;
-import java.util.HashMap;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -45,7 +45,7 @@ import java.util.Properties;
  * @author Miguel Pastor
  */
 public class ServiceConfiguratorImpl implements ServiceConfigurator {
-	
+
 	public void destory() {
 		if (_serviceRegistrar != null) {
 			_serviceRegistrar.destroy();
@@ -72,6 +72,16 @@ public class ServiceConfiguratorImpl implements ServiceConfigurator {
 		reconfigureCaches(classLoader);
 
 		readResourceActions(classLoader);
+	}
+
+	public void setResourceActionLocalService(
+		ResourceActionLocalService resourceActionLocalService) {
+
+		_resourceActionLocalService = resourceActionLocalService;
+	}
+
+	public void setResourceActions(ResourceActions resourceActions) {
+		_resourceActions = resourceActions;
 	}
 
 	public void setServiceComponentLocalService(
@@ -148,9 +158,8 @@ public class ServiceConfiguratorImpl implements ServiceConfigurator {
 
 		try {
 			_serviceComponentLocalService.initServiceComponent(
-				serviceComponentConfiguration,
-				classLoader, buildNamespace, buildNumber, buildDate,
-				buildAutoUpgrade);
+				serviceComponentConfiguration, classLoader, buildNamespace,
+				buildNumber, buildDate, buildAutoUpgrade);
 		}
 		catch (PortalException pe) {
 			_log.error("Unable to initialize service component", pe);
@@ -177,8 +186,7 @@ public class ServiceConfiguratorImpl implements ServiceConfigurator {
 
 		for (String resourceActionsConfig : resourceActionsConfigs) {
 			try {
-				ResourceActionsUtil.read(
-					null, classLoader, resourceActionsConfig);
+				_resourceActions.read(null, classLoader, resourceActionsConfig);
 			}
 			catch (Exception e) {
 				_log.error(
@@ -192,14 +200,14 @@ public class ServiceConfiguratorImpl implements ServiceConfigurator {
 			configuration.get("service.configurator.portlet.ids"));
 
 		for (String portletId : portletIds) {
-			List<String> modelNames =
-				ResourceActionsUtil.getPortletModelResources(portletId);
+			List<String> modelNames = _resourceActions.getPortletModelResources(
+				portletId);
 
 			for (String modelName : modelNames) {
 				List<String> modelActions =
-					ResourceActionsUtil.getModelResourceActions(modelName);
+					_resourceActions.getModelResourceActions(modelName);
 
-				ResourceActionLocalServiceUtil.checkResourceActions(
+				_resourceActionLocalService.checkResourceActions(
 					modelName, modelActions);
 			}
 		}
@@ -219,7 +227,7 @@ public class ServiceConfiguratorImpl implements ServiceConfigurator {
 
 			return;
 		}
-		
+
 		String singleVMConfigurationLocation = configuration.get(
 			PropsKeys.EHCACHE_SINGLE_VM_CONFIG_LOCATION);
 		String multiVMConfigurationLocation = configuration.get(
@@ -227,10 +235,10 @@ public class ServiceConfiguratorImpl implements ServiceConfigurator {
 
 		if (Validator.isNull(singleVMConfigurationLocation) &&
 			Validator.isNull(multiVMConfigurationLocation)) {
-			
+
 			return;
 		}
-		
+
 		if (_serviceRegistrar == null) {
 			Registry registry = RegistryUtil.getRegistry();
 
@@ -265,9 +273,11 @@ public class ServiceConfiguratorImpl implements ServiceConfigurator {
 		}
 	}
 
-	private static Log _log = LogFactoryUtil.getLog(
+	private static final Log _log = LogFactoryUtil.getLog(
 		ServiceConfiguratorImpl.class);
 
+	private ResourceActionLocalService _resourceActionLocalService;
+	private ResourceActions _resourceActions;
 	private ServiceComponentLocalService _serviceComponentLocalService;
 	private volatile ServiceRegistrar<PortalCacheConfiguratorSettings>
 		_serviceRegistrar;

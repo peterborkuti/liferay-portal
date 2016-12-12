@@ -58,6 +58,7 @@ import java.io.InputStream;
 
 import java.net.URL;
 
+import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -153,12 +154,11 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 			Parameters parameters = OSGiHeader.parseHeader(
 				bundleSymbolicNameAttributeValue);
 
-			Set<String> bundleSymbolicNameSet = parameters.keySet();
+			Set<String> set = parameters.keySet();
 
-			Iterator<String> bundleSymbolicNameIterator =
-				bundleSymbolicNameSet.iterator();
+			Iterator<String> iterator = set.iterator();
 
-			String bundleSymbolicName = bundleSymbolicNameIterator.next();
+			String bundleSymbolicName = iterator.next();
 
 			String bundleVersionAttributeValue = attributes.getValue(
 				Constants.BUNDLE_VERSION);
@@ -609,7 +609,15 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 
 			unsyncBufferedInputStream.mark(1024 * 1000);
 
-			Bundle bundle = getBundle(bundleContext, unsyncBufferedInputStream);
+			Bundle bundle = null;
+
+			if (location.startsWith("reference:")) {
+				bundle = _getStaticBundle(
+					bundleContext, unsyncBufferedInputStream);
+			}
+			else {
+				bundle = getBundle(bundleContext, unsyncBufferedInputStream);
+			}
 
 			try {
 				unsyncBufferedInputStream.reset();
@@ -769,6 +777,64 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 		return properties;
 	}
 
+	private Bundle _getStaticBundle(
+			BundleContext bundleContext, InputStream inputStream)
+		throws PortalException {
+
+		try {
+			JarInputStream jarInputStream = new JarInputStream(inputStream);
+
+			Manifest manifest = jarInputStream.getManifest();
+
+			Attributes attributes = manifest.getMainAttributes();
+
+			String bundleSymbolicNameAttributeValue = attributes.getValue(
+				Constants.BUNDLE_SYMBOLICNAME);
+
+			Parameters parameters = OSGiHeader.parseHeader(
+				bundleSymbolicNameAttributeValue);
+
+			Set<String> set = parameters.keySet();
+
+			Iterator<String> iterator = set.iterator();
+
+			String bundleSymbolicName = iterator.next();
+
+			String bundleVersionAttributeValue = attributes.getValue(
+				Constants.BUNDLE_VERSION);
+
+			Version bundleVersion = Version.parseVersion(
+				bundleVersionAttributeValue);
+
+			for (Bundle bundle : bundleContext.getBundles()) {
+				if (bundleSymbolicName.equals(bundle.getSymbolicName())) {
+					Version curBundleVersion = Version.parseVersion(
+						String.valueOf(bundle.getVersion()));
+
+					if (bundleVersion.equals(curBundleVersion)) {
+						return bundle;
+					}
+					else {
+						bundle.uninstall();
+
+						FrameworkWiring frameworkWiring = _framework.adapt(
+							FrameworkWiring.class);
+
+						frameworkWiring.refreshBundles(
+							Collections.singletonList(bundle));
+
+						return null;
+					}
+				}
+			}
+
+			return null;
+		}
+		catch (Exception e) {
+			throw new PortalException(e);
+		}
+	}
+
 	private String _getSystemPackagesExtra() {
 		String[] systemPackagesExtra =
 			PropsValues.MODULE_FRAMEWORK_SYSTEM_PACKAGES_EXTRA;
@@ -807,7 +873,7 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 
 			_log.debug(
 				"The portal's system bundle is exporting the following " +
-					"packages:\n" +s);
+					"packages:\n" + s);
 		}
 
 		return sb.toString();
@@ -1096,7 +1162,7 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 
 			if (_log.isInfoEnabled()) {
 				_log.info(
-					"Uninstalled orphan overwritten static JAR bundle " +
+					"Uninstalled orphan overriding static JAR bundle " +
 						location);
 			}
 		}
@@ -1108,7 +1174,7 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 
 		refreshBundles.clear();
 
-		Set<String> overwrittenFileNames = new HashSet<>();
+		Set<String> overrideStaticFileNames = new HashSet<>();
 
 		for (Path jarPath : jarPaths) {
 			try (InputStream inputStream = Files.newInputStream(jarPath)) {
@@ -1120,14 +1186,16 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 				if (bundle != null) {
 					bundles.add(bundle);
 
-					overwrittenFileNames.add(
+					overrideStaticFileNames.add(
 						path.substring(path.lastIndexOf(StringPool.SLASH) + 1));
 				}
 			}
 		}
 
+		String deployDir = bundleContext.getProperty("lpkg.deployer.dir");
+
 		File file = new File(
-			bundleContext.getProperty("lpkg.deployer.dir") + StringPool.SLASH +
+			deployDir + StringPool.SLASH +
 				StaticLPKGResolver.getStaticLPKGFileName());
 
 		if (file.exists()) {
@@ -1176,14 +1244,14 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 							String fileName =
 								matcher.group(1) + matcher.group(4);
 
-							if (overwrittenFileNames.contains(fileName)) {
+							if (overrideStaticFileNames.contains(fileName)) {
 								if (_log.isInfoEnabled()) {
 									StringBundler sb = new StringBundler(7);
 
 									sb.append(zipFile);
 									sb.append(":");
 									sb.append(zipEntry);
-									sb.append(" is overwritten by ");
+									sb.append(" is overridden by ");
 									sb.append(
 										PropsValues.MODULE_FRAMEWORK_BASE_DIR);
 									sb.append("/static/");
@@ -1204,6 +1272,36 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 						}
 					}
 				}
+			}
+		}
+
+		Set<String> overrideLPKGFileNames = new HashSet<>();
+
+		try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(
+				Paths.get(deployDir, "override"))) {
+
+			for (Path path : directoryStream) {
+				String fileName = String.valueOf(path.getFileName());
+
+				String pathName = StringUtil.toLowerCase(fileName);
+
+				if (pathName.endsWith("jar")) {
+					overrideLPKGFileNames.add(fileName);
+				}
+			}
+		}
+
+		for (Bundle bundle : bundleContext.getBundles()) {
+			String location = bundle.getLocation();
+
+			Matcher matcher = _pattern.matcher(location);
+
+			if (matcher.matches()) {
+				location = matcher.group(1) + matcher.group(4);
+			}
+
+			if (overrideLPKGFileNames.contains(location)) {
+				bundle.uninstall();
 			}
 		}
 
@@ -1412,7 +1510,7 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 		ModuleFrameworkImpl.class);
 
 	private static final Pattern _pattern = Pattern.compile(
-		"(.*?)(-\\d+\\.\\d+\\.\\d+)(\\..+)?(\\.jar)");
+		"/?(.*?)(-\\d+\\.\\d+\\.\\d+)(\\..+)?(\\.jar)");
 
 	private Framework _framework;
 	private final Map<ApplicationContext, List<ServiceRegistration<?>>>
