@@ -1017,6 +1017,8 @@ information.
 						<then>
 							<exec dir="${project.dir}/${build.binaries.cache.dir}" executable="git" failonerror="true">
 								<arg value="pull" />
+								<arg value="upstream" />
+								<arg value="master" />
 								<arg value="--rebase" />
 							</exec>
 						</then>
