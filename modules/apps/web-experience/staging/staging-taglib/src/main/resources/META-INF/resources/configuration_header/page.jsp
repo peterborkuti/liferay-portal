@@ -21,7 +21,7 @@
 
 	<aui:input name="nameRequired" type="hidden" value="1" />
 
-	<aui:input label="title" name="name" showRequiredLabel="<%= true %>">
+	<aui:input data="<%= data %>" label="title" name="name" showRequiredLabel="<%= true %>">
 		<aui:validator name="required">
 			function() {
 				return (AUI.$('#<portlet:namespace />nameRequired').prop('value') === "1");
