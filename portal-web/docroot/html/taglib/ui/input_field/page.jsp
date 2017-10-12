@@ -27,6 +27,7 @@ String defaultLanguageId = (String)request.getAttribute("liferay-ui:input-field:
 Object defaultValue = request.getAttribute("liferay-ui:input-field:defaultValue");
 boolean disabled = GetterUtil.getBoolean((String)request.getAttribute("liferay-ui:input-field:disabled"));
 Map<String, Object> dynamicAttributes = (Map<String, Object>)request.getAttribute("liferay-ui:input-field:dynamicAttributes");
+Map<String, Object> data = (Map<String, Object>)dynamicAttributes.get("data");
 String field = (String)request.getAttribute("liferay-ui:input-field:field");
 String fieldParam = GetterUtil.getString((String)request.getAttribute("liferay-ui:input-field:fieldParam"));
 Format format = (Format)request.getAttribute("liferay-ui:input-field:format");
@@ -468,7 +469,7 @@ if (hints != null) {
 							/>
 						</c:when>
 						<c:otherwise>
-							<input <%= !autoComplete ? "autocomplete=\"off\"" : StringPool.BLANK %> class="<%= cssClass + " lfr-input-text" %>" <%= disabled ? "disabled=\"disabled\"" : StringPool.BLANK %> id="<%= namespace %><%= id %>" name="<%= namespace %><%= fieldParam %>" <%= Validator.isNotNull(placeholder) ? "placeholder=\"" + LanguageUtil.get(resourceBundle, placeholder) + "\"" : StringPool.BLANK %> style="<%= upperCase ? "text-transform: uppercase;" : StringPool.BLANK %>" type="<%= secret ? "password" : "text" %>" value="<%= autoEscape ? HtmlUtil.escape(value) : value %>" />
+							<input <%= !autoComplete ? "autocomplete=\"off\"" : StringPool.BLANK %> class="<%= cssClass + " lfr-input-text" %>" <%= AUIUtil.buildData(data) %> <%= disabled ? "disabled=\"disabled\"" : StringPool.BLANK %> id="<%= namespace %><%= id %>" name="<%= namespace %><%= fieldParam %>" <%= Validator.isNotNull(placeholder) ? "placeholder=\"" + LanguageUtil.get(resourceBundle, placeholder) + "\"" : StringPool.BLANK %> style="<%= upperCase ? "text-transform: uppercase;" : StringPool.BLANK %>" type="<%= secret ? "password" : "text" %>" value="<%= autoEscape ? HtmlUtil.escape(value) : value %>" />
 						</c:otherwise>
 					</c:choose>
 				</c:when>
