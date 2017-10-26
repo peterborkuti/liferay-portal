@@ -48,25 +48,22 @@ public class MyEditorContributorPortlet extends BaseEditorConfigContributor {
 				
 					JSONObject toolbars = jsonObject.getJSONObject("toolbars");
 					String extraPlugins = jsonObject.getString("extraPlugins");
-	
-					if(Validator.isNotNull(extraPlugins)){
-						extraPlugins +=",youtube,videodetector";
-					}
-					else{
-						extraPlugins = "youtube,videodetector";
-					}
-					
+			
+					extraPlugins = extraPlugins.concat(",ae_uibridge,ae_uicore,ae_buttonbridge,ae_embed,videodetector,youtube");
+			
 					jsonObject.put("extraPlugins", extraPlugins);
 	
 					if (toolbars != null) {
 					    JSONObject toolbarAdd = toolbars.getJSONObject("add");
+							
 					
 					    if (toolbarAdd != null) {
 					        JSONArray addButtons = toolbarAdd.getJSONArray("buttons");
 					
 									addButtons.put("camera");
-					        addButtons.put("youtube");
-									addButtons.put("videodetector");
+									addButtons.put("embed");
+					        addButtons.put("Youtube");
+									addButtons.put("VideoDetector");
 					    }
 							
 					}
