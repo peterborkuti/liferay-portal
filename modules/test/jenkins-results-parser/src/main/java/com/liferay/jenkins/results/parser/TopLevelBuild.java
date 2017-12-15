@@ -789,7 +789,7 @@ public class TopLevelBuild extends BaseBuild {
 			Dom4JUtil.getNewElement(
 				"p", null, "Start Time: ",
 				JenkinsResultsParserUtil.toDateString(
-					new Date(getStartTimestamp()))),
+					new Date(getStartTime()), getJenkinsReportTimeZoneName())),
 			Dom4JUtil.getNewElement(
 				"p", null, "Build Time: ",
 				JenkinsResultsParserUtil.toDurationString(getDuration())),

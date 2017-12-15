@@ -270,7 +270,7 @@
 </tr>
 <tr>
 	<td>COLOR_EFFECT</td>
-	<td>//a[contains(@class, 'btn')]//*[name()='svg'][@data-icon='effects']</td>
+	<td>//a[contains(@class, 'btn')][span/*[name()='svg'][@data-icon='effects']]</td>
 	<td></td>
 </tr>
 <tr>
@@ -390,7 +390,7 @@
 </tr>
 <tr>
 	<td>FILTER_EFFECT</td>
-	<td>//a[contains(@class,'btn') and (@data-control='effects')]//*[name()='svg'][contains(@class,'lexicon-icon')]</td>
+	<td>//a[contains(@class,'btn') and (@data-control='effects')][span/*[name()='svg'][contains(@class,'lexicon-icon')]]</td>
 	<td></td>
 </tr>
 <tr>
@@ -470,12 +470,12 @@
 </tr>
 <tr>
 	<td>MOVE_AVAILABLE_TO_CURRENT</td>
-	<td>//div[@id='metadataContent']//button[@title='Move selected items from Available to Current.']</td>
+	<td>//button[@title='Move selected items from Available to Current.']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>MOVE_CURRENT_TO_AVAILABLE</td>
-	<td>//div[@id='metadataContent']//button[@title='Move selected items from Current to Available.']</td>
+	<td>//button[@title='Move selected items from Current to Available.']</td>
 	<td></td>
 </tr>
 <tr>
@@ -749,6 +749,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>MODAL_CONTENT_SUBMIT</td>
+	<td>//div[@class='modal-content']//button[@type='submit']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>TAB_SUBMIT_BTN</td>
 	<td>//button[contains(@type,'submit') and contains(.,'${key_tab}')]</td>
 	<td></td>
@@ -760,7 +765,7 @@
 </tr>
 <tr>
 	<td>TRANSFORM</td>
-	<td>//a[contains(@class, 'btn')]//*[name()='svg'][@data-icon='transform']</td>
+	<td>//a[contains(@class, 'btn')][span/*[name()='svg'][@data-icon='transform']]</td>
 	<td></td>
 </tr>
 <tr>

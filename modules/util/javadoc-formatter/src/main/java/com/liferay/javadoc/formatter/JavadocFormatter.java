@@ -15,6 +15,7 @@
 package com.liferay.javadoc.formatter;
 
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.xml.Dom4jUtil;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -28,7 +29,6 @@ import com.liferay.portal.tools.JavaImportsFormatter;
 import com.liferay.portal.tools.ToolsUtil;
 import com.liferay.portal.xml.SAXReaderFactory;
 import com.liferay.util.xml.Dom4jDocUtil;
-import com.liferay.util.xml.Dom4jUtil;
 import com.liferay.util.xml.XMLSafeReader;
 
 import com.thoughtworks.qdox.JavaProjectBuilder;
@@ -1413,7 +1413,7 @@ public class JavadocFormatter {
 			Element rootElement, JavaClass javaClass, String indent)
 		throws Exception {
 
-		StringBundler sb = new StringBundler();
+		StringBundler sb = new StringBundler(8);
 
 		sb.append(indent);
 		sb.append("/**\n");
@@ -1589,7 +1589,7 @@ public class JavadocFormatter {
 			return null;
 		}
 
-		StringBundler sb = new StringBundler();
+		StringBundler sb = new StringBundler(8);
 
 		sb.append(indent);
 		sb.append("/**\n");
@@ -1662,7 +1662,7 @@ public class JavadocFormatter {
 			return null;
 		}
 
-		StringBundler sb = new StringBundler();
+		StringBundler sb = new StringBundler(8);
 
 		sb.append(indent);
 		sb.append("/**\n");

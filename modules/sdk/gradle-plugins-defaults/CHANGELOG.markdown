@@ -2562,6 +2562,36 @@ read-only sub-repositories.
 ### Changed
 - [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version 3.5.61.
 
+## 5.2.15 - 2017-12-10
+
+### Changed
+- [LPS-76326]: Update the [Liferay Gradle Plugins] dependency to version 3.5.62.
+
+## 5.2.16 - 2017-12-12
+
+### Changed
+- [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version 3.5.63.
+
+## 5.2.17 - 2017-12-12
+
+### Changed
+- [LPS-76018]: Update the [Liferay Gradle Plugins] dependency to version 3.5.64.
+
+## 5.2.18 - 2017-12-12
+
+### Changed
+- [LPS-76018]: Update the [Liferay Gradle Plugins] dependency to version 3.5.65.
+
+## 5.2.19 - 2017-12-12
+
+### Changed
+- [LPS-76018]: Update the [Liferay Gradle Plugins] dependency to version 3.5.66.
+
+## 5.2.20 - 2017-12-13
+
+### Changed
+- [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version 3.5.67.
+
 [Find Security Bugs]: https://github.com/liferay/liferay-portal/tree/master/modules/third-party/com-h3xstream-findsecbugs
 [Gradle License Report]: https://github.com/jk1/Gradle-License-Report
 [Liferay CDN]: https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public
@@ -2846,6 +2876,7 @@ read-only sub-repositories.
 [LPS-75952]: https://issues.liferay.com/browse/LPS-75952
 [LPS-75965]: https://issues.liferay.com/browse/LPS-75965
 [LPS-75971]: https://issues.liferay.com/browse/LPS-75971
+[LPS-76018]: https://issues.liferay.com/browse/LPS-76018
 [LPS-76110]: https://issues.liferay.com/browse/LPS-76110
 [LPS-76145]: https://issues.liferay.com/browse/LPS-76145
 [LPS-76181]: https://issues.liferay.com/browse/LPS-76181
@@ -2855,6 +2886,7 @@ read-only sub-repositories.
 [LPS-76224]: https://issues.liferay.com/browse/LPS-76224
 [LPS-76226]: https://issues.liferay.com/browse/LPS-76226
 [LPS-76256]: https://issues.liferay.com/browse/LPS-76256
+[LPS-76326]: https://issues.liferay.com/browse/LPS-76326
 [LRDOCS-2594]: https://issues.liferay.com/browse/LRDOCS-2594
 [LRDOCS-2841]: https://issues.liferay.com/browse/LRDOCS-2841
 [LRDOCS-2981]: https://issues.liferay.com/browse/LRDOCS-2981

@@ -449,7 +449,7 @@ public class LPKGBundleTrackerCustomizer
 					!location.equals(installedBundle.getLocation())) {
 
 					if (_log.isInfoEnabled()) {
-						StringBundler sb = new StringBundler();
+						StringBundler sb = new StringBundler(7);
 
 						sb.append("Skipping installation of ");
 						sb.append(symbolicName);
@@ -539,7 +539,7 @@ public class LPKGBundleTrackerCustomizer
 	private InputStream _toWARWrapperBundle(Bundle bundle, URL url)
 		throws IOException {
 
-		StringBundler sb = new StringBundler(7);
+		StringBundler sb = new StringBundler(10);
 
 		sb.append("lpkg:/");
 		sb.append(URLCodec.encodeURL(bundle.getSymbolicName()));
