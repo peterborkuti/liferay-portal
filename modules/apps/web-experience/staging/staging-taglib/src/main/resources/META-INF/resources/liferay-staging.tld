@@ -243,6 +243,39 @@
 		</attribute>
 	</tag>
 	<tag>
+		<description>Renders the kebab menu for a staging process list item</description>
+		<name>process-list-menu</name>
+		<tag-class>com.liferay.staging.taglib.servlet.taglib.ProcessListMenuTag</tag-class>
+		<body-content>empty</body-content>
+		<attribute>
+			<description>The group ID of the <![CDATA[<code>backgroundTask</code>]]></description>
+			<name>backgroundTaskGroupId</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>long</type>
+		</attribute>
+		<attribute>
+			<description>The ID of the <![CDATA[<code>backgroundTask</code>]]></description>
+			<name>backgroundTaskId</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>long</type>
+		</attribute>
+		<attribute>
+			<description>The label for the deleting the background task menu. This is usually cancel or clear in the appropriate language.</description>
+			<name>deleteLabel</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<description>Whether publishing is local or not</description>
+			<name>localPublishing</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>boolean</type>
+		</attribute>
+	</tag>
+	<tag>
 		<description>Renders the remote site options.</description>
 		<name>remote-options</name>
 		<tag-class>com.liferay.staging.taglib.servlet.taglib.RemoteOptionsTag</tag-class>
