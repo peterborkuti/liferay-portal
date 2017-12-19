@@ -183,6 +183,25 @@
 		<body-content>JSP</body-content>
 	</tag>
 	<tag>
+		<description>Renders the incomplete processing message for publication</description>
+		<name>incomplete-process-message</name>
+		<tag-class>com.liferay.staging.taglib.servlet.taglib.IncompleteProcessMessageTag</tag-class>
+		<body-content>empty</body-content>
+		<attribute>
+			<description>Whether publishing is local or not</description>
+			<name>localPublishing</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>boolean</type>
+		</attribute>
+		<attribute>
+			<description>Task executor class name.</description>
+			<name>taskExecutorClassName</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+	</tag>
+	<tag>
 		<description>Renders a <![CDATA[<code>Navbar</code>]]> containing a staging menu with page versioning information, if available.</description>
 		<name>menu</name>
 		<tag-class>com.liferay.staging.taglib.servlet.taglib.MenuTag</tag-class>
