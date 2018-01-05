@@ -25,8 +25,10 @@ import com.liferay.gradle.plugins.cache.CacheExtension;
 import com.liferay.gradle.plugins.cache.CachePlugin;
 import com.liferay.gradle.plugins.cache.task.TaskCache;
 import com.liferay.gradle.plugins.defaults.internal.FindSecurityBugsPlugin;
+import com.liferay.gradle.plugins.defaults.internal.JSDocDefaultsPlugin;
 import com.liferay.gradle.plugins.defaults.internal.JaCoCoPlugin;
 import com.liferay.gradle.plugins.defaults.internal.LiferayRelengPlugin;
+import com.liferay.gradle.plugins.defaults.internal.PublishPluginDefaultsPlugin;
 import com.liferay.gradle.plugins.defaults.internal.WhipDefaultsPlugin;
 import com.liferay.gradle.plugins.defaults.internal.util.BackupFilesBuildAdapter;
 import com.liferay.gradle.plugins.defaults.internal.util.FileUtil;
@@ -34,6 +36,8 @@ import com.liferay.gradle.plugins.defaults.internal.util.GitUtil;
 import com.liferay.gradle.plugins.defaults.internal.util.GradlePluginsDefaultsUtil;
 import com.liferay.gradle.plugins.defaults.internal.util.GradleUtil;
 import com.liferay.gradle.plugins.defaults.internal.util.IncrementVersionClosure;
+import com.liferay.gradle.plugins.defaults.internal.util.NameSuffixFileSpec;
+import com.liferay.gradle.plugins.defaults.internal.util.StringUtil;
 import com.liferay.gradle.plugins.defaults.internal.util.XMLUtil;
 import com.liferay.gradle.plugins.defaults.internal.util.copy.RenameDependencyAction;
 import com.liferay.gradle.plugins.defaults.internal.util.copy.ReplaceContentFilterReader;
@@ -48,7 +52,8 @@ import com.liferay.gradle.plugins.extensions.LiferayExtension;
 import com.liferay.gradle.plugins.extensions.LiferayOSGiExtension;
 import com.liferay.gradle.plugins.jasper.jspc.JspCPlugin;
 import com.liferay.gradle.plugins.js.transpiler.JSTranspilerPlugin;
-import com.liferay.gradle.plugins.lang.builder.BuildLangTask;
+import com.liferay.gradle.plugins.jsdoc.JSDocPlugin;
+import com.liferay.gradle.plugins.jsdoc.JSDocTask;
 import com.liferay.gradle.plugins.node.tasks.PublishNodeModuleTask;
 import com.liferay.gradle.plugins.patcher.PatchTask;
 import com.liferay.gradle.plugins.service.builder.BuildServiceTask;
@@ -65,11 +70,11 @@ import com.liferay.gradle.plugins.wsdd.builder.BuildWSDDTask;
 import com.liferay.gradle.plugins.wsdd.builder.WSDDBuilderPlugin;
 import com.liferay.gradle.plugins.wsdl.builder.WSDLBuilderPlugin;
 import com.liferay.gradle.plugins.xsd.builder.XSDBuilderPlugin;
-import com.liferay.gradle.util.StringUtil;
 import com.liferay.gradle.util.Validator;
 import com.liferay.gradle.util.copy.ExcludeExistingFileAction;
 import com.liferay.gradle.util.copy.RenameDependencyClosure;
 import com.liferay.gradle.util.copy.ReplaceLeadingPathAction;
+import com.liferay.gradle.util.copy.StripPathSegmentsAction;
 import com.liferay.portal.tools.wsdd.builder.WSDDBuilderArgs;
 
 import groovy.json.JsonSlurper;
@@ -120,8 +125,6 @@ import javax.xml.parsers.DocumentBuilder;
 
 import nebula.plugin.extraconfigurations.OptionalBasePlugin;
 import nebula.plugin.extraconfigurations.ProvidedBasePlugin;
-
-import org.dm.gradle.plugins.bundle.BundleExtension;
 
 import org.gradle.StartParameter;
 import org.gradle.api.Action;
@@ -193,6 +196,7 @@ import org.gradle.api.tasks.SourceSetOutput;
 import org.gradle.api.tasks.StopActionException;
 import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.TaskContainer;
+import org.gradle.api.tasks.TaskInputs;
 import org.gradle.api.tasks.TaskOutputs;
 import org.gradle.api.tasks.Upload;
 import org.gradle.api.tasks.VerificationTask;
@@ -257,6 +261,8 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 	public static final String INSTALL_CACHE_TASK_NAME = "installCache";
 
 	public static final String JAR_JAVADOC_TASK_NAME = "jarJavadoc";
+
+	public static final String JAR_JSDOC_TASK_NAME = "jarJSDoc";
 
 	public static final String JAR_JSP_TASK_NAME = "jarJSP";
 
@@ -411,6 +417,7 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 
 		final Jar jarJSPsTask = _addTaskJarJSP(project);
 		final Jar jarJavadocTask = _addTaskJarJavadoc(project);
+		final Jar jarJSDocTask = _addTaskJarJSDoc(project);
 		final Jar jarSourcesTask = _addTaskJarSources(project, testProject);
 		final Jar jarSourcesCommercialTask = _addTaskJarSourcesCommercial(
 			project, privateProject, testProject);
@@ -443,7 +450,6 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 		_configureTaskTestIntegration(project);
 		_configureTaskTlddoc(project, portalRootDir);
 		_configureTasksBaseline(project);
-		_configureTasksBuildLang(project);
 		_configureTasksCheckOSGiBundleState(project, liferayExtension);
 		_configureTasksFindBugs(project);
 		_configureTasksJavaCompile(project);
@@ -506,8 +512,9 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 					_checkVersion(project);
 
 					_configureArtifacts(
-						project, jarJSPsTask, jarJavadocTask, jarSourcesTask,
-						jarSourcesCommercialTask, jarTLDDocTask);
+						project, jarJSDocTask, jarJSPsTask, jarJavadocTask,
+						jarSourcesTask, jarSourcesCommercialTask,
+						jarTLDDocTask);
 					_configureTaskJarSources(jarSourcesTask);
 					_configureTaskJarSources(jarSourcesCommercialTask);
 					_configureTaskUpdateFileVersions(
@@ -641,7 +648,7 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 
 				@Override
 				public String call() throws Exception {
-					return _getBundleInstruction(
+					return GradlePluginsDefaultsUtil.getBundleInstruction(
 						project, Constants.BUNDLE_SYMBOLICNAME);
 				}
 
@@ -1040,6 +1047,25 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 		return jar;
 	}
 
+	private Jar _addTaskJarJSDoc(Project project) {
+		Jar jar = GradleUtil.addTask(project, JAR_JSDOC_TASK_NAME, Jar.class);
+
+		jar.setClassifier("jsdoc");
+		jar.setDescription(
+			"Assembles a jar archive containing the Javascript API " +
+				"documentation files for this project.");
+		jar.eachFile(new StripPathSegmentsAction(2));
+		jar.setGroup(BasePlugin.BUILD_GROUP);
+		jar.setIncludeEmptyDirs(false);
+
+		JSDocTask jsdocTask = (JSDocTask)GradleUtil.getTask(
+			project, JSDocPlugin.JSDOC_TASK_NAME);
+
+		jar.from(jsdocTask);
+
+		return jar;
+	}
+
 	private Jar _addTaskJarJSP(Project project) {
 		Jar jar = GradleUtil.addTask(project, JAR_JSP_TASK_NAME, Jar.class);
 
@@ -1400,7 +1426,10 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 	}
 
 	private void _applyPlugins(Project project) {
-		if (Validator.isNotNull(_getBundleInstruction(project, "Main-Class"))) {
+		if (Validator.isNotNull(
+				GradlePluginsDefaultsUtil.getBundleInstruction(
+					project, "Main-Class"))) {
+
 			GradleUtil.applyPlugin(project, ApplicationPlugin.class);
 		}
 
@@ -1408,6 +1437,7 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 		GradleUtil.applyPlugin(project, DependencyCheckerPlugin.class);
 		GradleUtil.applyPlugin(project, FindBugsPlugin.class);
 		GradleUtil.applyPlugin(project, IdeaPlugin.class);
+		GradleUtil.applyPlugin(project, JSDocPlugin.class);
 		GradleUtil.applyPlugin(project, MavenPlugin.class);
 		GradleUtil.applyPlugin(project, OptionalBasePlugin.class);
 		GradleUtil.applyPlugin(project, PmdPlugin.class);
@@ -1428,6 +1458,8 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 		}
 
 		FindSecurityBugsPlugin.INSTANCE.apply(project);
+		JSDocDefaultsPlugin.INSTANCE.apply(project);
+		PublishPluginDefaultsPlugin.INSTANCE.apply(project);
 	}
 
 	private void _applyVersionOverrideJson(Project project, String fileName)
@@ -1476,8 +1508,8 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 			Constants.BUNDLE_VERSION);
 
 		if (Validator.isNotNull(bundleVersion)) {
-			Map<String, String> bundleInstructions = _getBundleInstructions(
-				project);
+			Map<String, String> bundleInstructions =
+				GradlePluginsDefaultsUtil.getBundleInstructions(project);
 
 			bundleInstructions.put(Constants.BUNDLE_VERSION, bundleVersion);
 
@@ -1645,8 +1677,8 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 	}
 
 	private void _configureArtifacts(
-		Project project, Jar jarJSPTask, Jar jarJavadocTask, Jar jarSourcesTask,
-		Jar jarSourcesCommercialTask, Jar jarTLDDocTask) {
+		Project project, Jar jarJSDocTask, Jar jarJSPTask, Jar jarJavadocTask,
+		Jar jarSourcesTask, Jar jarSourcesCommercialTask, Jar jarTLDDocTask) {
 
 		ArtifactHandler artifactHandler = project.getArtifacts();
 
@@ -1656,27 +1688,7 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 			SourceSet sourceSet = GradleUtil.getSourceSet(
 				project, SourceSet.MAIN_SOURCE_SET_NAME);
 
-			FileCollection resourcesFileCollection = sourceSet.getResources();
-
-			FileCollection jspFileCollection = resourcesFileCollection.filter(
-				new Spec<File>() {
-
-					@Override
-					public boolean isSatisfiedBy(File file) {
-						String fileName = file.getName();
-
-						if (fileName.endsWith(".jsp") ||
-							fileName.endsWith(".jspf")) {
-
-							return true;
-						}
-
-						return false;
-					}
-
-				});
-
-			if (!jspFileCollection.isEmpty()) {
+			if (FileUtil.hasFiles(sourceSet.getResources(), _jspSpec)) {
 				artifactHandler.add(
 					Dependency.ARCHIVES_CONFIGURATION, jarJSPTask);
 			}
@@ -1710,45 +1722,25 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 		Task javadocTask = GradleUtil.getTask(
 			project, JavaPlugin.JAVADOC_TASK_NAME);
 
-		spec = new Spec<File>() {
-
-			@Override
-			public boolean isSatisfiedBy(File file) {
-				String fileName = file.getName();
-
-				if (fileName.endsWith(".java")) {
-					return true;
-				}
-
-				return false;
-			}
-
-		};
-
-		if (FileUtil.hasSourceFiles(javadocTask, spec)) {
+		if (FileUtil.hasSourceFiles(javadocTask, _javaSpec)) {
 			artifactHandler.add(
 				Dependency.ARCHIVES_CONFIGURATION, jarJavadocTask);
+		}
+
+		Task jsdocTask = GradleUtil.getTask(
+			project, JSDocPlugin.JSDOC_TASK_NAME);
+
+		TaskInputs taskInputs = jsdocTask.getInputs();
+
+		if (FileUtil.hasFiles(taskInputs.getFiles(), _jsdocSpec)) {
+			artifactHandler.add(
+				Dependency.ARCHIVES_CONFIGURATION, jarJSDocTask);
 		}
 
 		Task tlddocTask = GradleUtil.getTask(
 			project, TLDDocBuilderPlugin.TLDDOC_TASK_NAME);
 
-		spec = new Spec<File>() {
-
-			@Override
-			public boolean isSatisfiedBy(File file) {
-				String fileName = file.getName();
-
-				if (fileName.endsWith(".tld")) {
-					return true;
-				}
-
-				return false;
-			}
-
-		};
-
-		if (FileUtil.hasSourceFiles(tlddocTask, spec)) {
+		if (FileUtil.hasSourceFiles(tlddocTask, _tldSpec)) {
 			artifactHandler.add(
 				Dependency.ARCHIVES_CONFIGURATION, jarTLDDocTask);
 		}
@@ -1839,8 +1831,8 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 	}
 
 	private void _configureBundleInstructions(Project project) {
-		Map<String, String> bundleInstructions = _getBundleInstructions(
-			project);
+		Map<String, String> bundleInstructions =
+			GradlePluginsDefaultsUtil.getBundleInstructions(project);
 
 		String projectPath = project.getPath();
 
@@ -2756,10 +2748,6 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 		}
 	}
 
-	private void _configureTaskBuildLang(BuildLangTask buildLangTask) {
-		buildLangTask.setTranslate(false);
-	}
-
 	private void _configureTaskBuildService(Project project) {
 		BuildServiceTask buildServiceTask =
 			(BuildServiceTask)GradleUtil.getTask(
@@ -3075,7 +3063,7 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 	}
 
 	private void _configureTaskJavadocFilter(Javadoc javadoc) {
-		String exportPackage = _getBundleInstruction(
+		String exportPackage = GradlePluginsDefaultsUtil.getBundleInstruction(
 			javadoc.getProject(), Constants.EXPORT_PACKAGE);
 
 		if (Validator.isNull(exportPackage)) {
@@ -3179,14 +3167,9 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 		sb.append(' ');
 		sb.append(project.getVersion());
 		sb.append(" - ");
-
-		String moduleName = project.getDescription();
-
-		if (Validator.isNull(moduleName)) {
-			moduleName = project.getName();
-		}
-
-		sb.append(moduleName);
+		sb.append(
+			GradlePluginsDefaultsUtil.getBundleInstruction(
+				project, Constants.BUNDLE_NAME));
 
 		javadoc.setTitle(sb.toString());
 	}
@@ -3223,21 +3206,6 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 				@Override
 				public void execute(BaselineTask baselineTask) {
 					_configureTaskBaseline(baselineTask);
-				}
-
-			});
-	}
-
-	private void _configureTasksBuildLang(Project project) {
-		TaskContainer taskContainer = project.getTasks();
-
-		taskContainer.withType(
-			BuildLangTask.class,
-			new Action<BuildLangTask>() {
-
-				@Override
-				public void execute(BuildLangTask buildLangTask) {
-					_configureTaskBuildLang(buildLangTask);
 				}
 
 			});
@@ -3317,7 +3285,7 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 	}
 
 	private void _configureTasksJspC(Project project) {
-		String fragmentHost = _getBundleInstruction(
+		String fragmentHost = GradlePluginsDefaultsUtil.getBundleInstruction(
 			project, Constants.FRAGMENT_HOST);
 
 		if (Validator.isNotNull(fragmentHost)) {
@@ -3614,21 +3582,6 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 		catch (IOException ioe) {
 			throw new UncheckedIOException(ioe);
 		}
-	}
-
-	private String _getBundleInstruction(Project project, String key) {
-		Map<String, String> bundleInstructions = _getBundleInstructions(
-			project);
-
-		return bundleInstructions.get(key);
-	}
-
-	@SuppressWarnings("unchecked")
-	private Map<String, String> _getBundleInstructions(Project project) {
-		BundleExtension bundleExtension = GradleUtil.getExtension(
-			project, BundleExtension.class);
-
-		return (Map<String, String>)bundleExtension.getInstructions();
 	}
 
 	private GitRepo _getGitRepo(File dir) {
@@ -4256,6 +4209,12 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 	private static final BackupFilesBuildAdapter _backupFilesBuildAdapter =
 		new BackupFilesBuildAdapter();
 	private static final Set<String> _copyrightedExtensions;
+	private static final Spec<File> _javaSpec = new NameSuffixFileSpec(".java");
+	private static final Spec<File> _jsdocSpec = new NameSuffixFileSpec(
+		".es.js", ".jsdoc", ".jsx");
+	private static final Spec<File> _jspSpec = new NameSuffixFileSpec(
+		".jsp", ".jspf");
+	private static final Spec<File> _tldSpec = new NameSuffixFileSpec(".tld");
 
 	static {
 		_copyrightedExtensions = new HashSet<>();

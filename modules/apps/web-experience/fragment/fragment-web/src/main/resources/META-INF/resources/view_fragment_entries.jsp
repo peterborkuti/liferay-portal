@@ -23,6 +23,8 @@ portletDisplay.setURLBack(fragmentDisplayContext.getFragmentCollectionsRedirect(
 renderResponse.setTitle(fragmentDisplayContext.getFragmentCollectionTitle());
 %>
 
+<liferay-ui:error exception="<%= RequiredFragmentEntryException.class %>" message="the-fragment-entry-cannot-be-deleted-because-it-is-required-by-one-or-more-page-templates" />
+
 <aui:nav-bar cssClass="collapse-basic-search" markupView="lexicon">
 	<portlet:renderURL var="mainURL" />
 
@@ -151,28 +153,21 @@ renderResponse.setTitle(fragmentDisplayContext.getFragmentCollectionTitle());
 	</liferay-frontend:add-menu>
 
 	<aui:script require="metal-dom/src/all/dom as dom">
-		var fieldName = '<%= LanguageUtil.get(request, "name") %>';
-		var namespace = '<%= renderResponse.getNamespace() %>';
-		var spritemap = '<%= themeDisplay.getPathThemeImages() %>/lexicon/icons.svg';
+		function handleAddFragmentEntryMenuItemClick(event) {
+			event.preventDefault();
 
-		var addFragmentEntryMenuItemClickHandler = dom.delegate(
-			document.body,
-			'click',
-			'#<portlet:namespace />addFragmentEntryMenuItem',
-			function(event) {
-				event.preventDefault();
-
-				Liferay.Util.openSimpleInputModal({
-					dialogTitle: '<%= LanguageUtil.get(request, "add-fragment") %>',
-					formSubmitURL: '<%= addFragmentEntryURL.toString() %>',
-					mainFieldLabel: fieldName,
+			Liferay.Util.openSimpleInputModal(
+				{
+					dialogTitle: '<liferay-ui:message key="add-fragment" />',
+					formSubmitURL: '<%= addFragmentEntryURL %>',
+					mainFieldLabel: '<liferay-ui:message key="name" />',
 					mainFieldName: 'name',
-					mainFieldPlaceholder: fieldName,
-					namespace: namespace,
-					spritemap: spritemap
-				});
-			}
-		);
+					mainFieldPlaceholder: '<liferay-ui:message key="name" />',
+					namespace: '<portlet:namespace />',
+					spritemap: '<%= themeDisplay.getPathThemeImages() %>/lexicon/icons.svg'
+				}
+			);
+		}
 
 		var updateFragmentEntryMenuItemClickHandler = dom.delegate(
 			document.body,
@@ -184,26 +179,30 @@ renderResponse.setTitle(fragmentDisplayContext.getFragmentCollectionTitle());
 				event.preventDefault();
 
 				Liferay.Util.openSimpleInputModal({
-					dialogTitle: '<%= LanguageUtil.get(request, "rename-fragment") %>',
+					dialogTitle: '<liferay-ui:message key="rename-fragment" />',
 					formSubmitURL: data.formSubmitUrl,
 					idFieldName: 'id',
 					idFieldValue: data.idFieldValue,
-					mainFieldLabel: fieldName,
+					mainFieldLabel: '<liferay-ui:message key="name" />',
 					mainFieldName: 'name',
-					mainFieldPlaceholder: fieldName,
+					mainFieldPlaceholder: '<liferay-ui:message key="name" />',
 					mainFieldValue: data.mainFieldValue,
-					namespace: namespace,
-					spritemap: spritemap
+					namespace: '<portlet:namespace />',
+					spritemap: '<%= themeDisplay.getPathThemeImages() %>/lexicon/icons.svg'
 				});
 			}
 		);
 
 		function handleDestroyPortlet () {
-			addFragmentEntryMenuItemClickHandler.removeListener();
+			addFragmentEntryMenuItem.removeEventListener('click', handleAddFragmentEntryMenuItemClick);
 			updateFragmentEntryMenuItemClickHandler.removeListener();
 
 			Liferay.detach('destroyPortlet', handleDestroyPortlet);
 		}
+
+		var addFragmentEntryMenuItem = document.getElementById('<portlet:namespace />addFragmentEntryMenuItem');
+
+		addFragmentEntryMenuItem.addEventListener('click', handleAddFragmentEntryMenuItemClick);
 
 		Liferay.on('destroyPortlet', handleDestroyPortlet);
 

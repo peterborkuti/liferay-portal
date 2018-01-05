@@ -16,7 +16,6 @@ package com.liferay.apio.architect.representor;
 
 import com.liferay.apio.architect.alias.BinaryFunction;
 import com.liferay.apio.architect.consumer.TriConsumer;
-import com.liferay.apio.architect.identifier.Identifier;
 import com.liferay.apio.architect.language.Language;
 import com.liferay.apio.architect.related.RelatedCollection;
 import com.liferay.apio.architect.related.RelatedModel;
@@ -48,12 +47,15 @@ import java.util.stream.Stream;
  * </p>
  *
  * @author Alejandro Hernández
+ * @param  <T> the model's type
+ * @param  <S> the model identifier's type ({@link Long}, {@link String}, etc.)
  * @see    Representor.Builder
+ * @review
  */
-public class Representor<T, U extends Identifier> {
+public class Representor<T, S> {
 
 	public Representor(
-		Class<U> identifierClass,
+		Class<S> identifierClass,
 		Supplier<List<RelatedCollection<T, ?>>> relatedCollectionsSupplier) {
 
 		_identifierClass = identifierClass;
@@ -85,7 +87,7 @@ public class Representor<T, U extends Identifier> {
 	 * @param  model the model instance
 	 * @return the model's identifier
 	 */
-	public U getIdentifier(T model) {
+	public S getIdentifier(T model) {
 		return _identifierFunction.apply(model);
 	}
 
@@ -94,7 +96,7 @@ public class Representor<T, U extends Identifier> {
 	 *
 	 * @return the identifier class
 	 */
-	public Class<U> getIdentifierClass() {
+	public Class<S> getIdentifierClass() {
 		return _identifierClass;
 	}
 
@@ -177,7 +179,7 @@ public class Representor<T, U extends Identifier> {
 	 * Creates generic representations of your domain models that Apio
 	 * hypermedia writers can understand.
 	 */
-	public static class Builder<T, U extends Identifier> {
+	public static class Builder<T, U> {
 
 		public Builder(Class<U> identifierClass) {
 			Supplier<List<RelatedCollection<T, ?>>> listSupplier =
@@ -189,7 +191,7 @@ public class Representor<T, U extends Identifier> {
 
 		public Builder(
 			Class<U> identifierClass,
-			TriConsumer<String, Class<?>, Function<Object, Identifier>>
+			TriConsumer<String, Class<?>, Function<Object, Object>>
 				addRelatedCollectionTriConsumer,
 			Supplier<List<RelatedCollection<T, ?>>>
 				relatedCollectionsSupplier) {
@@ -232,14 +234,14 @@ public class Representor<T, U extends Identifier> {
 			public <S> FirstStep addBidirectionalModel(
 				String key, String relatedKey, Class<S> modelClass,
 				Function<T, Optional<S>> modelFunction,
-				Function<S, Identifier> identifierFunction) {
+				Function<S, Object> identifierFunction) {
 
 				_representor._relatedModels.add(
 					new RelatedModel<>(key, modelClass, modelFunction));
 
 				_addRelatedCollectionTriConsumer.accept(
 					relatedKey, modelClass,
-					(Function<Object, Identifier>)identifierFunction);
+					(Function<Object, Object>)identifierFunction);
 
 				return this;
 			}
@@ -379,7 +381,7 @@ public class Representor<T, U extends Identifier> {
 			 */
 			public <S> FirstStep addRelatedCollection(
 				String key, Class<S> modelClass,
-				Function<T, Identifier> identifierFunction) {
+				Function<T, Object> identifierFunction) {
 
 				_representor._relatedCollections.add(
 					new RelatedCollection<>(
@@ -420,7 +422,7 @@ public class Representor<T, U extends Identifier> {
 
 			/**
 			 * Provides a lambda function that can be used to obtain a model's
-			 * {@link Identifier}.
+			 * identifier.
 			 *
 			 * @param  identifierFunction lambda function used to obtain a
 			 *         model's identifier
@@ -435,7 +437,7 @@ public class Representor<T, U extends Identifier> {
 		}
 
 		private final TriConsumer<String, Class<?>,
-			Function<Object, Identifier>> _addRelatedCollectionTriConsumer;
+			Function<Object, Object>> _addRelatedCollectionTriConsumer;
 		private final Representor<T, U> _representor;
 
 	}
@@ -443,8 +445,8 @@ public class Representor<T, U extends Identifier> {
 	private Map<String, BinaryFunction<T>> _binaryFunctions = new HashMap<>();
 	private Map<String, Function<T, Boolean>> _booleanFunctions =
 		new HashMap<>();
-	private final Class<U> _identifierClass;
-	private Function<T, U> _identifierFunction;
+	private final Class<S> _identifierClass;
+	private Function<T, S> _identifierFunction;
 	private Map<String, String> _links = new HashMap<>();
 	private Map<String, BiFunction<T, Language, String>>
 		_localizedStringFunctions = new HashMap<>();

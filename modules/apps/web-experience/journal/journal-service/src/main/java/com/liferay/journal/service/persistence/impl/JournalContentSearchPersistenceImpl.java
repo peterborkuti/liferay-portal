@@ -22,6 +22,8 @@ import com.liferay.journal.model.impl.JournalContentSearchImpl;
 import com.liferay.journal.model.impl.JournalContentSearchModelImpl;
 import com.liferay.journal.service.persistence.JournalContentSearchPersistence;
 
+import com.liferay.petra.string.StringPool;
+
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
@@ -36,7 +38,6 @@ import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.io.Serializable;
@@ -229,7 +230,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 			if (portletId == null) {
 				query.append(_FINDER_COLUMN_PORTLETID_PORTLETID_1);
 			}
-			else if (portletId.equals(StringPool.BLANK)) {
+			else if (portletId.equals("")) {
 				query.append(_FINDER_COLUMN_PORTLETID_PORTLETID_3);
 			}
 			else {
@@ -318,7 +319,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 		msg.append("portletId=");
 		msg.append(portletId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchContentSearchException(msg.toString());
 	}
@@ -369,7 +370,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 		msg.append("portletId=");
 		msg.append(portletId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchContentSearchException(msg.toString());
 	}
@@ -463,7 +464,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 		if (portletId == null) {
 			query.append(_FINDER_COLUMN_PORTLETID_PORTLETID_1);
 		}
-		else if (portletId.equals(StringPool.BLANK)) {
+		else if (portletId.equals("")) {
 			query.append(_FINDER_COLUMN_PORTLETID_PORTLETID_3);
 		}
 		else {
@@ -599,7 +600,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 			if (portletId == null) {
 				query.append(_FINDER_COLUMN_PORTLETID_PORTLETID_1);
 			}
-			else if (portletId.equals(StringPool.BLANK)) {
+			else if (portletId.equals("")) {
 				query.append(_FINDER_COLUMN_PORTLETID_PORTLETID_3);
 			}
 			else {
@@ -786,7 +787,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 			if (articleId == null) {
 				query.append(_FINDER_COLUMN_ARTICLEID_ARTICLEID_1);
 			}
-			else if (articleId.equals(StringPool.BLANK)) {
+			else if (articleId.equals("")) {
 				query.append(_FINDER_COLUMN_ARTICLEID_ARTICLEID_3);
 			}
 			else {
@@ -875,7 +876,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 		msg.append("articleId=");
 		msg.append(articleId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchContentSearchException(msg.toString());
 	}
@@ -926,7 +927,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 		msg.append("articleId=");
 		msg.append(articleId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchContentSearchException(msg.toString());
 	}
@@ -1020,7 +1021,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 		if (articleId == null) {
 			query.append(_FINDER_COLUMN_ARTICLEID_ARTICLEID_1);
 		}
-		else if (articleId.equals(StringPool.BLANK)) {
+		else if (articleId.equals("")) {
 			query.append(_FINDER_COLUMN_ARTICLEID_ARTICLEID_3);
 		}
 		else {
@@ -1156,7 +1157,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 			if (articleId == null) {
 				query.append(_FINDER_COLUMN_ARTICLEID_ARTICLEID_1);
 			}
-			else if (articleId.equals(StringPool.BLANK)) {
+			else if (articleId.equals("")) {
 				query.append(_FINDER_COLUMN_ARTICLEID_ARTICLEID_3);
 			}
 			else {
@@ -1436,7 +1437,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 		msg.append(", privateLayout=");
 		msg.append(privateLayout);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchContentSearchException(msg.toString());
 	}
@@ -1494,7 +1495,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 		msg.append(", privateLayout=");
 		msg.append(privateLayout);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchContentSearchException(msg.toString());
 	}
@@ -1906,7 +1907,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 			if (articleId == null) {
 				query.append(_FINDER_COLUMN_G_A_ARTICLEID_1);
 			}
-			else if (articleId.equals(StringPool.BLANK)) {
+			else if (articleId.equals("")) {
 				query.append(_FINDER_COLUMN_G_A_ARTICLEID_3);
 			}
 			else {
@@ -2001,7 +2002,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 		msg.append(", articleId=");
 		msg.append(articleId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchContentSearchException(msg.toString());
 	}
@@ -2058,7 +2059,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 		msg.append(", articleId=");
 		msg.append(articleId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchContentSearchException(msg.toString());
 	}
@@ -2157,7 +2158,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 		if (articleId == null) {
 			query.append(_FINDER_COLUMN_G_A_ARTICLEID_1);
 		}
-		else if (articleId.equals(StringPool.BLANK)) {
+		else if (articleId.equals("")) {
 			query.append(_FINDER_COLUMN_G_A_ARTICLEID_3);
 		}
 		else {
@@ -2299,7 +2300,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 			if (articleId == null) {
 				query.append(_FINDER_COLUMN_G_A_ARTICLEID_1);
 			}
-			else if (articleId.equals(StringPool.BLANK)) {
+			else if (articleId.equals("")) {
 				query.append(_FINDER_COLUMN_G_A_ARTICLEID_3);
 			}
 			else {
@@ -2603,7 +2604,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 		msg.append(", layoutId=");
 		msg.append(layoutId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchContentSearchException(msg.toString());
 	}
@@ -2666,7 +2667,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 		msg.append(", layoutId=");
 		msg.append(layoutId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchContentSearchException(msg.toString());
 	}
@@ -3109,7 +3110,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 			if (articleId == null) {
 				query.append(_FINDER_COLUMN_G_P_A_ARTICLEID_1);
 			}
-			else if (articleId.equals(StringPool.BLANK)) {
+			else if (articleId.equals("")) {
 				query.append(_FINDER_COLUMN_G_P_A_ARTICLEID_3);
 			}
 			else {
@@ -3211,7 +3212,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 		msg.append(", articleId=");
 		msg.append(articleId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchContentSearchException(msg.toString());
 	}
@@ -3274,7 +3275,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 		msg.append(", articleId=");
 		msg.append(articleId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchContentSearchException(msg.toString());
 	}
@@ -3379,7 +3380,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 		if (articleId == null) {
 			query.append(_FINDER_COLUMN_G_P_A_ARTICLEID_1);
 		}
-		else if (articleId.equals(StringPool.BLANK)) {
+		else if (articleId.equals("")) {
 			query.append(_FINDER_COLUMN_G_P_A_ARTICLEID_3);
 		}
 		else {
@@ -3530,7 +3531,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 			if (articleId == null) {
 				query.append(_FINDER_COLUMN_G_P_A_ARTICLEID_1);
 			}
-			else if (articleId.equals(StringPool.BLANK)) {
+			else if (articleId.equals("")) {
 				query.append(_FINDER_COLUMN_G_P_A_ARTICLEID_3);
 			}
 			else {
@@ -3763,7 +3764,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 			if (portletId == null) {
 				query.append(_FINDER_COLUMN_G_P_L_P_PORTLETID_1);
 			}
-			else if (portletId.equals(StringPool.BLANK)) {
+			else if (portletId.equals("")) {
 				query.append(_FINDER_COLUMN_G_P_L_P_PORTLETID_3);
 			}
 			else {
@@ -3871,7 +3872,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 		msg.append(", portletId=");
 		msg.append(portletId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchContentSearchException(msg.toString());
 	}
@@ -3939,7 +3940,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 		msg.append(", portletId=");
 		msg.append(portletId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchContentSearchException(msg.toString());
 	}
@@ -4050,7 +4051,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 		if (portletId == null) {
 			query.append(_FINDER_COLUMN_G_P_L_P_PORTLETID_1);
 		}
-		else if (portletId.equals(StringPool.BLANK)) {
+		else if (portletId.equals("")) {
 			query.append(_FINDER_COLUMN_G_P_L_P_PORTLETID_3);
 		}
 		else {
@@ -4209,7 +4210,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 			if (portletId == null) {
 				query.append(_FINDER_COLUMN_G_P_L_P_PORTLETID_1);
 			}
-			else if (portletId.equals(StringPool.BLANK)) {
+			else if (portletId.equals("")) {
 				query.append(_FINDER_COLUMN_G_P_L_P_PORTLETID_3);
 			}
 			else {
@@ -4323,7 +4324,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 			msg.append(", articleId=");
 			msg.append(articleId);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -4408,7 +4409,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 			if (portletId == null) {
 				query.append(_FINDER_COLUMN_G_P_L_P_A_PORTLETID_1);
 			}
-			else if (portletId.equals(StringPool.BLANK)) {
+			else if (portletId.equals("")) {
 				query.append(_FINDER_COLUMN_G_P_L_P_A_PORTLETID_3);
 			}
 			else {
@@ -4422,7 +4423,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 			if (articleId == null) {
 				query.append(_FINDER_COLUMN_G_P_L_P_A_ARTICLEID_1);
 			}
-			else if (articleId.equals(StringPool.BLANK)) {
+			else if (articleId.equals("")) {
 				query.append(_FINDER_COLUMN_G_P_L_P_A_ARTICLEID_3);
 			}
 			else {
@@ -4559,7 +4560,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 			if (portletId == null) {
 				query.append(_FINDER_COLUMN_G_P_L_P_A_PORTLETID_1);
 			}
-			else if (portletId.equals(StringPool.BLANK)) {
+			else if (portletId.equals("")) {
 				query.append(_FINDER_COLUMN_G_P_L_P_A_PORTLETID_3);
 			}
 			else {
@@ -4573,7 +4574,7 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 			if (articleId == null) {
 				query.append(_FINDER_COLUMN_G_P_L_P_A_ARTICLEID_1);
 			}
-			else if (articleId.equals(StringPool.BLANK)) {
+			else if (articleId.equals("")) {
 				query.append(_FINDER_COLUMN_G_P_L_P_A_ARTICLEID_3);
 			}
 			else {
@@ -5321,12 +5322,12 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

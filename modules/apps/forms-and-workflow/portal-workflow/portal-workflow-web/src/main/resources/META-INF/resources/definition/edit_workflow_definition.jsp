@@ -42,10 +42,14 @@ renderResponse.setTitle((workflowDefinition == null) ? LanguageUtil.get(request,
 			<div class="info-bar-item">
 				<c:choose>
 					<c:when test="<%= active %>">
-						<span class="label label-info label-lg"><%= LanguageUtil.get(request, "published") %></span>
+						<span class="label label-info label-lg ">
+							<liferay-ui:message key="published" />
+						</span>
 					</c:when>
 					<c:otherwise>
-						<span class="label label-lg label-secondary"><%= LanguageUtil.get(request, "not-published") %></span>
+						<span class="label label-lg label-secondary">
+							<liferay-ui:message key="not-published" />
+						</span>
 					</c:otherwise>
 				</c:choose>
 			</div>
@@ -81,18 +85,55 @@ renderResponse.setTitle((workflowDefinition == null) ? LanguageUtil.get(request,
 			<div class="sidebar sidebar-light">
 				<div class="sidebar-header">
 					<aui:icon cssClass="icon-monospaced sidenav-close text-default visible-xs-inline-block" image="times" markupView="lexicon" url="javascript:;" />
+
+					<h4>
+						<%= workflowDefinition.getName() %>
+					</h4>
 				</div>
 
-				<liferay-ui:tabs cssClass="navbar-no-collapse" names="details,revision-history" refresh="<%= false %>" type="tabs">
+				<liferay-ui:tabs cssClass="navbar-no-collapse panel panel-default" names="details,revision-history" refresh="<%= false %>" type="tabs nav-tabs-default">
 					<liferay-ui:section>
-						<div class="sidebar-body">
-							<h3 class="version">
-								<liferay-ui:message key="version" /> <%= workflowDefinition.getVersion() %>
-							</h3>
+						<div class="sidebar-list">
 
-							<aui:model-context bean="<%= workflowDefinition %>" model="<%= WorkflowDefinition.class %>" />
+							<%
+							String userName = workflowDefinitionDisplayContext.getUserName(workflowDefinition);
+							%>
 
-							<aui:workflow-status model="<%= WorkflowDefinition.class %>" status="<%= WorkflowConstants.STATUS_APPROVED %>" />
+							<div class="card-row-padded created-date">
+								<div>
+									<span class="info-title">
+										<liferay-ui:message key="created" />
+									</span>
+								</div>
+
+								<span class="info-content lfr-card-modified-by-text">
+									<liferay-ui:message arguments="<%= new String[] {dateFormatTime.format(workflowDefinitionDisplayContext.getCreatedDate(workflowDefinition)), userName} %>" key="x-by-x" translateArguments="<%= false %>" />
+								</span>
+							</div>
+
+							<div class="card-row-padded last-modified">
+								<div>
+									<span class="info-title">
+										<liferay-ui:message key="last-modified" />
+									</span>
+								</div>
+
+								<span class="info-content lfr-card-modified-by-text">
+									<liferay-ui:message arguments="<%= new String[] {dateFormatTime.format(workflowDefinition.getModifiedDate()), userName} %>" key="x-by-x" translateArguments="<%= false %>" />
+								</span>
+							</div>
+
+							<div class="card-row-padded">
+								<div>
+									<span class="info-title">
+										<liferay-ui:message key="total-modifications" />
+									</span>
+								</div>
+
+								<span class="info-content lfr-card-modified-by-text">
+									<liferay-ui:message arguments='<%= new String[] {workflowDefinitionDisplayContext.getWorkflowDefinitionCount(workflowDefinition) + ""} %>' key="x-revisions" translateArguments="<%= false %>" />
+								</span>
+							</div>
 						</div>
 					</liferay-ui:section>
 

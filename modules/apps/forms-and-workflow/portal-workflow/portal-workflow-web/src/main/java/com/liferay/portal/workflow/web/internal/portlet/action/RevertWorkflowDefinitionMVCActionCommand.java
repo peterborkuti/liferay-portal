@@ -18,17 +18,18 @@ import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.DateUtil;
-import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.ResourceBundleLoader;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowDefinition;
 import com.liferay.portal.kernel.workflow.WorkflowDefinitionManagerUtil;
+import com.liferay.portal.workflow.constants.WorkflowWebKeys;
 import com.liferay.portal.workflow.web.internal.constants.WorkflowPortletKeys;
 
-import java.text.Format;
+import java.text.DateFormat;
 
+import java.util.Date;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -36,7 +37,6 @@ import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Inácio Nery
@@ -56,34 +56,36 @@ public class RevertWorkflowDefinitionMVCActionCommand
 	 * Adds a success message to the workflow definition reversion action
 	 *
 	 * @param  actionRequest The actionRequest object of the action
-	 * @param  workflowDefinition The workflow definition that will be reverted
-	 *         back to published.
 	 * @review
 	 */
+	@Override
 	protected void addSuccessMessage(
-		ActionRequest actionRequest, WorkflowDefinition workflowDefinition) {
+		ActionRequest actionRequest, ActionResponse actionResponse) {
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
 		Locale locale = themeDisplay.getLocale();
 
-		Format dateTimeFormat = null;
+		DateFormat dateTimeFormat = null;
 
 		if (DateUtil.isFormatAmPm(locale)) {
-			dateTimeFormat = FastDateFormatFactoryUtil.getSimpleDateFormat(
+			dateTimeFormat = DateFormatFactoryUtil.getSimpleDateFormat(
 				"MMM d, yyyy, hh:mm a", locale);
 		}
 		else {
-			dateTimeFormat = FastDateFormatFactoryUtil.getSimpleDateFormat(
+			dateTimeFormat = DateFormatFactoryUtil.getSimpleDateFormat(
 				"MMM d, yyyy, HH:mm", locale);
 		}
 
-		String dateTime = dateTimeFormat.format(
-			workflowDefinition.getModifiedDate());
+		Date workflowDefinitionModifiedDate = ParamUtil.getDate(
+			actionRequest, WorkflowWebKeys.WORKFLOW_DEFINITION_MODIFIED_DATE,
+			dateTimeFormat);
+
+		String dateTime = dateTimeFormat.format(workflowDefinitionModifiedDate);
 
 		ResourceBundle resourceBundle =
-			_resourceBundleLoader.loadResourceBundle(locale);
+			resourceBundleLoader.loadResourceBundle(locale);
 
 		SessionMessages.add(
 			actionRequest, "requestProcessed",
@@ -110,23 +112,23 @@ public class RevertWorkflowDefinitionMVCActionCommand
 		String name = ParamUtil.getString(actionRequest, "name");
 		int version = ParamUtil.getInteger(actionRequest, "version");
 
-		WorkflowDefinition workflowDefinition =
+		WorkflowDefinition previousWorkflowDefinition =
 			WorkflowDefinitionManagerUtil.getWorkflowDefinition(
 				themeDisplay.getCompanyId(), name, version);
 
-		String content = workflowDefinition.getContent();
+		actionRequest.setAttribute(
+			WorkflowWebKeys.WORKFLOW_DEFINITION_MODIFIED_DATE,
+			previousWorkflowDefinition.getModifiedDate());
 
-		workflowDefinitionManager.deployWorkflowDefinition(
-			themeDisplay.getCompanyId(), themeDisplay.getUserId(),
-			workflowDefinition.getTitle(), content.getBytes());
+		String content = previousWorkflowDefinition.getContent();
 
-		addSuccessMessage(actionRequest, workflowDefinition);
+		WorkflowDefinition workflowDefinition =
+			workflowDefinitionManager.deployWorkflowDefinition(
+				themeDisplay.getCompanyId(), themeDisplay.getUserId(),
+				previousWorkflowDefinition.getTitle(), content.getBytes());
+
+		setRedirectAttribute(actionRequest, workflowDefinition);
+
+		sendRedirect(actionRequest, actionResponse);
 	}
-
-	@Reference(
-		target = "(bundle.symbolic.name=com.liferay.portal.workflow.web)",
-		unbind = "-"
-	)
-	private ResourceBundleLoader _resourceBundleLoader;
-
 }

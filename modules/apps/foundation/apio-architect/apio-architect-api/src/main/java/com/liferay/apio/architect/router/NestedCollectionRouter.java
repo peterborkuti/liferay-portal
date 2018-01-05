@@ -16,7 +16,6 @@ package com.liferay.apio.architect.router;
 
 import aQute.bnd.annotation.ConsumerType;
 
-import com.liferay.apio.architect.identifier.Identifier;
 import com.liferay.apio.architect.routes.NestedCollectionRoutes;
 import com.liferay.apio.architect.routes.NestedCollectionRoutes.Builder;
 
@@ -36,12 +35,16 @@ import com.liferay.apio.architect.routes.NestedCollectionRoutes.Builder;
  * </p>
  *
  * @author Alejandro Hernández
+ * @param  <T> the model's type
+ * @param  <S> the parent model's type
+ * @param  <U> the parent model identifier's type ({@link Long}, {@link String},
+ *         etc.)
  * @see    NestedCollectionRoutes.Builder
  * @review
  */
 @ConsumerType
 @SuppressWarnings("unused")
-public interface NestedCollectionRouter<T, U, V extends Identifier> {
+public interface NestedCollectionRouter<T, S, U> {
 
 	/**
 	 * Creates the {@link NestedCollectionRoutes} supported by the nested
@@ -52,6 +55,6 @@ public interface NestedCollectionRouter<T, U, V extends Identifier> {
 	 *        NestedCollectionRoutes} instance
 	 * @see   NestedCollectionRoutes.Builder
 	 */
-	public NestedCollectionRoutes<T> collectionRoutes(Builder<T, V> builder);
+	public NestedCollectionRoutes<T> collectionRoutes(Builder<T, U> builder);
 
 }

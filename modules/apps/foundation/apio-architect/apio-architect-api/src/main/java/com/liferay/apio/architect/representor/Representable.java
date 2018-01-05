@@ -16,7 +16,6 @@ package com.liferay.apio.architect.representor;
 
 import aQute.bnd.annotation.ConsumerType;
 
-import com.liferay.apio.architect.identifier.Identifier;
 import com.liferay.apio.architect.representor.Representor.Builder;
 
 /**
@@ -37,11 +36,13 @@ import com.liferay.apio.architect.representor.Representor.Builder;
  * </p>
  *
  * @author Alejandro Hernández
+ * @param  <T> the model's type
+ * @param  <S> the model identifier's type ({@link Long}, {@link String}, etc.)
  * @see    Representor.Builder
  * @review
  */
 @ConsumerType
-public interface Representable<T, U extends Identifier> {
+public interface Representable<T, S> {
 
 	/**
 	 * Returns the resource's name.
@@ -65,6 +66,6 @@ public interface Representable<T, U extends Identifier> {
 	 * @param builder the representor builder used to create the representor
 	 * @see   Representor.Builder
 	 */
-	public Representor<T, U> representor(Builder<T, U> builder);
+	public Representor<T, S> representor(Builder<T, S> builder);
 
 }

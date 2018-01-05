@@ -15,7 +15,6 @@
 package com.liferay.apio.architect.alias.routes;
 
 import com.liferay.apio.architect.alias.RequestFunction;
-import com.liferay.apio.architect.identifier.Identifier;
 import com.liferay.apio.architect.pagination.Page;
 import com.liferay.apio.architect.uri.Path;
 
@@ -26,8 +25,10 @@ import java.util.function.Function;
  * collection page.
  *
  * @author Alejandro Hernández
+ * @param  <T> the model's type
+ * @review
  */
 @FunctionalInterface
 public interface NestedGetPageFunction<T>
-	extends RequestFunction<Function<Path, Function<Identifier, Page<T>>>> {
+	extends RequestFunction<Function<Path, Function<Object, Page<T>>>> {
 }

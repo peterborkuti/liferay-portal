@@ -14,20 +14,16 @@
 
 package com.liferay.apio.architect.sample.internal.resource;
 
-import com.liferay.apio.architect.identifier.LongIdentifier;
 import com.liferay.apio.architect.pagination.PageItems;
 import com.liferay.apio.architect.pagination.Pagination;
 import com.liferay.apio.architect.representor.Representor;
 import com.liferay.apio.architect.resource.CollectionResource;
 import com.liferay.apio.architect.routes.CollectionRoutes;
 import com.liferay.apio.architect.routes.ItemRoutes;
+import com.liferay.apio.architect.sample.internal.form.PersonForm;
 import com.liferay.apio.architect.sample.internal.model.Person;
 
-import java.time.Instant;
-
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import javax.ws.rs.NotFoundException;
@@ -43,7 +39,7 @@ import org.osgi.service.component.annotations.Component;
  */
 @Component(immediate = true)
 public class PersonCollectionResource
-	implements CollectionResource<Person, LongIdentifier> {
+	implements CollectionResource<Person, Long> {
 
 	@Override
 	public CollectionRoutes<Person> collectionRoutes(
@@ -52,7 +48,7 @@ public class PersonCollectionResource
 		return builder.addGetter(
 			this::_getPageItems
 		).addCreator(
-			this::_addPerson
+			this::_addPerson, PersonForm::buildForm
 		).build();
 	}
 
@@ -63,25 +59,25 @@ public class PersonCollectionResource
 
 	@Override
 	public ItemRoutes<Person> itemRoutes(
-		ItemRoutes.Builder<Person, LongIdentifier> builder) {
+		ItemRoutes.Builder<Person, Long> builder) {
 
 		return builder.addGetter(
 			this::_getPerson
 		).addRemover(
 			this::_deletePerson
 		).addUpdater(
-			this::_updatePerson
+			this::_updatePerson, PersonForm::buildForm
 		).build();
 	}
 
 	@Override
-	public Representor<Person, LongIdentifier> representor(
-		Representor.Builder<Person, LongIdentifier> builder) {
+	public Representor<Person, Long> representor(
+		Representor.Builder<Person, Long> builder) {
 
 		return builder.types(
 			"Person"
 		).identifier(
-			person -> person::getPersonId
+			Person::getPersonId
 		).addDate(
 			"birthDate", Person::getBirthDate
 		).addString(
@@ -101,25 +97,16 @@ public class PersonCollectionResource
 		).build();
 	}
 
-	private Person _addPerson(Map<String, Object> body) {
-		String address = (String)body.get("address");
-		String avatar = (String)body.get("image");
-
-		String birthDateString = (String)body.get("birthDate");
-
-		Date birthDate = Date.from(Instant.parse(birthDateString));
-
-		String email = (String)body.get("email");
-		String firstName = (String)body.get("givenName");
-		String jobTitle = (String)body.get("jobTitle");
-		String lastName = (String)body.get("familyName");
-
+	private Person _addPerson(PersonForm personForm) {
 		return Person.addPerson(
-			address, avatar, birthDate, email, firstName, jobTitle, lastName);
+			personForm.getAddress(), personForm.getImage(),
+			personForm.getBirthDate(), personForm.getEmail(),
+			personForm.getGivenName(), personForm.getJobTitle(),
+			personForm.getFamilyName());
 	}
 
-	private void _deletePerson(LongIdentifier personLongIdentifier) {
-		Person.deletePerson(personLongIdentifier.getId());
+	private void _deletePerson(Long personId) {
+		Person.deletePerson(personId);
 	}
 
 	private PageItems<Person> _getPageItems(Pagination pagination) {
@@ -130,37 +117,22 @@ public class PersonCollectionResource
 		return new PageItems<>(persons, count);
 	}
 
-	private Person _getPerson(LongIdentifier personLongIdentifier) {
-		Optional<Person> optional = Person.getPerson(
-			personLongIdentifier.getId());
+	private Person _getPerson(Long personId) {
+		Optional<Person> optional = Person.getPerson(personId);
 
 		return optional.orElseThrow(
-			() -> new NotFoundException(
-				"Unable to get person " + personLongIdentifier.getId()));
+			() -> new NotFoundException("Unable to get person " + personId));
 	}
 
-	private Person _updatePerson(
-		LongIdentifier personLongIdentifier, Map<String, Object> body) {
-
-		String address = (String)body.get("address");
-		String avatar = (String)body.get("image");
-
-		String birthDateString = (String)body.get("birthDate");
-
-		Date birthDate = Date.from(Instant.parse(birthDateString));
-
-		String email = (String)body.get("email");
-		String firstName = (String)body.get("givenName");
-		String jobTitle = (String)body.get("jobTitle");
-		String lastName = (String)body.get("familyName");
-
+	private Person _updatePerson(Long personId, PersonForm personForm) {
 		Optional<Person> optional = Person.updatePerson(
-			address, avatar, birthDate, email, firstName, jobTitle, lastName,
-			personLongIdentifier.getId());
+			personForm.getAddress(), personForm.getImage(),
+			personForm.getBirthDate(), personForm.getEmail(),
+			personForm.getGivenName(), personForm.getJobTitle(),
+			personForm.getFamilyName(), personId);
 
 		return optional.orElseThrow(
-			() -> new NotFoundException(
-				"Unable to get person " + personLongIdentifier.getId()));
+			() -> new NotFoundException("Unable to get person " + personId));
 	}
 
 }

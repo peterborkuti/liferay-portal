@@ -15,7 +15,6 @@
 package com.liferay.apio.architect.sample.liferay.portal.internal.resource;
 
 import com.liferay.apio.architect.functional.Try;
-import com.liferay.apio.architect.identifier.LongIdentifier;
 import com.liferay.apio.architect.pagination.PageItems;
 import com.liferay.apio.architect.pagination.Pagination;
 import com.liferay.apio.architect.representor.Representor;
@@ -24,6 +23,7 @@ import com.liferay.apio.architect.routes.ItemRoutes;
 import com.liferay.apio.architect.routes.NestedCollectionRoutes;
 import com.liferay.apio.architect.sample.liferay.portal.identifier.AggregateRatingIdentifier;
 import com.liferay.apio.architect.sample.liferay.portal.identifier.CommentableIdentifier;
+import com.liferay.apio.architect.sample.liferay.portal.internal.form.BlogPostingForm;
 import com.liferay.apio.architect.sample.liferay.portal.rating.AggregateRating;
 import com.liferay.apio.architect.sample.liferay.portal.rating.AggregateRatingService;
 import com.liferay.apio.architect.sample.liferay.portal.website.WebSite;
@@ -38,20 +38,10 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserService;
-import com.liferay.portal.kernel.util.DateUtil;
-import com.liferay.portal.kernel.util.Validator;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.function.Supplier;
 
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ServerErrorException;
 
@@ -69,17 +59,16 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(immediate = true)
 public class BlogPostingNestedCollectionResource
-	implements NestedCollectionResource
-		<BlogsEntry, LongIdentifier, WebSite, LongIdentifier> {
+	implements NestedCollectionResource <BlogsEntry, Long, WebSite, Long> {
 
 	@Override
 	public NestedCollectionRoutes<BlogsEntry> collectionRoutes(
-		NestedCollectionRoutes.Builder<BlogsEntry, LongIdentifier> builder) {
+		NestedCollectionRoutes.Builder<BlogsEntry, Long> builder) {
 
 		return builder.addGetter(
 			this::_getPageItems
 		).addCreator(
-			this::_addBlogsEntry
+			this::_addBlogsEntry, BlogPostingForm::buildForm
 		).build();
 	}
 
@@ -90,28 +79,28 @@ public class BlogPostingNestedCollectionResource
 
 	@Override
 	public ItemRoutes<BlogsEntry> itemRoutes(
-		ItemRoutes.Builder<BlogsEntry, LongIdentifier> builder) {
+		ItemRoutes.Builder<BlogsEntry, Long> builder) {
 
 		return builder.addGetter(
 			this::_getBlogsEntry
 		).addRemover(
 			this::_deleteBlogsEntry
 		).addUpdater(
-			this::_updateBlogsEntry
+			this::_updateBlogsEntry, BlogPostingForm::buildForm
 		).build();
 	}
 
 	@Override
-	public Representor<BlogsEntry, LongIdentifier> representor(
-		Representor.Builder<BlogsEntry, LongIdentifier> builder) {
+	public Representor<BlogsEntry, Long> representor(
+		Representor.Builder<BlogsEntry, Long> builder) {
 
 		return builder.types(
 			"BlogPosting"
 		).identifier(
-			blogsEntry -> blogsEntry::getEntryId
+			BlogsEntry::getEntryId
 		).addBidirectionalModel(
 			"webSite", "blogs", WebSite.class, this::_getWebSiteOptional,
-			WebSite::getWebSiteLongIdentifier
+			WebSite::getWebSiteId
 		).addDate(
 			"createDate", BlogsEntry::getCreateDate
 		).addDate(
@@ -145,60 +134,33 @@ public class BlogPostingNestedCollectionResource
 	}
 
 	private BlogsEntry _addBlogsEntry(
-		LongIdentifier groupLongIdentifier, Map<String, Object> body) {
-
-		String title = (String)body.get("headline");
-		String subtitle = (String)body.get("alternativeHeadline");
-		String description = (String)body.get("description");
-		String content = (String)body.get("articleBody");
-		String displayDateString = (String)body.get("displayDate");
-
-		Supplier<BadRequestException> invalidBodyExceptionSupplier =
-			() -> new BadRequestException("Invalid body");
-
-		if (Validator.isNull(title) || Validator.isNull(subtitle) ||
-			Validator.isNull(description) || Validator.isNull(content) ||
-			Validator.isNull(displayDateString)) {
-
-			throw invalidBodyExceptionSupplier.get();
-		}
-
-		Calendar calendar = Calendar.getInstance();
-
-		Try<DateFormat> dateFormatTry = Try.success(
-			DateUtil.getISO8601Format());
-
-		Date displayDate = dateFormatTry.map(
-			dateFormat -> dateFormat.parse(displayDateString)
-		).mapFailMatching(
-			ParseException.class, invalidBodyExceptionSupplier
-		).getUnchecked();
-
-		calendar.setTime(displayDate);
-
-		int month = calendar.get(Calendar.MONTH);
-		int day = calendar.get(Calendar.DATE);
-		int year = calendar.get(Calendar.YEAR);
-		int hour = calendar.get(Calendar.HOUR);
-		int minute = calendar.get(Calendar.MINUTE);
+		Long groupId, BlogPostingForm blogPostingForm) {
 
 		ServiceContext serviceContext = new ServiceContext();
 
 		serviceContext.setAddGroupPermissions(true);
 		serviceContext.setAddGuestPermissions(true);
-		serviceContext.setScopeGroupId(groupLongIdentifier.getId());
+		serviceContext.setScopeGroupId(groupId);
 
 		Try<BlogsEntry> blogsEntryTry = Try.fromFallible(
 			() -> _blogsService.addEntry(
-				title, subtitle, description, content, month, day, year, hour,
-				minute, false, false, null, null, null, null, serviceContext));
+				blogPostingForm.getHeadline(),
+				blogPostingForm.getAlternativeHeadline(),
+				blogPostingForm.getDescription(),
+				blogPostingForm.getArticleBody(),
+				blogPostingForm.getDisplayDateMonth(),
+				blogPostingForm.getDisplayDateDay(),
+				blogPostingForm.getDisplayDateYear(),
+				blogPostingForm.getDisplayDateHour(),
+				blogPostingForm.getDisplayDateMinute(), false, false, null,
+				null, null, null, serviceContext));
 
 		return blogsEntryTry.getUnchecked();
 	}
 
-	private void _deleteBlogsEntry(LongIdentifier blogsEntryIdLongIdentifier) {
+	private void _deleteBlogsEntry(Long blogsEntryId) {
 		try {
-			_blogsService.deleteEntry(blogsEntryIdLongIdentifier.getId());
+			_blogsService.deleteEntry(blogsEntryId);
 		}
 		catch (PortalException pe) {
 			throw new ServerErrorException(500, pe);
@@ -216,16 +178,14 @@ public class BlogPostingNestedCollectionResource
 				aggregateRatingIdentifier));
 	}
 
-	private BlogsEntry _getBlogsEntry(
-		LongIdentifier blogsEntryIdLongIdentifier) {
-
+	private BlogsEntry _getBlogsEntry(Long blogsEntryId) {
 		try {
-			return _blogsService.getEntry(blogsEntryIdLongIdentifier.getId());
+			return _blogsService.getEntry(blogsEntryId);
 		}
 		catch (NoSuchEntryException | PrincipalException e) {
 			throw new NotFoundException(
 				"Unable to get blogs entry " +
-					blogsEntryIdLongIdentifier.getId(),
+					blogsEntryId,
 				e);
 		}
 		catch (PortalException pe) {
@@ -234,13 +194,12 @@ public class BlogPostingNestedCollectionResource
 	}
 
 	private PageItems<BlogsEntry> _getPageItems(
-		Pagination pagination, LongIdentifier groupIdLongIdentifier) {
+		Pagination pagination, Long groupId) {
 
 		List<BlogsEntry> blogsEntries = _blogsService.getGroupEntries(
-			groupIdLongIdentifier.getId(), 0, pagination.getStartPosition(),
+			groupId, 0, pagination.getStartPosition(),
 			pagination.getEndPosition());
-		int count = _blogsService.getGroupEntriesCount(
-			groupIdLongIdentifier.getId(), 0);
+		int count = _blogsService.getGroupEntriesCount(groupId, 0);
 
 		return new PageItems<>(blogsEntries, count);
 	}
@@ -264,57 +223,29 @@ public class BlogPostingNestedCollectionResource
 	}
 
 	private BlogsEntry _updateBlogsEntry(
-		LongIdentifier blogsEntryIdLongIdentifier, Map<String, Object> body) {
-
-		String title = (String)body.get("headline");
-		String subtitle = (String)body.get("alternativeHeadline");
-		String description = (String)body.get("description");
-		String content = (String)body.get("articleBody");
-		String displayDateString = (String)body.get("displayDate");
-
-		Supplier<BadRequestException> invalidBodyExceptionSupplier =
-			() -> new BadRequestException("Invalid body");
-
-		if (Validator.isNull(title) || Validator.isNull(subtitle) ||
-			Validator.isNull(description) || Validator.isNull(content) ||
-			Validator.isNull(displayDateString)) {
-
-			throw invalidBodyExceptionSupplier.get();
-		}
-
-		Calendar calendar = Calendar.getInstance();
-
-		Try<DateFormat> dateFormatTry = Try.success(
-			DateUtil.getISO8601Format());
-
-		Date displayDate = dateFormatTry.map(
-			dateFormat -> dateFormat.parse(displayDateString)
-		).mapFailMatching(
-			ParseException.class, invalidBodyExceptionSupplier
-		).getUnchecked();
-
-		calendar.setTime(displayDate);
-
-		int month = calendar.get(Calendar.MONTH);
-		int day = calendar.get(Calendar.DATE);
-		int year = calendar.get(Calendar.YEAR);
-		int hour = calendar.get(Calendar.HOUR);
-		int minute = calendar.get(Calendar.MINUTE);
+		Long blogsEntryId, BlogPostingForm blogPostingForm) {
 
 		ServiceContext serviceContext = new ServiceContext();
 
 		serviceContext.setAddGroupPermissions(true);
 		serviceContext.setAddGuestPermissions(true);
 
-		BlogsEntry blogsEntry = _getBlogsEntry(blogsEntryIdLongIdentifier);
+		BlogsEntry blogsEntry = _getBlogsEntry(blogsEntryId);
 
 		serviceContext.setScopeGroupId(blogsEntry.getGroupId());
 
 		Try<BlogsEntry> blogsEntryTry = Try.fromFallible(
 			() -> _blogsService.updateEntry(
-				blogsEntryIdLongIdentifier.getId(), title, subtitle,
-				description, content, month, day, year, hour, minute, false,
-				false, null, null, null, null, serviceContext));
+				blogsEntryId, blogPostingForm.getHeadline(),
+				blogPostingForm.getAlternativeHeadline(),
+				blogPostingForm.getDescription(),
+				blogPostingForm.getArticleBody(),
+				blogPostingForm.getDisplayDateMonth(),
+				blogPostingForm.getDisplayDateDay(),
+				blogPostingForm.getDisplayDateYear(),
+				blogPostingForm.getDisplayDateHour(),
+				blogPostingForm.getDisplayDateMinute(), false, false, null,
+				null, null, null, serviceContext));
 
 		return blogsEntryTry.getUnchecked();
 	}

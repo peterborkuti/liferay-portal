@@ -15,13 +15,14 @@
 package com.liferay.apio.architect.sample.liferay.portal.internal.resource;
 
 import com.liferay.apio.architect.functional.Try;
-import com.liferay.apio.architect.identifier.LongIdentifier;
 import com.liferay.apio.architect.pagination.PageItems;
 import com.liferay.apio.architect.pagination.Pagination;
 import com.liferay.apio.architect.representor.Representor;
 import com.liferay.apio.architect.resource.NestedCollectionResource;
 import com.liferay.apio.architect.routes.ItemRoutes;
 import com.liferay.apio.architect.routes.NestedCollectionRoutes;
+import com.liferay.apio.architect.sample.liferay.portal.internal.form.WebPageElementCreatorForm;
+import com.liferay.apio.architect.sample.liferay.portal.internal.form.WebPageElementUpdaterForm;
 import com.liferay.apio.architect.sample.liferay.portal.website.WebSite;
 import com.liferay.apio.architect.sample.liferay.portal.website.WebSiteService;
 import com.liferay.document.library.kernel.service.DLFolderService;
@@ -34,22 +35,10 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserService;
-import com.liferay.portal.kernel.util.DateUtil;
-import com.liferay.portal.kernel.util.Validator;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
-import java.util.function.Supplier;
 
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ServerErrorException;
 
@@ -66,18 +55,16 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(immediate = true)
 public class WebPageElementNestedCollectionResource
-	implements NestedCollectionResource
-		<JournalArticle, LongIdentifier, WebSite, LongIdentifier> {
+	implements NestedCollectionResource <JournalArticle, Long, WebSite, Long> {
 
 	@Override
 	public NestedCollectionRoutes<JournalArticle> collectionRoutes(
-		NestedCollectionRoutes.Builder<JournalArticle, LongIdentifier>
-			builder) {
+		NestedCollectionRoutes.Builder<JournalArticle, Long> builder) {
 
 		return builder.addGetter(
 			this::_getPageItems
 		).addCreator(
-			this::_addJournalArticle
+			this::_addJournalArticle, WebPageElementCreatorForm::buildForm
 		).build();
 	}
 
@@ -88,28 +75,28 @@ public class WebPageElementNestedCollectionResource
 
 	@Override
 	public ItemRoutes<JournalArticle> itemRoutes(
-		ItemRoutes.Builder<JournalArticle, LongIdentifier> builder) {
+		ItemRoutes.Builder<JournalArticle, Long> builder) {
 
 		return builder.addGetter(
 			this::_getJournalArticle
 		).addRemover(
 			this::_deleteJournalArticle
 		).addUpdater(
-			this::_updateJournalArticle
+			this::_updateJournalArticle, WebPageElementUpdaterForm::buildForm
 		).build();
 	}
 
 	@Override
-	public Representor<JournalArticle, LongIdentifier> representor(
-		Representor.Builder<JournalArticle, LongIdentifier> builder) {
+	public Representor<JournalArticle, Long> representor(
+		Representor.Builder<JournalArticle, Long> builder) {
 
 		return builder.types(
 			"WebPageElement"
 		).identifier(
-			journalArticle -> journalArticle::getId
+			JournalArticle::getFolderId
 		).addBidirectionalModel(
 			"webSite", "webPageElements", WebSite.class,
-			this::_getWebSiteOptional, WebSite::getWebSiteLongIdentifier
+			this::_getWebSiteOptional, WebSite::getWebSiteId
 		).addDate(
 			"dateCreated", JournalArticle::getCreateDate
 		).addDate(
@@ -132,83 +119,36 @@ public class WebPageElementNestedCollectionResource
 	}
 
 	private JournalArticle _addJournalArticle(
-		LongIdentifier groupLongIdentifier, Map<String, Object> body) {
-
-		String folderIdString = (String)body.get("folder");
-		String title = (String)body.get("title");
-		String description = (String)body.get("description");
-		String content = (String)body.get("text");
-		String ddmStructureKey = (String)body.get("structure");
-		String ddmTemplateKey = (String)body.get("template");
-		String displayDateString = (String)body.get("dateDisplayed");
-
-		Supplier<BadRequestException> incorrectBodyExceptionSupplier =
-			() -> new BadRequestException("Invalid body");
-
-		if (Validator.isNull(folderIdString) || Validator.isNull(title) ||
-			Validator.isNull(description) || Validator.isNull(content) ||
-			Validator.isNull(ddmStructureKey) ||
-			Validator.isNull(ddmTemplateKey) ||
-			Validator.isNull(displayDateString)) {
-
-			throw incorrectBodyExceptionSupplier.get();
-		}
-
-		Try<Long> folderIdLongTry = Try.fromFallible(
-			() -> Long.valueOf(folderIdString));
-
-		long folderId = folderIdLongTry.orElse(0L);
-
-		Map<Locale, String> titleMap = new HashMap<>();
-
-		titleMap.put(Locale.getDefault(), title);
-
-		Map<Locale, String> descriptionMap = new HashMap<>();
-
-		descriptionMap.put(Locale.getDefault(), description);
-
-		Calendar calendar = Calendar.getInstance();
-
-		Try<DateFormat> dateFormatTry = Try.success(
-			DateUtil.getISO8601Format());
-
-		Date displayDate = dateFormatTry.map(
-			dateFormat -> dateFormat.parse(displayDateString)
-		).mapFailMatching(
-			ParseException.class, incorrectBodyExceptionSupplier
-		).getUnchecked();
-
-		calendar.setTime(displayDate);
-
-		int displayDateMonth = calendar.get(Calendar.MONTH);
-		int displayDateDay = calendar.get(Calendar.DATE);
-		int displayDateYear = calendar.get(Calendar.YEAR);
-		int displayDateHour = calendar.get(Calendar.HOUR);
-		int displayDateMinute = calendar.get(Calendar.MINUTE);
+		Long groupId, WebPageElementCreatorForm webPageElementCreatorForm) {
 
 		ServiceContext serviceContext = new ServiceContext();
 
 		serviceContext.setAddGroupPermissions(true);
 		serviceContext.setAddGuestPermissions(true);
-		serviceContext.setScopeGroupId(groupLongIdentifier.getId());
+		serviceContext.setScopeGroupId(groupId);
 
 		Try<JournalArticle> journalArticleTry = Try.fromFallible(() ->
 			_journalArticleService.addArticle(
-				groupLongIdentifier.getId(), folderId, 0, 0, null, true,
-				titleMap, descriptionMap, content, ddmStructureKey,
-				ddmTemplateKey, null, displayDateMonth, displayDateDay,
-				displayDateYear, displayDateHour, displayDateMinute, 0, 0, 0, 0,
-				0, true, 0, 0, 0, 0, 0, true, true, null, serviceContext));
+				groupId, webPageElementCreatorForm.getFolder(), 0, 0, null,
+				true, webPageElementCreatorForm.getTitleMap(),
+				webPageElementCreatorForm.getDescriptionMap(),
+				webPageElementCreatorForm.getText(),
+				webPageElementCreatorForm.getStructure(),
+				webPageElementCreatorForm.getTemplate(), null,
+				webPageElementCreatorForm.getDisplayDateMonth(),
+				webPageElementCreatorForm.getDisplayDateDay(),
+				webPageElementCreatorForm.getDisplayDateYear(),
+				webPageElementCreatorForm.getDisplayDateHour(),
+				webPageElementCreatorForm.getDisplayDateMinute(), 0, 0, 0, 0, 0,
+				true, 0, 0, 0, 0, 0, true, true, null, serviceContext));
 
 		return journalArticleTry.getUnchecked();
 	}
 
-	private void _deleteJournalArticle(
-		LongIdentifier journalArticleLongIdentifier) {
-
+	private void _deleteJournalArticle(Long journalArticleId) {
 		try {
 			JournalArticle article = _journalArticleService.getArticle(
-				journalArticleLongIdentifier.getId());
+				journalArticleId);
 
 			_journalArticleService.deleteArticle(
 				article.getGroupId(), article.getArticleId(),
@@ -221,17 +161,14 @@ public class WebPageElementNestedCollectionResource
 		}
 	}
 
-	private JournalArticle _getJournalArticle(
-		LongIdentifier journalArticleLongIdentifier) {
-
+	private JournalArticle _getJournalArticle(Long journalArticleId) {
 		try {
-			return _journalArticleService.getArticle(
-				journalArticleLongIdentifier.getId());
+			return _journalArticleService.getArticle(journalArticleId);
 		}
 		catch (NoSuchArticleException nsae) {
 			throw new NotFoundException(
 				"Unable to get article " +
-					journalArticleLongIdentifier.getId(),
+					journalArticleId,
 				nsae);
 		}
 		catch (PortalException pe) {
@@ -240,14 +177,13 @@ public class WebPageElementNestedCollectionResource
 	}
 
 	private PageItems<JournalArticle> _getPageItems(
-		Pagination pagination, LongIdentifier groupLongIdentifier) {
+		Pagination pagination, Long groupId) {
 
 		List<JournalArticle> journalArticles =
 			_journalArticleService.getArticles(
-				groupLongIdentifier.getId(), 0, pagination.getStartPosition(),
+				groupId, 0, pagination.getStartPosition(),
 				pagination.getEndPosition(), null);
-		int count = _journalArticleService.getArticlesCount(
-			groupLongIdentifier.getId(), 0);
+		int count = _journalArticleService.getArticlesCount(groupId, 0);
 
 		return new PageItems<>(journalArticles, count);
 	}
@@ -273,68 +209,25 @@ public class WebPageElementNestedCollectionResource
 	}
 
 	private JournalArticle _updateJournalArticle(
-		LongIdentifier journalArticleLongIdentifier, Map<String, Object> body) {
-
-		String userIdString = (String)body.get("user");
-		String groupIdString = (String)body.get("group");
-		String folderIdString = (String)body.get("folder");
-		String versionString = (String)body.get("version");
-		String title = (String)body.get("title");
-		String description = (String)body.get("description");
-		String content = (String)body.get("text");
-
-		Supplier<BadRequestException> incorrectBodyExceptionSupplier =
-			() -> new BadRequestException("Invalid body");
-
-		if (Validator.isNull(userIdString) || Validator.isNull(groupIdString) ||
-			Validator.isNull(folderIdString) ||
-			Validator.isNull(versionString) || Validator.isNull(title) ||
-			Validator.isNull(description) || Validator.isNull(content)) {
-
-			throw incorrectBodyExceptionSupplier.get();
-		}
-
-		Try<Long> userIdLongTry = Try.fromFallible(
-			() -> Long.valueOf(userIdString));
-
-		long userId = userIdLongTry.orElseThrow(incorrectBodyExceptionSupplier);
-
-		Try<Long> groupIdLongTry = Try.fromFallible(
-			() -> Long.valueOf(groupIdString));
-
-		long groupId = groupIdLongTry.orElseThrow(
-			incorrectBodyExceptionSupplier);
-
-		Try<Long> folderIdLongTry = Try.fromFallible(
-			() -> Long.valueOf(folderIdString));
-
-		long folderId = folderIdLongTry.orElse(0L);
-
-		Try<Double> versionDoubleTry = Try.fromFallible(
-			() -> Double.valueOf(versionString));
-
-		double version = versionDoubleTry.orElseThrow(
-			incorrectBodyExceptionSupplier);
-
-		Map<Locale, String> titleMap = new HashMap<>();
-
-		titleMap.put(Locale.getDefault(), title);
-
-		Map<Locale, String> descriptionMap = new HashMap<>();
-
-		descriptionMap.put(Locale.getDefault(), description);
+		Long journalArticleId,
+		WebPageElementUpdaterForm webPageElementUpdaterForm) {
 
 		ServiceContext serviceContext = new ServiceContext();
 
 		serviceContext.setAddGroupPermissions(true);
 		serviceContext.setAddGuestPermissions(true);
-		serviceContext.setScopeGroupId(groupId);
+		serviceContext.setScopeGroupId(webPageElementUpdaterForm.getGroup());
 
 		Try<JournalArticle> journalArticleTry = Try.fromFallible(() ->
 			_journalArticleService.updateArticle(
-				userId, groupId, folderId,
-				String.valueOf(journalArticleLongIdentifier.getId()), version,
-				titleMap, descriptionMap, content, null, serviceContext));
+				webPageElementUpdaterForm.getUser(),
+				webPageElementUpdaterForm.getGroup(),
+				webPageElementUpdaterForm.getFolder(),
+				String.valueOf(journalArticleId),
+				webPageElementUpdaterForm.getVersion(),
+				webPageElementUpdaterForm.getTitleMap(),
+				webPageElementUpdaterForm.getDescriptionMap(),
+				webPageElementUpdaterForm.getText(), null, serviceContext));
 
 		return journalArticleTry.getUnchecked();
 	}

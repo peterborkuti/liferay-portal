@@ -16,7 +16,6 @@ package com.liferay.apio.architect.resource;
 
 import aQute.bnd.annotation.ConsumerType;
 
-import com.liferay.apio.architect.identifier.Identifier;
 import com.liferay.apio.architect.router.CollectionRouter;
 
 /**
@@ -48,12 +47,14 @@ import com.liferay.apio.architect.router.CollectionRouter;
  * </p>
  *
  * @author Alejandro Hernández
+ * @param  <T> the model's type
+ * @param  <S> the model identifier's type ({@link Long}, {@link String}, etc.)
  * @see    com.liferay.apio.architect.representor.Representor.Builder
  * @see    com.liferay.apio.architect.routes.ItemRoutes.Builder
  * @see    com.liferay.apio.architect.routes.CollectionRoutes.Builder
  * @review
  */
 @ConsumerType
-public interface CollectionResource<T, U extends Identifier>
-	extends ItemResource<T, U>, CollectionRouter<T> {
+public interface CollectionResource<T, S>
+	extends ItemResource<T, S>, CollectionRouter<T> {
 }

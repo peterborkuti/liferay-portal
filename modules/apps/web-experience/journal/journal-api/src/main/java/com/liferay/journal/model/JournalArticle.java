@@ -119,6 +119,17 @@ public interface JournalArticle extends JournalArticleModel, PersistedModel,
 	public JournalFolder getFolder()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
+	/**
+	* Returns the friendly URLs for all configured locales.
+	*
+	* @return the friendly URLs for all configured locales
+	*/
+	public java.util.Map<java.util.Locale, java.lang.String> getFriendlyURLMap()
+		throws com.liferay.portal.kernel.exception.PortalException;
+
+	public java.lang.String getFriendlyURLsXML()
+		throws com.liferay.portal.kernel.exception.PortalException;
+
 	public java.util.List<com.liferay.portal.kernel.repository.model.FileEntry> getImagesFileEntries()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
@@ -182,6 +193,9 @@ public interface JournalArticle extends JournalArticleModel, PersistedModel,
 	public java.util.Map<java.util.Locale, java.lang.String> getTitleMap();
 
 	public java.lang.String getTitleMapAsXML();
+
+	public java.lang.String getUrlTitle(java.util.Locale locale)
+		throws com.liferay.portal.kernel.exception.PortalException;
 
 	public boolean hasApprovedVersion();
 

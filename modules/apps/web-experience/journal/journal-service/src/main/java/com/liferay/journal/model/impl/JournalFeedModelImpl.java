@@ -25,6 +25,8 @@ import com.liferay.journal.model.JournalFeed;
 import com.liferay.journal.model.JournalFeedModel;
 import com.liferay.journal.model.JournalFeedSoap;
 
+import com.liferay.petra.string.StringPool;
+
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSON;
@@ -37,7 +39,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
 
@@ -423,7 +424,7 @@ public class JournalFeedModelImpl extends BaseModelImpl<JournalFeed>
 	@Override
 	public String getUuid() {
 		if (_uuid == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _uuid;
@@ -519,7 +520,7 @@ public class JournalFeedModelImpl extends BaseModelImpl<JournalFeed>
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -531,7 +532,7 @@ public class JournalFeedModelImpl extends BaseModelImpl<JournalFeed>
 	@Override
 	public String getUserName() {
 		if (_userName == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _userName;
@@ -575,7 +576,7 @@ public class JournalFeedModelImpl extends BaseModelImpl<JournalFeed>
 	@Override
 	public String getFeedId() {
 		if (_feedId == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _feedId;
@@ -601,7 +602,7 @@ public class JournalFeedModelImpl extends BaseModelImpl<JournalFeed>
 	@Override
 	public String getName() {
 		if (_name == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _name;
@@ -617,7 +618,7 @@ public class JournalFeedModelImpl extends BaseModelImpl<JournalFeed>
 	@Override
 	public String getDescription() {
 		if (_description == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _description;
@@ -633,7 +634,7 @@ public class JournalFeedModelImpl extends BaseModelImpl<JournalFeed>
 	@Override
 	public String getDDMStructureKey() {
 		if (_DDMStructureKey == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _DDMStructureKey;
@@ -649,7 +650,7 @@ public class JournalFeedModelImpl extends BaseModelImpl<JournalFeed>
 	@Override
 	public String getDDMTemplateKey() {
 		if (_DDMTemplateKey == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _DDMTemplateKey;
@@ -665,7 +666,7 @@ public class JournalFeedModelImpl extends BaseModelImpl<JournalFeed>
 	@Override
 	public String getDDMRendererTemplateKey() {
 		if (_DDMRendererTemplateKey == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _DDMRendererTemplateKey;
@@ -692,7 +693,7 @@ public class JournalFeedModelImpl extends BaseModelImpl<JournalFeed>
 	@Override
 	public String getOrderByCol() {
 		if (_orderByCol == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _orderByCol;
@@ -708,7 +709,7 @@ public class JournalFeedModelImpl extends BaseModelImpl<JournalFeed>
 	@Override
 	public String getOrderByType() {
 		if (_orderByType == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _orderByType;
@@ -724,7 +725,7 @@ public class JournalFeedModelImpl extends BaseModelImpl<JournalFeed>
 	@Override
 	public String getTargetLayoutFriendlyUrl() {
 		if (_targetLayoutFriendlyUrl == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _targetLayoutFriendlyUrl;
@@ -740,7 +741,7 @@ public class JournalFeedModelImpl extends BaseModelImpl<JournalFeed>
 	@Override
 	public String getTargetPortletId() {
 		if (_targetPortletId == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _targetPortletId;
@@ -756,7 +757,7 @@ public class JournalFeedModelImpl extends BaseModelImpl<JournalFeed>
 	@Override
 	public String getContentField() {
 		if (_contentField == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _contentField;
@@ -772,7 +773,7 @@ public class JournalFeedModelImpl extends BaseModelImpl<JournalFeed>
 	@Override
 	public String getFeedFormat() {
 		if (_feedFormat == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _feedFormat;
