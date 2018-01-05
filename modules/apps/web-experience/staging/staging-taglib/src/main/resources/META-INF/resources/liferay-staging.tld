@@ -15,12 +15,6 @@
 		<tag-class>com.liferay.staging.taglib.servlet.taglib.AlertTag</tag-class>
 		<body-content>JSP</body-content>
 		<attribute>
-			<description>Specifies the <![CDATA[<code>alert</code>]]>s type. It can be: info, warning, error, success. Defaults to info.</description>
-			<name>type</name>
-			<required>true</required>
-			<type>com.liferay.staging.taglib.servlet.taglib.AlertTypeEnum</type>
-		</attribute>
-		<attribute>
 			<description>Specifies if the <![CDATA[<code>alert</code>]]> is dismissible. Defaults to false.</description>
 			<name>dismissible</name>
 			<required>false</required>
@@ -33,6 +27,12 @@
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 			<type>boolean</type>
+		</attribute>
+		<attribute>
+			<description>Specifies the <![CDATA[<code>alert</code>]]>s type. It can be: info, warning, error, success. Defaults to info.</description>
+			<name>type</name>
+			<required>true</required>
+			<type>com.liferay.staging.taglib.servlet.taglib.AlertTypeEnum</type>
 		</attribute>
 	</tag>
 	<tag>

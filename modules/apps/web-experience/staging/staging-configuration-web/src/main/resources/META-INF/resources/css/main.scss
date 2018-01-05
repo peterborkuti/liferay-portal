@@ -2,225 +2,223 @@
 @import "bourbon";
 
 @mixin default-label {
-    color: #869CAD;
-    font-size: 14px;
+color: #869CAD;
+font-size: 14px;
 }
 
 .staging-configuration-control-label {
-    @include default-label;
+@include default-label;
 
-    font-weight: 500;
-    margin-right: auto;
+font-weight: 500;
+margin-right: auto;
 }
 
 .staging-configuration-control-label-bold {
-    color: #000;
-    font-weight: bold;
+color: #000;
+font-weight: bold;
 }
 
 .staging-configuration-control-toggle {
-    div {
-        margin-bottom: 0;
+div {
+	margin-bottom: 0;
 
-        label {
-            margin-bottom: 0;
-        }
-    }
+	label {
+	 margin-bottom: 0;
+	}
+}
 }
 
 .staging-configuration-help-label {
-    @include default-label;
+@include default-label;
 }
 
 .staging-configuration-list {
-    box-shadow: none;
+box-shadow: none;
 }
 
 .container-fluid-960 {
-    margin-left: auto;
-    margin-right: auto;
-    max-width: 960px;
-    padding-left: 12px;
-    padding-right: 12px;
-    width: 100%;
+margin-left: auto;
+margin-right: auto;
+max-width: 960px;
+padding-left: 12px;
+padding-right: 12px;
+width: 100%;
 }
 
 .staging-configuration-title {
-    margin-bottom: 50px;
+margin-bottom: 50px;
 }
 
 .staging-configuration-fieldset-title {
-    border: none;
+border: none;
 
-    & > .panel-heading {
+& > .panel-heading {
+	& > .panel-title {
+	 text-transform: uppercase;
 
-        & > .panel-title {
-            text-transform: uppercase;
+	 & > a {
+		border-bottom: 1px solid #E7E7ED;
+		margin: 0.75rem 1.25rem;
+		padding: 0;
 
-            & > a {
-                border-bottom: 1px solid #e7e7ed;
-                margin: 0.75rem 1.25rem;
-                padding: 0;
+		&:hover {
+		 text-decoration: none;
+		}
+	 }
 
-                &:hover {
-                    text-decoration: none;
-                }
-            }
-
-            & .collapse-icon .collapse-icon-closed, .collapse-icon .collapse-icon-open {
-                right: 1.4375rem;
-            }
-        }
-    }
+	 & .collapse-icon .collapse-icon-closed, .collapse-icon .collapse-icon-open {
+		right: 1.4375rem;
+	 }
+	}
+}
 }
 
 .staging-configuration-radio {
-    visibility: hidden;
-    position: relative !important;
-    transform: none !important;
-    top: 0 !important;
+position: relative !important;
+top: 0 !important;
+transform: none !important;
+visibility: hidden;
 
-    &::before {
-        display: block;
-        visibility: visible;
-        content: "";
-        border-radius: 100%;
-        height: 16px;
-        width: 16px;
-        border: 1px solid #D9E1F4;
-    }
+&::before {
+	border: 1px solid #D9E1F4;
+	border-radius: 100%;
+	content: "";
+	display: block;
+	height: 16px;
+	visibility: visible;
+	width: 16px;
+}
 
-    &:checked::before {
-        border: 4px solid #0B5FFF;
-    }
+&:checked::before {
+	border: 4px solid #0B5FFF;
+}
 }
 
 .staging-configuration-radio-label {
-    display: block;
-    margin-top: -24px;
-    margin-left: 5px;
+display: block;
+margin-left: 5px;
+margin-top: -24px;
 
-    & > .staging-configuration-radio-help-message {
-        font-weight: normal;
-    }
+& > .staging-configuration-radio-help-message {
+	font-weight: normal;
+}
 }
 
 i {
-    padding-right: 5px;
+padding-right: 5px;
 }
 
 .form-group.form-inline.input-checkbox-wrapper {
-    margin-bottom: 0.75rem;
+margin-bottom: 0.75rem;
 }
 
 .staging-configuration-checkbox {
-    visibility: hidden;
-    margin-right: 10px;
+margin-right: 10px;
+visibility: hidden;
 
-    &::before {
-        display: block;
-        visibility: visible;
-        content: "\f00c";
-        height: 15px;
-        width: 16px;
-        border: 1px solid #D9E1F4;
-        background: #FFF;
-        font-family: "fontawesome-alloy";
-        font-size: 11px;
-        text-align: center;
-        color: #FFF;
-        border-radius: 2px;
-    }
+&::before {
+	background: #FFF;
+	border: 1px solid #D9E1F4;
+	border-radius: 2px;
+	color: #FFF;
+	content: "\f00c";
+	display: block;
+	font-family: "fontawesome-alloy";
+	font-size: 11px;
+	height: 15px;
+	text-align: center;
+	visibility: visible;
+	width: 16px;
+}
 
-    &:checked::before {
-        background: #0B5FFF;
-        border: none;
-    }
+&:checked::before {
+	background: #0B5FFF;
+	border: none;
+}
 }
 
 .remote-port {
-    width: 150px;
+width: 150px;
 }
 
 .staging-configuration-submit-button-holder {
-    padding: 1.25rem;
+padding: 1.25rem;
 }
 
 .staging-alert {
-    padding-left: 3em;
-    text-indent: -1.5em;
+padding-left: 3em;
+text-indent: -1.5em;
 
-    & .staging-alert-lead {
-        padding-left: 0.3em;
-    }
+& .staging-alert-lead {
+	padding-left: 0.3em;
+}
 
-    & .staging-alert-body {
-        text-indent: -1.5em;
-    }
+& .staging-alert-body {
+	text-indent: -1.5em;
+}
 }
 
 .select-all-checkbox {
-    margin-bottom: 2rem;
+margin-bottom: 2rem;
 }
 
-
 .staging-configuration-section-title-holder {
-    position: relative;
-    border-bottom: 1px solid #e7e7ed;
-    margin-bottom: 0.75rem;
+border-bottom: 1px solid #E7E7ED;
+margin-bottom: 0.75rem;
+position: relative;
 
-    .staging-configuration-section-title {
-        text-transform: uppercase;
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: #6B6C7E;
-    }
+.staging-configuration-section-title {
+	color: #6B6C7E;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-transform: uppercase;
+}
 
-    & > .staging-configuration-icon-holder {
-        &:hover + .popover-wrapper {
-            visibility: visible;
-        }
+& > .staging-configuration-icon-holder {
+	&:hover + .popover-wrapper {
+	 visibility: visible;
+	}
 
-        & + .popover-wrapper {
-            visibility: hidden;
+	& + .popover-wrapper {
+	 visibility: hidden;
 
-            &:hover {
-                visibility: visible;
-            }
+	 &:hover {
+		visibility: visible;
+	 }
 
-            & > .arrow {
-                position: absolute;
-                display: block;
-                width: 0;
-                height: 0;
-                border: 9px solid transparent;
-                top: 50%;
-                left: -9px;
-                margin-top: -9px;
-                border-left-width: 0;
-                border-right-color: #aeb7bd;
-                z-index: 1061;
+	 & > .arrow {
+		border: 9px solid transparent;
+		border-left-width: 0;
+		border-right-color: #AEB7BD;
+		display: block;
+		height: 0;
+		left: -9px;
+		margin-top: -9px;
+		position: absolute;
+		top: 50%;
+		width: 0;
+		z-index: 1061;
 
-                &::after {
-                    position: absolute;
-                    display: block;
-                    width: 0;
-                    height: 0;
-                    border: 8px solid transparent;
-                    content: " ";
-                    left: 1px;
-                    bottom: -8px;
-                    border-left-width: 0;
-                    border-right-color: #fff;
-                }
-            }
+		&::after {
+		 position: absolute;
+		 display: block;
+		 width: 0;
+		 height: 0;
+		 border: 8px solid transparent;
+		 content: " ";
+		 left: 1px;
+		 bottom: -8px;
+		 border-left-width: 0;
+		 border-right-color: #FFF;
+		}
+	 }
 
-            .popover {
-                width: 232px;
-                height: 240px;
-                overflow-y: auto;
-                position: absolute;
-            }
-        }
-    }
+	 .popover {
+		height: 240px;
+		overflow-y: auto;
+		position: absolute;
+		width: 232px;
+	 }
+	}
+}
 }

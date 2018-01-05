@@ -11,24 +11,24 @@
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
  */
+
 package com.liferay.staging.taglib.servlet.taglib;
 
 /**
  * @author Péter Alius
  */
 public enum AlertTypeEnum {
-	info	("info"),
-	warning	("warning"),
-	success	("success"),
-	error	("error");
 
-	private final String alertCode;
-
-	AlertTypeEnum(String alertCode) {
-		this.alertCode = alertCode;
-	}
+	info("info"), warning("warning"), success("success"), error("error");
 
 	public String getAlertCode() {
-		return this.alertCode;
+		return _alertCode;
 	}
+
+	private AlertTypeEnum(String alertCode) {
+		_alertCode = alertCode;
+	}
+
+	private final String _alertCode;
+
 }

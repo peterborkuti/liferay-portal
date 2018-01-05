@@ -11,9 +11,11 @@
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
  */
+
 package com.liferay.staging.taglib.servlet.taglib;
 
 import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.staging.taglib.internal.servlet.ServletContextUtil;
 import com.liferay.taglib.util.IncludeTag;
 
@@ -35,21 +37,23 @@ public class AlertTag extends IncludeTag implements BodyTag {
 		return super.doStartTag();
 	}
 
-	public void setType(AlertTypeEnum type) {
-		_type = type.getAlertCode();
-	}
-
 	public void setDismissible(boolean dismissible) {
 		_dismissible = dismissible;
 	}
 
-	public void setFluid(boolean fluid) { _fluid = fluid; }
+	public void setFluid(boolean fluid) {
+		_fluid = fluid;
+	}
 
 	@Override
 	public void setPageContext(PageContext pageContext) {
 		super.setPageContext(pageContext);
 
 		servletContext = ServletContextUtil.getServletContext();
+	}
+
+	public void setType(AlertTypeEnum type) {
+		_type = type.getAlertCode();
 	}
 
 	@Override
@@ -71,15 +75,19 @@ public class AlertTag extends IncludeTag implements BodyTag {
 
 	@Override
 	protected void setAttributes(HttpServletRequest request) {
+		request.setAttribute(
+			"liferay-staging:alert:dismissible", String.valueOf(_dismissible));
+		request.setAttribute(
+			"liferay-staging:alert:fluid", String.valueOf(_fluid));
 		request.setAttribute("liferay-staging:alert:type", _type);
-		request.setAttribute("liferay-staging:alert:dismissible", String.valueOf(_dismissible));
-		request.setAttribute("liferay-staging:alert:fluid", String.valueOf(_fluid));
 	}
 
 	private static final String _ATTRIBUTE_NAMESPACE = "liferay-staging:alert:";
+
 	private static final String _PAGE = "/alert/page.jsp";
 
-	private String _type;
 	private boolean _dismissible;
 	private boolean _fluid;
+	private String _type = AlertTypeEnum.info.getAlertCode();
+
 }

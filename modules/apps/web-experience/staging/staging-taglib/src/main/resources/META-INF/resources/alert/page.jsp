@@ -22,6 +22,7 @@
 			<svg aria-hidden="true" class="lexicon-icon lexicon-icon-info-circle">
 				<use xlink:href="<%= themeDisplayPath %>/lexicon/icons.svg#info-circle" />
 			</svg>
+
 			<strong class="lead"><%= LanguageUtil.get(request, "alert-helper-info") %>: </strong>
 		</c:when>
 		<c:when test="<%= type == AlertTypeEnum.warning.getAlertCode() %>">
@@ -36,6 +37,7 @@
 			<svg aria-hidden="true" class="lexicon-icon lexicon-icon-exclamation-full">
 				<use xlink:href="<%= themeDisplayPath %>/lexicon/icons.svg#exclamation-full" />
 			</svg>
+
 			<strong class="lead"><%= LanguageUtil.get(request, "alert-helper-error") %>: </strong>
 		</c:when>
 	</c:choose>
@@ -44,9 +46,10 @@
 <liferay-util:buffer var="close">
 	<% if (dismissible == true) { %>
 	<button aria-label="Close" class="close" data-dismiss="alert" type="button">
-		<svg aria-hidden="true" class="icon-monospaced lexicon-icon  lexicon-icon-times">
+		<svg aria-hidden="true" class="icon-monospaced lexicon-icon lexicon-icon-times">
 			<use xlink:href="<%= themeDisplayPath %>/lexicon/icons.svg#times" />
 		</svg>
+
 		<span class="sr-only">Close</span>
 	</button>
 	<% } %>
