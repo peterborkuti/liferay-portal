@@ -15,14 +15,14 @@
 --%>
 
 <c:if test="<%= liveGroupRemoteStaging %>">
-	<liferay-staging:alert type="warning" dismissible="<%= true %>">
-		<liferay-ui:message key="<%= LanguageUtil.get(request, "live-group-remote-staging-alert") %>" />
+	<liferay-staging:alert dismissible="<%= true %>" type="warning">
+		<liferay-ui:message key='<%= LanguageUtil.get(request, "live-group-remote-staging-alert") %>' />
 		<liferay-ui:message arguments='<%= "javascript:" + renderResponse.getNamespace() + "saveGroup(true);" %>' key="you-can-also-forcibly-disable-remote-staging" />
 	</liferay-staging:alert>
 </c:if>
 
 <c:if test="<%= (lastCompletedInitialPublicationBackgroundTask != null) && (lastCompletedInitialPublicationBackgroundTask.getStatus() == BackgroundTaskConstants.STATUS_FAILED) %>">
-	<liferay-staging:alert type="warning" dismissible="true">
+	<liferay-staging:alert dismissible="<%= true %>" type="warning">
 		<liferay-ui:message key="an-unexpected-error-occurred-with-the-initial-staging-publication" />
 
 		<portlet:actionURL name="deleteBackgroundTask" var="deleteBackgroundTaskURL">
@@ -101,8 +101,9 @@
 </liferay-ui:error>
 
 <liferay-ui:error exception="<%= LocaleException.class %>">
+
 	<%
-		LocaleException le = (LocaleException)errorException;
+	LocaleException le = (LocaleException)errorException;
 	%>
 
 	<c:if test="<%= le.getType() == LocaleException.TYPE_EXPORT_IMPORT %>">
@@ -111,8 +112,9 @@
 </liferay-ui:error>
 
 <liferay-ui:error exception="<%= SystemException.class %>">
+
 	<%
-		SystemException se = (SystemException)errorException;
+	SystemException se = (SystemException)errorException;
 	%>
 
 	<liferay-ui:message key="<%= se.getMessage() %>" />

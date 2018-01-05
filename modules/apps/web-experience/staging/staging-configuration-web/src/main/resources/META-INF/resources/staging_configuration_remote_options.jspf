@@ -15,13 +15,13 @@
 --%>
 
 <%
-	boolean showRemoteOptions = stagedRemotely;
+boolean showRemoteOptions = stagedRemotely;
 
-	int stagingType = ParamUtil.getInteger(request, "stagingType");
+int stagingType = ParamUtil.getInteger(request, "stagingType");
 
-	if (stagingType == StagingConstants.TYPE_REMOTE_STAGING) {
-		showRemoteOptions = true;
-	}
+if (stagingType == StagingConstants.TYPE_REMOTE_STAGING) {
+	showRemoteOptions = true;
+}
 %>
 
 <div class="<%= showRemoteOptions ? StringPool.BLANK : "hide" %>" id="<portlet:namespace />remoteStagingOptions">
@@ -31,7 +31,7 @@
 
 	<aui:fieldset cssClass="staging-configuration-fieldset-title">
 		<div class="staging-configuration-section-title-holder">
-			<span class="staging-configuration-section-title"><%= LanguageUtil.get(request, "remote-live-connection-settings" )%></span>
+			<span class="staging-configuration-section-title"><%= LanguageUtil.get(request, "remote-live-connection-settings") %></span>
 		</div>
 
 		<%@ include file="/error_remote_options_exception.jspf" %>
@@ -42,7 +42,7 @@
 
 		<aui:input label="remote-host-ip" name="remoteAddress" size="20" type="text" value='<%= liveGroupTypeSettings.getProperty("remoteAddress") %>' />
 
-		<aui:input label="remote-port" name="remotePort" size="10" type="text" value='<%= liveGroupTypeSettings.getProperty("remotePort") %>' cssClass="remote-port" />
+		<aui:input cssClass="remote-port" label="remote-port" name="remotePort" size="10" type="text" value='<%= liveGroupTypeSettings.getProperty("remotePort") %>' />
 
 		<aui:input label="remote-path-context" name="remotePathContext" size="10" type="text" value='<%= liveGroupTypeSettings.getProperty("remotePathContext") %>' />
 
@@ -51,9 +51,10 @@
 		<div class="flex-container">
 
 			<%
-				boolean secureConnection = GetterUtil.getBoolean(liveGroupTypeSettings.getProperty("secureConnection"));
+			boolean secureConnection = GetterUtil.getBoolean(liveGroupTypeSettings.getProperty("secureConnection"));
 			%>
-			<aui:input label="use-a-secure-network-connection" name="secureConnection" type="checkbox" value="<%= secureConnection %>" cssClass="staging-configuration-checkbox" />
+
+			<aui:input cssClass="staging-configuration-checkbox" label="use-a-secure-network-connection" name="secureConnection" type="checkbox" value="<%= secureConnection %>" />
 		</div>
 	</aui:fieldset>
 </div>

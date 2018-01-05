@@ -23,20 +23,23 @@
 		<liferay-util:buffer var="noneText">
 			<span class="staging-configuration-radio-label"><%= LanguageUtil.get(request, "none") %></span>
 		</liferay-util:buffer>
-		<aui:input checked="<%= !liveGroup.isStaged() %>" id="none" label="<%= noneText %>" name="stagingType" type="radio" value="<%= StagingConstants.TYPE_NOT_STAGED %>" cssClass="staging-configuration-radio" />
+
+		<aui:input checked="<%= !liveGroup.isStaged() %>" cssClass="staging-configuration-radio" id="none" label="<%= noneText %>" name="stagingType" type="radio" value="<%= StagingConstants.TYPE_NOT_STAGED %>" />
 
 		<c:if test="<%= !liveGroupRemoteStaging && !stagedRemotely %>">
 			<liferay-util:buffer var="localLiveText">
 				<span class="staging-configuration-radio-label"><%= LanguageUtil.get(request, "local-live") %>: <span class="staging-configuration-radio-help-message"><%= LanguageUtil.get(request, "staging-type-local") %></span></span>
 			</liferay-util:buffer>
-			<aui:input checked="<%= stagedLocally %>" id="local" label="<%= localLiveText %>" name="stagingType" type="radio" value="<%= StagingConstants.TYPE_LOCAL_STAGING %>" cssClass="staging-configuration-radio" />
+
+			<aui:input checked="<%= stagedLocally %>" cssClass="staging-configuration-radio" id="local" label="<%= localLiveText %>" name="stagingType" type="radio" value="<%= StagingConstants.TYPE_LOCAL_STAGING %>" />
 		</c:if>
 
 		<c:if test="<%= !stagedLocally %>">
 			<liferay-util:buffer var="remoteLiveText">
 				<span class="staging-configuration-radio-label"><%= LanguageUtil.get(request, "remote-live") %>: <span class="staging-configuration-radio-help-message"><%= LanguageUtil.get(request, "staging-type-remote") %></span></span>
 			</liferay-util:buffer>
-			<aui:input checked="<%= stagedRemotely %>" id="remote" label="<%= remoteLiveText %>" name="stagingType" type="radio" value="<%= StagingConstants.TYPE_REMOTE_STAGING %>" cssClass="staging-configuration-radio" />
+
+			<aui:input checked="<%= stagedRemotely %>" cssClass="staging-configuration-radio" id="remote" label="<%= remoteLiveText %>" name="stagingType" type="radio" value="<%= StagingConstants.TYPE_REMOTE_STAGING %>" />
 		</c:if>
 	</div>
 </aui:fieldset>

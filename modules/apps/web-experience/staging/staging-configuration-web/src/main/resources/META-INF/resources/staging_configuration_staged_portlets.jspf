@@ -18,7 +18,7 @@
 	<c:if test="<%= !liveGroup.isCompany() && !liveGroupRemoteStaging %>">
 		<aui:fieldset>
 			<div class="staging-configuration-section-title-holder">
-				<span class="staging-configuration-section-title"><%= LanguageUtil.get(request, "page-versioning" )%></span>
+				<span class="staging-configuration-section-title"><%= LanguageUtil.get(request, "page-versioning") %></span>
 			</div>
 
 			<p class="staging-configuration-help-label">
@@ -26,34 +26,38 @@
 			</p>
 
 			<%
-				boolean branchingPublic = GetterUtil.getBoolean(liveGroupTypeSettings.getProperty("branchingPublic"));
+			boolean branchingPublic = GetterUtil.getBoolean(liveGroupTypeSettings.getProperty("branchingPublic"));
 			%>
-			<aui:input label="enabled-on-public-pages" name="branchingPublic" type="checkbox" value="<%= branchingPublic %>" cssClass="staging-configuration-checkbox" />
+
+			<aui:input cssClass="staging-configuration-checkbox" label="enabled-on-public-pages" name="branchingPublic" type="checkbox" value="<%= branchingPublic %>" />
+
 			<%
-				boolean branchingPrivate = GetterUtil.getBoolean(liveGroupTypeSettings.getProperty("branchingPrivate"));
+			boolean branchingPrivate = GetterUtil.getBoolean(liveGroupTypeSettings.getProperty("branchingPrivate"));
 			%>
-			<aui:input label="enabled-on-private-pages" name="branchingPrivate" type="checkbox" value="<%= branchingPrivate %>" cssClass="staging-configuration-checkbox" />
+
+			<aui:input cssClass="staging-configuration-checkbox" label="enabled-on-private-pages" name="branchingPrivate" type="checkbox" value="<%= branchingPrivate %>" />
 		</aui:fieldset>
 	</c:if>
 
 	<aui:fieldset markupView="lexicon">
 		<div class="staging-configuration-section-title-holder">
-			<span class="staging-configuration-section-title"><%= LanguageUtil.get(request, "staged-content" )%></span>
+			<span class="staging-configuration-section-title"><%= LanguageUtil.get(request, "staged-content") %></span>
 			<span class="staging-configuration-icon-holder">
-                                        <svg aria-hidden="true" class="lexicon-icon lexicon-icon-question-circle-full">
-                                            <use xlink:href="<%=themeDisplay.getPathThemeImages()%>/lexicon/icons.svg#question-circle-full" />
-                                        </svg>
-                                    </span>
+				<svg aria-hidden="true" class="lexicon-icon lexicon-icon-question-circle-full">
+					<use xlink:href="<%= themeDisplay.getPathThemeImages() %>/lexicon/icons.svg#question-circle-full" />
+				</svg>
+			</span>
+
 			<div class="popover-wrapper">
 				<div class="arrow"></div>
-				<span class="popover bs-popover-right">
-                                                <div class="inline-scroller">
-                                                <div class="popover-header"><%= LanguageUtil.get(request, "staged-content") %></div>
-                                                    <div class="popover-body">
-                                                        <p><%= LanguageUtil.get(request, "staged-portlets-help") %></p>
-                                                    </div>
-                                                </div>
-                                            </span>
+				<span class="bs-popover-right popover">
+					<div class="inline-scroller">
+						<div class="popover-header"><%= LanguageUtil.get(request, "staged-content") %></div>
+						<div class="popover-body">
+							<p><%= LanguageUtil.get(request, "staged-portlets-help") %></p>
+						</div>
+					</div>
+				</span>
 			</div>
 
 			<aui:script use="aui-base, aui-popover">
@@ -80,42 +84,44 @@
 			<liferay-ui:message key="staged-portlets-alert" />
 		</p>
 
-		<aui:input disabled="<%= (liveGroupRemoteStaging && liveGroup.isStagedRemotely()) || liveGroup.isStaged() %>" id="selectAllCheckbox" label="select-all" name="selectAll" type="checkbox" cssClass="staging-configuration-checkbox select-all-checkbox"  />
+		<aui:input cssClass="select-all-checkbox staging-configuration-checkbox" disabled="<%= (liveGroupRemoteStaging && liveGroup.isStagedRemotely()) || liveGroup.isStaged() %>" id="selectAllCheckbox" label="select-all" name="selectAll" type="checkbox" />
 
 		<div id="stagingConfigurationControls">
-			<%
-				Set<String> portletDataHandlerClassNames = new HashSet<String>();
-
-				List<Portlet> dataSiteLevelPortlets = ExportImportHelperUtil.getDataSiteLevelPortlets(company.getCompanyId(), true);
-
-				dataSiteLevelPortlets = ListUtil.sort(dataSiteLevelPortlets, new PortletTitleComparator(application, locale));
-
-				for (Portlet curPortlet : dataSiteLevelPortlets) {
-					PortletDataHandler portletDataHandler = curPortlet.getPortletDataHandlerInstance();
-
-					Class<?> portletDataHandlerClass = portletDataHandler.getClass();
-
-					String portletDataHandlerClassName = portletDataHandlerClass.getName();
-
-					if (!portletDataHandlerClassNames.contains(portletDataHandlerClassName)) {
-						portletDataHandlerClassNames.add(portletDataHandlerClassName);
-					}
-					else {
-						continue;
-					}
-
-					boolean staged = portletDataHandler.isPublishToLiveByDefault();
-
-					if (stagingGroup != null) {
-						staged = stagingGroup.isStagedPortlet(StagingUtil.getStagedPortletId(curPortlet.getRootPortletId()));
-					}
-			%>
-
-			<aui:input disabled="<%= (liveGroupRemoteStaging && liveGroup.isStagedRemotely()) || liveGroup.isStaged() %>" label="<%= PortalUtil.getPortletTitle(curPortlet, application, locale) %>" name="<%= StagingConstants.STAGED_PREFIX + StagingUtil.getStagedPortletId(curPortlet.getRootPortletId()) + StringPool.DOUBLE_DASH %>" type="checkbox" value="<%= staged %>" cssClass="staging-configuration-checkbox" />
 
 			<%
+			Set<String> portletDataHandlerClassNames = new HashSet<String>();
+
+			List<Portlet> dataSiteLevelPortlets = ExportImportHelperUtil.getDataSiteLevelPortlets(company.getCompanyId(), true);
+
+			dataSiteLevelPortlets = ListUtil.sort(dataSiteLevelPortlets, new PortletTitleComparator(application, locale));
+
+			for (Portlet curPortlet : dataSiteLevelPortlets) {
+				PortletDataHandler portletDataHandler = curPortlet.getPortletDataHandlerInstance();
+
+				Class<?> portletDataHandlerClass = portletDataHandler.getClass();
+
+				String portletDataHandlerClassName = portletDataHandlerClass.getName();
+
+				if (!portletDataHandlerClassNames.contains(portletDataHandlerClassName)) {
+					portletDataHandlerClassNames.add(portletDataHandlerClassName);
+				}
+				else {
+					continue;
+				}
+
+				boolean staged = portletDataHandler.isPublishToLiveByDefault();
+
+				if (stagingGroup != null) {
+					staged = stagingGroup.isStagedPortlet(StagingUtil.getStagedPortletId(curPortlet.getRootPortletId()));
 				}
 			%>
+
+				<aui:input cssClass="staging-configuration-checkbox" disabled="<%= (liveGroupRemoteStaging && liveGroup.isStagedRemotely()) || liveGroup.isStaged() %>" label="<%= PortalUtil.getPortletTitle(curPortlet, application, locale) %>" name="<%= StagingConstants.STAGED_PREFIX + StagingUtil.getStagedPortletId(curPortlet.getRootPortletId()) + StringPool.DOUBLE_DASH %>" type="checkbox" value="<%= staged %>" />
+
+			<%
+			}
+			%>
+
 		</div>
 	</aui:fieldset>
 </div>
