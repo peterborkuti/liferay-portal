@@ -262,26 +262,28 @@
                             <aui:fieldset markupView="lexicon">
                                 <div class="staging-configuration-section-title-holder">
                                     <span class="staging-configuration-section-title"><%= LanguageUtil.get(request, "staged-content" )%></span>
-                                    <svg aria-hidden="true" class="lexicon-icon lexicon-icon-question-circle-full">
-                                        <use xlink:href="<%=themeDisplay.getPathThemeImages()%>/lexicon/icons.svg#question-circle-full" />
-                                    </svg>
+                                    <span class="staging-configuration-icon-holder">
+                                        <svg aria-hidden="true" class="lexicon-icon lexicon-icon-question-circle-full">
+                                            <use xlink:href="<%=themeDisplay.getPathThemeImages()%>/lexicon/icons.svg#question-circle-full" />
+                                        </svg>
+                                    </span>
                                     <div class="popover-wrapper">
                                         <div class="arrow"></div>
                                         <span class="popover bs-popover-right">
-                                            <div class="inline-scroller">
-                                            <div class="popover-header"><%= LanguageUtil.get(request, "staged-content") %></div>
-                                                <div class="popover-body">
-                                                    <p><%= LanguageUtil.get(request, "staged-portlets-help") %></p>
+                                                <div class="inline-scroller">
+                                                <div class="popover-header"><%= LanguageUtil.get(request, "staged-content") %></div>
+                                                    <div class="popover-body">
+                                                        <p><%= LanguageUtil.get(request, "staged-portlets-help") %></p>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </span>
+                                            </span>
                                     </div>
 
                                     <aui:script use="aui-base, aui-popover">
-                                        var icon = A.one(".staging-configuration-section-title-holder > svg.lexicon-icon");
+                                        var icon = A.one(".staging-configuration-section-title-holder > .staging-configuration-icon-holder");
                                         var arrow = A.one(".staging-configuration-section-title-holder > .popover-wrapper > .arrow");
                                         var popover = A.one(".staging-configuration-section-title-holder > .popover-wrapper > span.popover");
-                                        var popoverLeft = -(icon.getDOMNode().getBoundingClientRect().right - (popover.getStyle("width").slice(0, -2) / 2) - 18);
+                                        var popoverLeft = -(icon.getDOMNode().getBoundingClientRect().right - (popover.getStyle("width").slice(0, -2) / 2) - 23);
                                         var popoverTop = -(popover.getStyle("height").slice(0, -2) / 2);
                                         popover.setStyle('top', popoverTop);
                                         popover.setStyle('left', popoverLeft);
