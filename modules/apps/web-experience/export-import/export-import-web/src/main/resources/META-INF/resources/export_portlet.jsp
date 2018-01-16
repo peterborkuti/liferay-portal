@@ -91,7 +91,7 @@ String[] disallowedCharacters = PropsValues.DL_CHAR_BLACKLIST;
 				<div class="container-fluid-1280">
 					<aui:fieldset-group markupView="lexicon">
 						<aui:fieldset>
-							<aui:input label="export-the-selected-data-to-the-given-lar-file-name" name="exportFileName" required="<%= true %>" showRequiredLabel="<%= false %>" size="50" value='<%= ExportImportHelperUtil.getPortletExportFileName(selPortlet) %>'>
+							<aui:input label="export-the-selected-data-to-the-given-lar-file-name" name="exportFileName" required="<%= true %>" showRequiredLabel="<%= false %>" size="50" value="<%= ExportImportHelperUtil.getPortletExportFileName(selPortlet) %>">
 								<aui:validator errorMessage='<%= LanguageUtil.get(request, "the-following-are-invalid-characters") + Arrays.toString(disallowedCharacters) %>' name="custom">
 									function(val, fieldNode, ruleValue) {
 
