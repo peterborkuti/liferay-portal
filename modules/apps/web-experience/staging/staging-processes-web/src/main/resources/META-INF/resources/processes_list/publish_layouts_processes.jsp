@@ -101,19 +101,6 @@ OrderByComparator<BackgroundTask> orderByComparator = BackgroundTaskComparatorFa
 			keyProperty="backgroundTaskId"
 			modelVar="backgroundTask"
 		>
-
-			<%
-			BackgroundTaskDisplay backgroundTaskDisplay = BackgroundTaskDisplayFactoryUtil.getBackgroundTaskDisplay(backgroundTask);
-
-			String backgroundTaskName = backgroundTaskDisplay.getDisplayName(request);
-
-			boolean processPrivateLayout = MapUtil.getBoolean(backgroundTask.getTaskContextMap(), "privateLayout");
-
-			String publicPagesDescription = (processPrivateLayout) ? LanguageUtil.get(request, "private-pages") : LanguageUtil.get(request, "public-pages");
-
-			backgroundTaskName = String.format("%s (%s)", backgroundTaskName, publicPagesDescription);
-			%>
-
 			<c:choose>
 				<c:when test='<%= displayStyle.equals("descriptive") %>'>
 					<liferay-ui:search-container-column-text>
@@ -126,100 +113,25 @@ OrderByComparator<BackgroundTask> orderByComparator = BackgroundTaskComparatorFa
 					<liferay-ui:search-container-column-text
 						colspan="<%= 2 %>"
 					>
+						<liferay-staging:process-title
+							backgroundTask="<%= backgroundTask %>"
+							listView="<%= false %>"
+						/>
 
-						<%
-						User backgroundTaskUser = UserLocalServiceUtil.getUser(backgroundTask.getUserId());
+						<liferay-staging:process-in-progress
+							backgroundTask="<%= backgroundTask %>"
+						/>
 
-						Date createDate = backgroundTask.getCreateDate();
+						<liferay-staging:process-status
+							backgroundTaskStatus="<%= backgroundTask.getStatus() %>"
+							backgroundTaskStatusLabel="<%= backgroundTask.getStatusLabel() %>"
+						/>
 
-						String modifiedDateDescription = LanguageUtil.getTimeDescription(request, System.currentTimeMillis() - createDate.getTime(), true);
-						%>
-
-						<h6 class="text-default">
-							<liferay-ui:message arguments="<%= new String[] {HtmlUtil.escape(backgroundTaskUser.getFullName()), modifiedDateDescription} %>" key="x-modified-x-ago" />
-						</h6>
-
-						<h5 id="<portlet:namespace />backgroundTaskName<%= backgroundTask.getBackgroundTaskId() %>">
-							<%= HtmlUtil.escape(backgroundTaskName) %>
-						</h5>
-
-						<c:if test="<%= backgroundTask.isInProgress() %>">
-
-							<%
-							BackgroundTaskStatus backgroundTaskStatus = BackgroundTaskStatusRegistryUtil.getBackgroundTaskStatus(backgroundTask.getBackgroundTaskId());
-							%>
-
-							<c:if test="<%= backgroundTaskStatus != null %>">
-
-								<%
-								String cmd = ArrayUtil.toString(ExportImportConfigurationHelper.getExportImportConfigurationParameter(backgroundTask, Constants.CMD), StringPool.BLANK);
-
-								int percentage = 100;
-
-								long allModelAdditionCountersTotal = GetterUtil.getLong(backgroundTaskStatus.getAttribute("allModelAdditionCountersTotal"));
-								long allPortletAdditionCounter = GetterUtil.getLong(backgroundTaskStatus.getAttribute("allPortletAdditionCounter"));
-								long currentModelAdditionCountersTotal = GetterUtil.getLong(backgroundTaskStatus.getAttribute("currentModelAdditionCountersTotal"));
-								long currentPortletAdditionCounter = GetterUtil.getLong(backgroundTaskStatus.getAttribute("currentPortletAdditionCounter"));
-
-								long allProgressBarCountersTotal = allModelAdditionCountersTotal + allPortletAdditionCounter;
-								long currentProgressBarCountersTotal = currentModelAdditionCountersTotal + currentPortletAdditionCounter;
-
-								if (allProgressBarCountersTotal > 0) {
-									int base = 100;
-
-									String phase = GetterUtil.getString(backgroundTaskStatus.getAttribute("phase"));
-
-									if (phase.equals(Constants.EXPORT) && !Objects.equals(cmd, Constants.PUBLISH_TO_REMOTE)) {
-										base = 50;
-									}
-
-									percentage = Math.round((float)currentProgressBarCountersTotal / allProgressBarCountersTotal * base);
-								}
-								%>
-
-								<div class="active progress progress-striped progress-xs">
-									<div class="progress-bar" style="width: <%= percentage %>%;">
-										<c:if test="<%= (allProgressBarCountersTotal > 0) && (!Objects.equals(cmd, Constants.PUBLISH_TO_REMOTE) || (percentage < 100)) %>">
-											<%= percentage + StringPool.PERCENT %>
-										</c:if>
-									</div>
-								</div>
-
-								<%
-								String stagedModelName = (String)backgroundTaskStatus.getAttribute("stagedModelName");
-								String stagedModelType = (String)backgroundTaskStatus.getAttribute("stagedModelType");
-								%>
-
-								<c:choose>
-									<c:when test="<%= Objects.equals(cmd, Constants.PUBLISH_TO_REMOTE) && (percentage == 100) %>">
-										<div class="progress-current-item">
-											<strong><liferay-ui:message key="please-wait-as-the-publication-processes-on-the-remote-site" /></strong>
-										</div>
-									</c:when>
-									<c:when test="<%= Validator.isNotNull(stagedModelName) && Validator.isNotNull(stagedModelType) %>">
-										<div class="progress-current-item">
-											<strong><liferay-ui:message key="publishing" /><%= StringPool.TRIPLE_PERIOD %></strong> <%= ResourceActionsUtil.getModelResource(locale, stagedModelType) %> <em><%= HtmlUtil.escape(stagedModelName) %></em>
-										</div>
-									</c:when>
-								</c:choose>
-							</c:if>
-						</c:if>
-
-						<h6 class="background-task-status-row background-task-status-<%= BackgroundTaskConstants.getStatusLabel(backgroundTask.getStatus()) %> <%= BackgroundTaskConstants.getStatusCssClass(backgroundTask.getStatus()) %>">
-							<liferay-ui:message key="<%= backgroundTask.getStatusLabel() %>" />
-						</h6>
-
-						<c:if test="<%= Validator.isNotNull(backgroundTask.getStatusMessage()) %>">
-							<h6 class="background-task-status-row">
-								<a class="details-link" href="javascript:Liferay.fire('<portlet:namespace />viewBackgroundTaskDetails', {nodeId: 'backgroundTaskStatusMessage<%= backgroundTask.getBackgroundTaskId() %>', title: $('#<portlet:namespace />backgroundTaskName<%= backgroundTask.getBackgroundTaskId() %>').text()}); void(0);"><liferay-ui:message key="see-more-details" /></a>
-							</h6>
-
-							<div class="background-task-status-message hide" id="<portlet:namespace />backgroundTaskStatusMessage<%= backgroundTask.getBackgroundTaskId() %>">
-								<liferay-util:include page="/processes_list/publish_process_message_task_details.jsp" servletContext="<%= application %>">
-									<liferay-util:param name="backgroundTaskId" value="<%= String.valueOf(backgroundTask.getBackgroundTaskId()) %>" />
-								</liferay-util:include>
-							</div>
-						</c:if>
+						<liferay-staging:process-message-task-details
+							backgroundTaskId="<%= backgroundTask.getBackgroundTaskId() %>"
+							backgroundTaskStatusMessage="<%= backgroundTask.getStatusMessage() %>"
+							linkClass="background-task-status-row"
+						/>
 					</liferay-ui:search-container-column-text>
 				</c:when>
 				<c:when test='<%= displayStyle.equals("list") %>'>
@@ -238,16 +150,31 @@ OrderByComparator<BackgroundTask> orderByComparator = BackgroundTaskComparatorFa
 					<liferay-ui:search-container-column-text
 						name="title"
 					>
-						<span id="<%= liferayPortletResponse.getNamespace() + "backgroundTaskName" + String.valueOf(backgroundTask.getBackgroundTaskId()) %>">
-							<liferay-ui:message key="<%= HtmlUtil.escape(backgroundTaskName) %>" />
-						</span>
+						<liferay-staging:process-title
+							backgroundTask="<%= backgroundTask %>"
+							listView="<%= true %>"
+						/>
 					</liferay-ui:search-container-column-text>
 
-					<liferay-ui:search-container-column-jsp
+					<liferay-ui:search-container-column-text
 						cssClass="background-task-status-column"
 						name="status"
-						path="/processes_list/publish_process_message.jsp"
-					/>
+					>
+						<liferay-staging:process-in-progress
+							backgroundTask="<%= backgroundTask %>"
+						/>
+
+						<liferay-staging:process-status
+							backgroundTaskStatus="<%= backgroundTask.getStatus() %>"
+							backgroundTaskStatusLabel="<%= backgroundTask.getStatusLabel() %>"
+						/>
+
+						<liferay-staging:process-message-task-details
+							backgroundTaskId="<%= backgroundTask.getBackgroundTaskId() %>"
+							backgroundTaskStatusMessage="<%= backgroundTask.getStatusMessage() %>"
+							linkClass="background-task-status-row"
+						/>
+					</liferay-ui:search-container-column-text>
 
 					<liferay-ui:search-container-column-date
 						name="create-date"
@@ -266,35 +193,10 @@ OrderByComparator<BackgroundTask> orderByComparator = BackgroundTaskComparatorFa
 			<liferay-ui:search-container-column-text
 				align="right"
 			>
-				<liferay-ui:icon-menu direction="left-side" icon="<%= StringPool.BLANK %>" markupView="lexicon" message="<%= StringPool.BLANK %>" showWhenSingleIcon="<%= true %>">
-					<c:if test="<%= !localPublishing || (backgroundTask.getGroupId() != liveGroupId) %>">
-						<portlet:actionURL name="editPublishConfiguration" var="relaunchURL">
-							<portlet:param name="mvcRenderCommandName" value="editPublishConfiguration" />
-							<portlet:param name="<%= Constants.CMD %>" value="<%= Constants.RELAUNCH %>" />
-							<portlet:param name="redirect" value="<%= currentURL.toString() %>" />
-							<portlet:param name="backgroundTaskId" value="<%= String.valueOf(backgroundTask.getBackgroundTaskId()) %>" />
-						</portlet:actionURL>
-
-						<liferay-ui:icon
-							message="relaunch"
-							url="<%= relaunchURL %>"
-						/>
-					</c:if>
-
-					<portlet:actionURL name="deleteBackgroundTasks" var="deleteBackgroundTaskURL">
-						<portlet:param name="redirect" value="<%= currentURL.toString() %>" />
-						<portlet:param name="deleteBackgroundTaskIds" value="<%= String.valueOf(backgroundTask.getBackgroundTaskId()) %>" />
-					</portlet:actionURL>
-
-					<%
-					Date completionDate = backgroundTask.getCompletionDate();
-					%>
-
-					<liferay-ui:icon
-						message='<%= LanguageUtil.get(request, ((completionDate != null) && completionDate.before(new Date())) ? "clear" : "cancel") %>'
-						url="<%= deleteBackgroundTaskURL %>"
-					/>
-				</liferay-ui:icon-menu>
+				<liferay-staging:process-list-menu
+					backgroundTask="<%= backgroundTask %>"
+					localPublishing="<%= localPublishing %>"
+				/>
 			</liferay-ui:search-container-column-text>
 		</liferay-ui:search-container-row>
 
@@ -302,19 +204,10 @@ OrderByComparator<BackgroundTask> orderByComparator = BackgroundTaskComparatorFa
 	</liferay-ui:search-container>
 </aui:form>
 
-<%
-int incompleteBackgroundTaskCount = BackgroundTaskManagerUtil.getBackgroundTasksCount(groupId, taskExecutorClassName, false);
-
-if (localPublishing) {
-	incompleteBackgroundTaskCount += BackgroundTaskManagerUtil.getBackgroundTasksCount(liveGroupId, taskExecutorClassName, false);
-}
-%>
-
-<div class="hide incomplete-process-message">
-	<liferay-util:include page="/processes_list/incomplete_processes_message.jsp" servletContext="<%= application %>">
-		<liferay-util:param name="incompleteBackgroundTaskCount" value="<%= String.valueOf(incompleteBackgroundTaskCount) %>" />
-	</liferay-util:include>
-</div>
+<liferay-staging:incomplete-process-message
+	localPublishing="<%= localPublishing %>"
+	taskExecutorClassName="<%= taskExecutorClassName %>"
+/>
 
 <aui:script>
 	function <portlet:namespace />deleteEntries() {
