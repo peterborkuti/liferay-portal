@@ -193,14 +193,8 @@ OrderByComparator<BackgroundTask> orderByComparator = BackgroundTaskComparatorFa
 			<liferay-ui:search-container-column-text
 				align="right"
 			>
-
-				<%
-				Date completionDate = backgroundTask.getCompletionDate();
-				%>
-
 				<liferay-staging:process-list-menu
-					backgroundTaskGroupId="<%= backgroundTask.getGroupId() %>" backgroundTaskId="<%= backgroundTask.getBackgroundTaskId() %>"
-					deleteLabel='<%= LanguageUtil.get(request, ((completionDate != null) && completionDate.before(new Date())) ? "clear" : "cancel") %>'
+					backgroundTask="<%= backgroundTask %>"
 					localPublishing="<%= localPublishing %>"
 				/>
 			</liferay-ui:search-container-column-text>
