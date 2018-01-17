@@ -16,6 +16,7 @@ package com.liferay.staging.taglib.servlet.taglib;
 
 import aQute.bnd.annotation.ProviderType;
 
+import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
 import com.liferay.staging.taglib.internal.servlet.ServletContextUtil;
 import com.liferay.taglib.util.IncludeTag;
 
@@ -28,16 +29,8 @@ import javax.servlet.jsp.PageContext;
 @ProviderType
 public class ProcessListMenuTag extends IncludeTag {
 
-	public void setBackgroundTaskGroupId(long backgroundTaskGroupId) {
-		_backgroundTaskGroupId = backgroundTaskGroupId;
-	}
-
-	public void setBackgroundTaskId(long backgroundTaskId) {
-		_backgroundTaskId = backgroundTaskId;
-	}
-
-	public void setDeleteLabel(String deleteLabel) {
-		_deleteLabel = deleteLabel;
+	public void setBackgroundTask(BackgroundTask backgroundTask) {
+		_backgroundTask = backgroundTask;
 	}
 
 	public void setLocalPublishing(boolean localPublishing) {
@@ -53,9 +46,7 @@ public class ProcessListMenuTag extends IncludeTag {
 
 	@Override
 	protected void cleanUp() {
-		_backgroundTaskId = 0;
-		_backgroundTaskGroupId = 0;
-		_deleteLabel = null;
+		_backgroundTask = null;
 		_localPublishing = false;
 	}
 
@@ -67,13 +58,8 @@ public class ProcessListMenuTag extends IncludeTag {
 	@Override
 	protected void setAttributes(HttpServletRequest request) {
 		request.setAttribute(
-			"liferay-staging:process-list-menu:backgroundTaskGroupId",
-			_backgroundTaskGroupId);
-		request.setAttribute(
-			"liferay-staging:process-list-menu:backgroundTaskId",
-			_backgroundTaskId);
-		request.setAttribute(
-			"liferay-staging:process-list-menu:deleteLabel", _deleteLabel);
+			"liferay-staging:process-list-menu:backgroundTask",
+			_backgroundTask);
 		request.setAttribute(
 			"liferay-staging:process-list-menu:localPublishing",
 			_localPublishing);
@@ -81,9 +67,7 @@ public class ProcessListMenuTag extends IncludeTag {
 
 	private static final String _PAGE = "/process_list_menu/page.jsp";
 
-	private long _backgroundTaskGroupId;
-	private long _backgroundTaskId;
-	private String _deleteLabel;
+	private BackgroundTask _backgroundTask;
 	private boolean _localPublishing;
 
 }
