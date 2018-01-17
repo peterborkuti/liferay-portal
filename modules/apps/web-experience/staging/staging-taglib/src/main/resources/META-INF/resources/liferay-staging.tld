@@ -345,24 +345,11 @@
 		<tag-class>com.liferay.staging.taglib.servlet.taglib.ProcessListMenuTag</tag-class>
 		<body-content>empty</body-content>
 		<attribute>
-			<description>The group ID of the <![CDATA[<code>backgroundTask</code>]]></description>
-			<name>backgroundTaskGroupId</name>
+			<description>The background task for the publishing process</description>
+			<name>backgroundTask</name>
 			<required>true</required>
 			<rtexprvalue>true</rtexprvalue>
-			<type>long</type>
-		</attribute>
-		<attribute>
-			<description>The ID of the <![CDATA[<code>backgroundTask</code>]]></description>
-			<name>backgroundTaskId</name>
-			<required>true</required>
-			<rtexprvalue>true</rtexprvalue>
-			<type>long</type>
-		</attribute>
-		<attribute>
-			<description>The label for the deleting the background task menu. This is usually cancel or clear in the appropriate language.</description>
-			<name>deleteLabel</name>
-			<required>true</required>
-			<rtexprvalue>true</rtexprvalue>
+			<type>com.liferay.portal.kernel.backgroundtask.BackgroundTask</type>
 		</attribute>
 		<attribute>
 			<description>Whether publishing is local or not</description>

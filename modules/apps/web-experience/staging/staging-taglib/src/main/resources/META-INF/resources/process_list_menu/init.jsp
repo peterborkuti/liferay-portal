@@ -14,11 +14,15 @@
  */
 --%>
 
+<%@ page import="com.liferay.portal.kernel.backgroundtask.BackgroundTask" %>
+
 <%@ include file="/init.jsp" %>
 
 <%
-long backgroundTaskId = ((Long)request.getAttribute("liferay-staging:process-list-menu:backgroundTaskId")).longValue();
-long backgroundTaskGroupId = ((Long)request.getAttribute("liferay-staging:process-list-menu:backgroundTaskGroupId")).longValue();
-String deleteLabel = (String)request.getAttribute("liferay-staging:process-list-menu:deleteLabel");
+BackgroundTask backgroundTask = (BackgroundTask)request.getAttribute("liferay-staging:process-list-menu:backgroundTask");
 boolean localPublishing = ((Boolean)request.getAttribute("liferay-staging:process-list-menu:localPublishing")).booleanValue();
+long backgroundTaskId = backgroundTask.getBackgroundTaskId();
+long backgroundTaskGroupId = backgroundTask.getGroupId();
+Date completionDate = backgroundTask.getCompletionDate();
+String deleteLabel = LanguageUtil.get(request, ((completionDate != null) && completionDate.before(new Date())) ? "clear" : "cancel");
 %>
