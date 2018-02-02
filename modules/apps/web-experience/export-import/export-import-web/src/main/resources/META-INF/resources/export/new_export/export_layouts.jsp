@@ -134,40 +134,20 @@ String[] disallowedCharacters = PropsValues.DL_CHAR_BLACKLIST;
 								<aui:validator errorMessage='<%= LanguageUtil.get(request, "the-following-are-invalid-characters") + Arrays.toString(disallowedCharacters) %>' name="custom">
 									function(val, fieldNode, ruleValue) {
 
-										var disallowedCharsInArray = [];
-
+										var disallowedCharacters = [];
 										<%
-										for (int i = 0; i < disallowedCharacters.length; i++) {
-											if ("\\".equals(disallowedCharacters[i])) {
-										%>
-
-												disallowedCharsInArray[<%= i %>] = "\\";
-
+											for (String s: disallowedCharacters) {
+											%>
+												disallowedCharacters.push("<%= HtmlUtil.escapeJS(s)%>");
 											<%
 											}
-											else if ("\"".equals(disallowedCharacters[i])) {
-											%>
-
-												disallowedCharsInArray[<%= i %>] = "\"";
-
-											<%
-											}
-											else {
-											%>
-
-												disallowedCharsInArray[<%= i %>] = "<%= disallowedCharacters[i] %>";
-
-										<%
-											}
-										}
 										%>
 
-										var index, len;
-										for (index = 0, len = disallowedCharsInArray.length; index < len; ++index) {
-											if (val.indexOf(disallowedCharsInArray[index]) !== -1) {
+										for (var i = 0; i < disallowedCharacters.length; i++) {
+											if (val.indexOf(Liferay.Util.unescapeHTML(disallowedCharacters[i])) !== -1) {
 												return false;
 											}
-										}
+										};
 
 										return true;
 									}
