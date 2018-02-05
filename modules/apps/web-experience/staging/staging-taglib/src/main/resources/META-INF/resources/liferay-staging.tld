@@ -332,6 +332,19 @@
 		</attribute>
 	</tag>
 	<tag>
+		<description>Renders a process' summary. It should be used within a <![CDATA[<code>process-list-menu</code>]]>.</description>
+		<name>process-summary</name>
+		<tag-class>com.liferay.staging.taglib.servlet.taglib.ProcessSummaryTag</tag-class>
+		<body-content>empty</body-content>
+		<attribute>
+			<description>The background tasks ID.</description>
+			<name>backgroundTaskId</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>long</type>
+		</attribute>
+	</tag>
+	<tag>
 		<description>Renders the remote site options.</description>
 		<name>remote-options</name>
 		<tag-class>com.liferay.staging.taglib.servlet.taglib.RemoteOptionsTag</tag-class>

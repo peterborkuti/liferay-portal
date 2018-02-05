@@ -40,4 +40,6 @@
 		message="<%= deleteLabel %>"
 		url="<%= deleteBackgroundTaskURL %>"
 	/>
+
+	<liferay-staging:process-summary backgroundTaskId="<%= backgroundTask.getBackgroundTaskId() %>" />
 </liferay-ui:icon-menu>
