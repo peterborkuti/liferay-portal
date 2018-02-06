@@ -18,6 +18,8 @@
 
 <%@ page import="com.liferay.portal.kernel.model.LayoutSetBranch" %><%@
 page import="com.liferay.portal.kernel.service.LayoutSetBranchLocalServiceUtil" %><%@
-page import="com.liferay.portlet.layoutsadmin.util.LayoutsTreeUtil" %>
+page import="com.liferay.portlet.layoutsadmin.util.LayoutsTreeUtil" %><%@
+page import="com.liferay.exportimport.constants.ExportImportConstants" %><%@
+page import="com.liferay.portal.kernel.util.LongWrapper" %>
 
 <liferay-staging:defineObjects />
