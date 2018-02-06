@@ -98,7 +98,7 @@ boolean deleteMissingLayouts = MapUtil.getBoolean(parameterMap, PortletDataHandl
 	<div class="sheet-subtitle"><liferay-ui:message key="pages" /></div>
 
 	<div class="process-summary-subsection">
-		<label>
+		<label class="process-summary-label">
 			<liferay-ui:message key="pages-option" />:
 		</label>
 
@@ -107,7 +107,7 @@ boolean deleteMissingLayouts = MapUtil.getBoolean(parameterMap, PortletDataHandl
 
 	<c:if test="<%= layoutSetBranch != null %>">
 		<div class="process-summary-subsection">
-			<label>
+			<label class="process-summary-label">
 				<liferay-ui:message key="site-pages-variation" />:
 			</label>
 
@@ -118,7 +118,7 @@ boolean deleteMissingLayouts = MapUtil.getBoolean(parameterMap, PortletDataHandl
 	<c:if test="<%= pageNames.size() != 0 %>">
 		<div class="process-summary-subsection">
 			<div>
-				<label>
+				<label class="process-summary-label">
 					<liferay-ui:message key="pages-to-publish" />:
 				</label>
 			</div>
@@ -139,7 +139,7 @@ boolean deleteMissingLayouts = MapUtil.getBoolean(parameterMap, PortletDataHandl
 	<c:if test="<%= themeSettings || logo || layoutSetSettings || layoutSetPrototypeSettings || deleteMissingLayouts %>">
 		<div class="process-summary-subsection">
 			<div>
-				<label>
+				<label class="process-summary-label">
 					<liferay-ui:message key="look-and-feel" />:
 				</label>
 			</div>

@@ -21,7 +21,7 @@ String range = MapUtil.getString(parameterMap, "range");
 <div class="process-summary-section">
 	<div class="sheet-subtitle"><liferay-ui:message key="content" /></div>
 
-	<div><label><liferay-ui:message key="date-restriction-options" /></label></div>
+	<div><label class="process-summary-label"><liferay-ui:message key="date-restriction-options" /></label></div>
 
 	<c:choose>
 		<c:when test="<%= range.equals(ExportImportDateUtil.RANGE_ALL) %>">

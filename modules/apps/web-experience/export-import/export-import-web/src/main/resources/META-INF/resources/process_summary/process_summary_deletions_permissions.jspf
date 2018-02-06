@@ -28,7 +28,7 @@ String processCmd = MapUtil.getString(parameterMap, "cmd");
 
 		<c:if test="<%= deletePortletData %>">
 			<div class="process-summary-subsection">
-				<label><%= LanguageUtil.get(request, "delete-application-data-before-importing") %>:</label>
+				<label class="process-summary-label"><%= LanguageUtil.get(request, "delete-application-data-before-importing") %>:</label>
 				<%= LanguageUtil.get(request, "delete-content-before-importing-warning") %>
 				<%= LanguageUtil.get(request, "delete-content-before-importing-suggestion") %>
 			</div>
@@ -51,7 +51,7 @@ String processCmd = MapUtil.getString(parameterMap, "cmd");
 			%>
 
 			<div class="process-summary-subsection">
-				<label><%= individualDeletionsTitle %>:</label>
+				<label class="process-summary-label"><%= individualDeletionsTitle %>:</label>
 				<%= individualDeletionsDescription %>
 			</div>
 		</c:if>
@@ -86,7 +86,7 @@ String processCmd = MapUtil.getString(parameterMap, "cmd");
 		<div class="sheet-subtitle"><liferay-ui:message key="permissions" /></div>
 
 		<div class="process-summary-subsection">
-			<label><%= LanguageUtil.get(request, permissionsTitle) %></label>:
+			<label class="process-summary-label"><%= LanguageUtil.get(request, permissionsTitle) %></label>:
 			<%= LanguageUtil.get(request, inputDescription) %>
 		</div>
 	</div>
