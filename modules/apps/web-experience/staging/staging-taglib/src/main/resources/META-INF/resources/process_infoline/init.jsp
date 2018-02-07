@@ -16,6 +16,10 @@
 
 <%@ include file="/init.jsp" %>
 
-<liferay-staging:process-list-new
-	resultRowSplitter="<%= new PublishResultRowSplitter() %>"
-/>
+<%
+BackgroundTask backgroundTask = (BackgroundTask)request.getAttribute("liferay-staging:process-infoline:backgroundTask");
+
+User backgroundTaskUser = UserLocalServiceUtil.getUser(backgroundTask.getUserId());
+
+String userName = backgroundTaskUser.getFullName();
+%>

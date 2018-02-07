@@ -1,3 +1,22 @@
+.process-list {
+	color: #272833;
+}
+
+.process-list-listview {
+	.process-title {
+		line-height: 34px;
+		margin-left: 0.5em;
+	}
+
+	.process-startdate {
+		white-space: nowrap;
+	}
+
+	.user-icon {
+		float: left;
+	}
+}
+
 .export-dialog-tree {
 	.content-options {
 		margin-bottom: 1em;

@@ -16,9 +16,11 @@ package com.liferay.staging.taglib.servlet.taglib;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
+import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.staging.taglib.internal.servlet.ServletContextUtil;
 import com.liferay.taglib.util.IncludeTag;
+
+import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.PageContext;
@@ -27,10 +29,14 @@ import javax.servlet.jsp.PageContext;
  * @author Peter Borkuti
  */
 @ProviderType
-public class ProcessInProgressTag extends IncludeTag {
+public class ProcessDateTag extends IncludeTag {
 
-	public void setBackgroundTask(BackgroundTask backgroundTask) {
-		_backgroundTask = backgroundTask;
+	public void setDate(Date date) {
+		_date = date;
+	}
+
+	public void setLabelKey(String labelKey) {
+		_labelKey = labelKey;
 	}
 
 	public void setListView(boolean listView) {
@@ -46,9 +52,8 @@ public class ProcessInProgressTag extends IncludeTag {
 
 	@Override
 	protected void cleanUp() {
-		super.cleanUp();
-
-		_backgroundTask = null;
+		_date = null;
+		_labelKey = StringPool.BLANK;
 		_listView = false;
 	}
 
@@ -59,16 +64,17 @@ public class ProcessInProgressTag extends IncludeTag {
 
 	@Override
 	protected void setAttributes(HttpServletRequest request) {
+		request.setAttribute("liferay-staging:process-date:date", _date);
 		request.setAttribute(
-			"liferay-staging:process-in-progress:backgroundTask",
-			_backgroundTask);
+			"liferay-staging:process-date:labelKey", _labelKey);
 		request.setAttribute(
-			"liferay-staging:process-in-progress:listView", _listView);
+			"liferay-staging:process-date:listView", _listView);
 	}
 
-	private static final String _PAGE = "/process_in_progress/page.jsp";
+	private static final String _PAGE = "/process_date/page.jsp";
 
-	private BackgroundTask _backgroundTask;
+	private Date _date;
+	private String _labelKey = StringPool.BLANK;
 	private boolean _listView;
 
 }

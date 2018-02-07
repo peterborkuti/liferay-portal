@@ -41,6 +41,13 @@ public class ExportImportLifecycleManagerUtil {
 		int code, int processFlag, String processId,
 		Serializable... arguments) {
 
+		try {
+			Thread.sleep(200);
+		}
+		catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
 		_exportImportLifecycleManager.fireExportImportLifecycleEvent(
 			code, processFlag, processId, arguments);
 	}
