@@ -16,6 +16,10 @@
 
 <%@ include file="/init.jsp" %>
 
-<liferay-staging:process-list-new
-	resultRowSplitter="<%= new PublishResultRowSplitter() %>"
-/>
+<%
+BackgroundTask backgroundTask = (BackgroundTask)request.getAttribute("liferay-staging:process-startdate:backgroundTask");
+
+boolean listView = GetterUtil.getBoolean(request.getAttribute("liferay-staging:process-startdate:listView"));
+
+Format dateFormatDateTime = FastDateFormatFactoryUtil.getDateTime(FastDateFormatConstants.MEDIUM, FastDateFormatConstants.SHORT, locale, timeZone);
+%>

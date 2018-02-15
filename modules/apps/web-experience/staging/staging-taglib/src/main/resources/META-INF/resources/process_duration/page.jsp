@@ -14,8 +14,11 @@
  */
 --%>
 
-<%@ include file="/init.jsp" %>
+<%@ include file="/process_duration/init.jsp" %>
 
-<liferay-staging:process-list-new
-	resultRowSplitter="<%= new PublishResultRowSplitter() %>"
-/>
+<c:if test="<%= duration > 0 %>">
+	<c:if test="<%= !listView %>">
+		<liferay-ui:message key="duration" />:
+	</c:if>
+	<%= timeDescription %>
+</c:if>

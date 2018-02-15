@@ -14,8 +14,13 @@
  */
 --%>
 
-<%@ include file="/init.jsp" %>
+<%@ include file="/process_startdate/init.jsp" %>
 
-<liferay-staging:process-list-new
-	resultRowSplitter="<%= new PublishResultRowSplitter() %>"
-/>
+<c:choose>
+	<c:when test="<%= listView %>">
+		<span class="process-date"><%= dateFormatDateTime.format(backgroundTask.getCreateDate()) %></span>
+	</c:when>
+	<c:otherwise>
+		<liferay-ui:message key="start-date" />: <%= dateFormatDateTime.format(backgroundTask.getCreateDate()) %>
+	</c:otherwise>
+</c:choose>

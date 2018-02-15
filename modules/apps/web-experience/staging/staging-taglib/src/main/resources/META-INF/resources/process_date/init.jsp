@@ -16,6 +16,10 @@
 
 <%@ include file="/init.jsp" %>
 
-<liferay-staging:process-list-new
-	resultRowSplitter="<%= new PublishResultRowSplitter() %>"
-/>
+<%
+Date date = (Date)request.getAttribute("liferay-staging:process-date:date");
+String labelKey = GetterUtil.getString(request.getAttribute("liferay-staging:process-date:labelKey"));
+boolean listView = GetterUtil.getBoolean(request.getAttribute("liferay-staging:process-date:listView"));
+
+Format dateFormatDateTime = FastDateFormatFactoryUtil.getDateTime(FastDateFormatConstants.MEDIUM, FastDateFormatConstants.SHORT, locale, timeZone);
+%>

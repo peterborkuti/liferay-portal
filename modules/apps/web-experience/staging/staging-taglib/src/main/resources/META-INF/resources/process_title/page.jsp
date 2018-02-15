@@ -18,6 +18,20 @@
 
 <c:choose>
 	<c:when test="<%= listView %>">
+		<strong class="process-title" id="<%= domId %>">
+			<liferay-ui:message key="<%= HtmlUtil.escape(backgroundTaskName) %>" />
+		</strong>
+	</c:when>
+	<c:otherwise>
+		<strong class="process-title" id="<%= domId %>">
+			<liferay-ui:message key="<%= HtmlUtil.escape(backgroundTaskName) %>" />
+		</strong>
+	</c:otherwise>
+</c:choose>
+
+<%--
+<c:choose>
+	<c:when test="<%= listView %>">
 		<span id="<%= domId %>">
 			<liferay-ui:message key="<%= HtmlUtil.escape(backgroundTaskName) %>" />
 		</span>
@@ -32,3 +46,5 @@
 		</h5>
 	</c:otherwise>
 </c:choose>
+
+--%>
