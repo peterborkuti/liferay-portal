@@ -40,4 +40,8 @@
 		message="<%= deleteLabel %>"
 		url="<%= deleteBackgroundTaskURL %>"
 	/>
+
+	<c:if test="<%= backgroundTask.isCompleted() %>">
+		<liferay-staging:process-summary-link backgroundTaskId="<%= backgroundTask.getBackgroundTaskId() %>" />
+	</c:if>
 </liferay-ui:icon-menu>
