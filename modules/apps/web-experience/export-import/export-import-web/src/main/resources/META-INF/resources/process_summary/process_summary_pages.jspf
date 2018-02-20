@@ -71,7 +71,7 @@
 				<liferay-ui:message key="site-pages-variation" />:
 			</label>
 
-			<span><%= layoutSetBranch.getName() %></span>
+			<span><%= HtmlUtil.escape(LanguageUtil.get(request, layoutSetBranch.getName())) %></span>
 		</div>
 	</c:if>
 
