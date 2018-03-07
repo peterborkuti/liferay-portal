@@ -18,5 +18,5 @@
 
 <clay:navigation-bar
 	inverted="<%= true %>"
-	items="<%= ExportTemplatesDisplayContext.ExportImportJSPNavigationItemList(renderResponse, request, pageContext) %>"
+	items="<%= ExportTemplatesDisplayContext.ExportTemplatesJSPNavigationItemList(renderResponse, request, pageContext) %>"
 />
