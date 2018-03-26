@@ -57,18 +57,24 @@
 
 			<aui:fieldset-group markupView="lexicon">
 				<aui:fieldset>
-					<c:choose>
-						<c:when test="<%= exportImportConfiguration == null %>">
-							<aui:input label="title" maxlength='<%= ModelHintsUtil.getMaxLength(ExportImportConfiguration.class.getName(), "name") %>' name="name" placeholder="process-name-placeholder" />
-						</c:when>
-						<c:otherwise>
-							<aui:input label="title" maxlength='<%= ModelHintsUtil.getMaxLength(ExportImportConfiguration.class.getName(), "name") %>' name="name" value="<%= exportImportConfiguration.getName() %>" />
-						</c:otherwise>
-					</c:choose>
+					<div class="sheet-section">
+						<h3 class="sheet-subtitle"><liferay-ui:message key="title" /></h3>
+						<c:choose>
+							<c:when test="<%= exportImportConfiguration == null %>">
+								<aui:input label="" maxlength='<%= ModelHintsUtil.getMaxLength(ExportImportConfiguration.class.getName(), "name") %>' name="name" placeholder="process-name-placeholder" />
+							</c:when>
+							<c:otherwise>
+								<aui:input label="" maxlength='<%= ModelHintsUtil.getMaxLength(ExportImportConfiguration.class.getName(), "name") %>' name="name" value="<%= exportImportConfiguration.getName() %>" />
+							</c:otherwise>
+						</c:choose>
+					</div>
 				</aui:fieldset>
 
-				<aui:fieldset collapsible="<%= true %>" cssClass="options-group" label="date">
-					<%@ include file="/new_publication/publish_layouts_scheduler.jspf" %>
+				<aui:fieldset cssClass="options-group" label="">
+					<div class="sheet-section">
+						<h3 class="sheet-subtitle"><liferay-ui:message key="date" /></h3>
+						<%@ include file="/new_publication/publish_layouts_scheduler.jspf" %>
+					</div>
 				</aui:fieldset>
 
 				<c:if test="<%= !group.isCompany() %>">
@@ -105,7 +111,7 @@
 				/>
 
 				<c:if test="<%= !localPublishing %>">
-					<aui:fieldset collapsible="<%= true %>" cssClass="options-group" label="remote-live-connection-settings">
+					<aui:fieldset cssClass="options-group" label="remote-live-connection-settings" markupView="lexicon">
 						<liferay-staging:remote-options
 							disableInputs="<%= configuredPublish %>"
 							exportImportConfigurationId="<%= exportImportConfigurationId %>"
