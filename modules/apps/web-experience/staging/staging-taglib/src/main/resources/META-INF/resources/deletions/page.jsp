@@ -40,11 +40,14 @@ String individualDeletionsLabel = individualDeletionsTitle + ": <span style='fon
 %>
 
 <c:if test="<%= cmd.equals(Constants.EXPORT) || cmd.equals(Constants.IMPORT) || cmd.equals(Constants.PUBLISH) %>">
-	<aui:fieldset collapsed="<%= true %>" collapsible="<%= true %>" cssClass="options-group" label="deletions" markupView="lexicon">
-		<c:if test="<%= !cmd.equals(Constants.EXPORT) %>">
-			<aui:input disabled="<%= disableInputs %>" id="deletePortletDataBeforeImportingCheckbox" label="<%= deleteApplicationDataBeforeImportingLabel %>" name="<%= PortletDataHandlerKeys.DELETE_PORTLET_DATA %>" type="checkbox" value="<%= MapUtil.getBoolean(parameterMap, PortletDataHandlerKeys.DELETE_PORTLET_DATA, false) %>" />
-		</c:if>
+	<aui:fieldset cssClass="options-group" markupView="lexicon">
+		<div class="sheet-section">
+			<h3 class="sheet-subtitle"><liferay-ui:message key="deletions" /></h3>
+			<c:if test="<%= !cmd.equals(Constants.EXPORT) %>">
+				<clay:checkbox checked="<%= MapUtil.getBoolean(parameterMap, PortletDataHandlerKeys.DELETE_PORTLET_DATA, false) %>" disabled="<%= disableInputs %>" label="<%= deleteApplicationDataBeforeImportingLabel %>" name="<%= liferayPortletResponse.getNamespace() + PortletDataHandlerKeys.DELETE_PORTLET_DATA %>" />
+			</c:if>
 
-		<aui:input disabled="<%= disableInputs %>" label="<%= individualDeletionsLabel %>" name="<%= PortletDataHandlerKeys.DELETIONS %>" type="checkbox" value="<%= MapUtil.getBoolean(parameterMap, PortletDataHandlerKeys.DELETIONS, false) %>" />
+			<clay:checkbox checked="<%= MapUtil.getBoolean(parameterMap, PortletDataHandlerKeys.DELETIONS, false) %>" disabled="<%= disableInputs %>" label="<%= individualDeletionsLabel %>" name="<%= liferayPortletResponse.getNamespace() + PortletDataHandlerKeys.DELETIONS %>" />
+		</div>
 	</aui:fieldset>
 </c:if>

@@ -56,18 +56,15 @@
 			/>
 
 			<aui:fieldset-group markupView="lexicon">
-				<aui:fieldset>
-					<div class="sheet-section">
-						<h3 class="sheet-subtitle"><liferay-ui:message key="title" /></h3>
-						<c:choose>
-							<c:when test="<%= exportImportConfiguration == null %>">
-								<aui:input label="" maxlength='<%= ModelHintsUtil.getMaxLength(ExportImportConfiguration.class.getName(), "name") %>' name="name" placeholder="process-name-placeholder" />
-							</c:when>
-							<c:otherwise>
-								<aui:input label="" maxlength='<%= ModelHintsUtil.getMaxLength(ExportImportConfiguration.class.getName(), "name") %>' name="name" value="<%= exportImportConfiguration.getName() %>" />
-							</c:otherwise>
-						</c:choose>
-					</div>
+				<aui:fieldset markapView="lexicon">
+					<c:choose>
+						<c:when test="<%= exportImportConfiguration == null %>">
+							<aui:input label="title" maxlength='<%= ModelHintsUtil.getMaxLength(ExportImportConfiguration.class.getName(), "name") %>' name="name" placeholder="process-name-placeholder" />
+						</c:when>
+						<c:otherwise>
+							<aui:input label="title" maxlength='<%= ModelHintsUtil.getMaxLength(ExportImportConfiguration.class.getName(), "name") %>' name="name" value="<%= exportImportConfiguration.getName() %>" />
+						</c:otherwise>
+					</c:choose>
 				</aui:fieldset>
 
 				<aui:fieldset cssClass="options-group" label="">
@@ -169,7 +166,7 @@
 	var exportImport = new Liferay.ExportImport(
 		{
 			commentsNode: '#<%= PortletDataHandlerKeys.COMMENTS %>',
-			deletionsNode: '#<%= PortletDataHandlerKeys.DELETIONS %>',
+			deletionsNode: '#<portlet:namespace /><%= PortletDataHandlerKeys.DELETIONS %>',
 			form: document.<portlet:namespace />exportPagesFm,
 			incompleteProcessMessageNode: '#<portlet:namespace />incompleteProcessMessage',
 			locale: '<%= locale.toLanguageTag() %>',
