@@ -44,10 +44,10 @@ String individualDeletionsLabel = individualDeletionsTitle + ": <span style='fon
 		<div class="sheet-section">
 			<h3 class="sheet-subtitle"><liferay-ui:message key="deletions" /></h3>
 			<c:if test="<%= !cmd.equals(Constants.EXPORT) %>">
-				<clay:checkbox checked="<%= MapUtil.getBoolean(parameterMap, PortletDataHandlerKeys.DELETE_PORTLET_DATA, false) %>" disabled="<%= disableInputs %>" label="<%= deleteApplicationDataBeforeImportingLabel %>" name="<%= liferayPortletResponse.getNamespace() + PortletDataHandlerKeys.DELETE_PORTLET_DATA %>" />
+				<clay:checkbox checked="<%= MapUtil.getBoolean(parameterMap, PortletDataHandlerKeys.DELETE_PORTLET_DATA, false) %>" disabled="<%= disableInputs %>" id="<%= liferayPortletResponse.getNamespace() + PortletDataHandlerKeys.DELETE_PORTLET_DATA %>" label="<%= deleteApplicationDataBeforeImportingLabel %>" name="<%= liferayPortletResponse.getNamespace() + PortletDataHandlerKeys.DELETE_PORTLET_DATA %>" />
 			</c:if>
 
-			<clay:checkbox checked="<%= MapUtil.getBoolean(parameterMap, PortletDataHandlerKeys.DELETIONS, false) %>" disabled="<%= disableInputs %>" label="<%= individualDeletionsLabel %>" name="<%= liferayPortletResponse.getNamespace() + PortletDataHandlerKeys.DELETIONS %>" />
+			<clay:checkbox checked="<%= MapUtil.getBoolean(parameterMap, PortletDataHandlerKeys.DELETIONS, false) %>" disabled="<%= disableInputs %>" id="<%= liferayPortletResponse.getNamespace() + PortletDataHandlerKeys.DELETIONS %>" label="<%= individualDeletionsLabel %>" name="<%= liferayPortletResponse.getNamespace() + PortletDataHandlerKeys.DELETIONS %>" />
 		</div>
 	</aui:fieldset>
 </c:if>

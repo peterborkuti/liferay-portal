@@ -166,7 +166,7 @@
 	var exportImport = new Liferay.ExportImport(
 		{
 			commentsNode: '#<%= PortletDataHandlerKeys.COMMENTS %>',
-			deletionsNode: '#<portlet:namespace /><%= PortletDataHandlerKeys.DELETIONS %>',
+			deletionsNode: '#<%= PortletDataHandlerKeys.DELETIONS %> input',
 			form: document.<portlet:namespace />exportPagesFm,
 			incompleteProcessMessageNode: '#<portlet:namespace />incompleteProcessMessage',
 			locale: '<%= locale.toLanguageTag() %>',
