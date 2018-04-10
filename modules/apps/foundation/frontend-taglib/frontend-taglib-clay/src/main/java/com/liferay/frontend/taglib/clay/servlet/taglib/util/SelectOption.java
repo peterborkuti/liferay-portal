@@ -1,4 +1,3 @@
-<%--
 /**
  * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
@@ -12,11 +11,38 @@
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
  */
---%>
 
-<%@ include file="/init.jsp" %>
+package com.liferay.frontend.taglib.clay.servlet.taglib.util;
 
-<clay:navigation-bar
-	inverted="<%= true %>"
-	items="<%= publishTemplatesDisplayContext.getJSPNavigationItemList() %>"
-/>
+/**
+ * @author Adolfo Pérez
+ */
+public class SelectOption {
+
+	public SelectOption(String label, String value) {
+		this(label, value, false);
+	}
+
+	public SelectOption(String label, String value, boolean selected) {
+		_label = label;
+		_value = value;
+		_selected = selected;
+	}
+
+	public String getLabel() {
+		return _label;
+	}
+
+	public String getValue() {
+		return _value;
+	}
+
+	public boolean isSelected() {
+		return _selected;
+	}
+
+	private final String _label;
+	private final boolean _selected;
+	private final String _value;
+
+}
