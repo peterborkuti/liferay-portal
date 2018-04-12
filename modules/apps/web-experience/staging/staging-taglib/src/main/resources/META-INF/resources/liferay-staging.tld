@@ -297,6 +297,30 @@
 		</attribute>
 	</tag>
 	<tag>
+		<description>Displays a popover.</description>
+		<name>popover</name>
+		<tag-class>com.liferay.staging.taglib.servlet.taglib.PopoverTag</tag-class>
+		<body-content>empty</body-content>
+		<attribute>
+			<description>The id of the popover. It will be added to the portletId for creating the dom id.</description>
+			<name>id</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<description>The language key of the popover's body text. If it is empty, the popover will not be displayed.</description>
+			<name>text</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<description>the language key of the popover's title.</description>
+			<name>title</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+	</tag>
+	<tag>
 		<description>Renders a portlet list section in the UI. This is meant to use in conjunction with the content tag.</description>
 		<name>portlet-list</name>
 		<tag-class>com.liferay.staging.taglib.servlet.taglib.PortletListTag</tag-class>
