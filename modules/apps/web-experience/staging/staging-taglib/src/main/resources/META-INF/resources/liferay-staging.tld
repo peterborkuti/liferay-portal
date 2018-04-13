@@ -77,6 +77,12 @@
 			<rtexprvalue>true</rtexprvalue>
 		</attribute>
 		<attribute>
+			<description>The language key of the text for the optional popover.</description>
+			<name>popover</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
 			<description>The language key of the checkbox's suggestion text. It will be displayed after the label.</description>
 			<name>suggestion</name>
 			<required>false</required>
