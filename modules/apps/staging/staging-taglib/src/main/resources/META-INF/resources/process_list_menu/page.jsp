@@ -23,9 +23,15 @@
 	message="<%= StringPool.BLANK %>"
 	showWhenSingleIcon="<%= true %>"
 >
-	<%@ include file="/process_list_menu/items/relaunch.jspf" %>
+	<c:if test="<%= relaunchMenu %>">
+		<%@ include file="/process_list_menu/items/relaunch.jspf" %>
+	</c:if>
 
-	<%@ include file="/process_list_menu/items/delete.jspf" %>
+	<c:if test="<%= deleteMenu %>">
+		<%@ include file="/process_list_menu/items/delete.jspf" %>
+	</c:if>
 
-	<%@ include file="/process_list_menu/items/summary.jspf" %>
+	<c:if test="<%= summaryMenu %>">
+		<%@ include file="/process_list_menu/items/summary.jspf" %>
+	</c:if>
 </liferay-ui:icon-menu>
