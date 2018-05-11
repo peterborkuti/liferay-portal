@@ -14,18 +14,12 @@
  */
 --%>
 
-<%@ include file="/process_list_menu/init.jsp" %>
+<portlet:actionURL name="deleteBackgroundTasks" var="deleteBackgroundTaskURL">
+	<portlet:param name="redirect" value="<%= currentURL.toString() %>" />
+	<portlet:param name="deleteBackgroundTaskIds" value="<%= String.valueOf(backgroundTask.getBackgroundTaskId()) %>" />
+</portlet:actionURL>
 
-<liferay-ui:icon-menu
-	direction="left-side"
-	icon="<%= StringPool.BLANK %>"
-	markupView="lexicon"
-	message="<%= StringPool.BLANK %>"
-	showWhenSingleIcon="<%= true %>"
->
-	<%@ include file="/process_list_menu/items/relaunch.jspf" %>
-
-	<%@ include file="/process_list_menu/items/delete.jspf" %>
-
-	<%@ include file="/process_list_menu/items/summary.jspf" %>
-</liferay-ui:icon-menu>
+<liferay-ui:icon
+	message="<%= deleteLabel %>"
+	url="<%= deleteBackgroundTaskURL %>"
+/>
