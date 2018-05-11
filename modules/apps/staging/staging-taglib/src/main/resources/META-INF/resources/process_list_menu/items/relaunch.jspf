@@ -14,18 +14,16 @@
  */
 --%>
 
-<%@ include file="/process_list_menu/init.jsp" %>
+<c:if test="<%= !localPublishing || (backgroundTask.getGroupId() != liveGroupId) %>">
+	<portlet:actionURL name="editPublishConfiguration" var="relaunchURL">
+		<portlet:param name="mvcRenderCommandName" value="editPublishConfiguration" />
+		<portlet:param name="<%= Constants.CMD %>" value="<%= Constants.RELAUNCH %>" />
+		<portlet:param name="redirect" value="<%= currentURL.toString() %>" />
+		<portlet:param name="backgroundTaskId" value="<%= String.valueOf(backgroundTask.getBackgroundTaskId()) %>" />
+	</portlet:actionURL>
 
-<liferay-ui:icon-menu
-	direction="left-side"
-	icon="<%= StringPool.BLANK %>"
-	markupView="lexicon"
-	message="<%= StringPool.BLANK %>"
-	showWhenSingleIcon="<%= true %>"
->
-	<%@ include file="/process_list_menu/items/relaunch.jspf" %>
-
-	<%@ include file="/process_list_menu/items/delete.jspf" %>
-
-	<%@ include file="/process_list_menu/items/summary.jspf" %>
-</liferay-ui:icon-menu>
+	<liferay-ui:icon
+		message="relaunch"
+		url="<%= relaunchURL %>"
+	/>
+</c:if>
