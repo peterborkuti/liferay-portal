@@ -16,6 +16,7 @@ package com.liferay.staging.taglib.servlet.taglib;
 
 import aQute.bnd.annotation.ProviderType;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.ResultRowSplitter;
 import com.liferay.staging.taglib.internal.servlet.ServletContextUtil;
 import com.liferay.taglib.util.IncludeTag;
@@ -29,11 +30,31 @@ import javax.servlet.jsp.PageContext;
 @ProviderType
 public class ProcessListTag extends IncludeTag {
 
+	public void setEmptyResultsMessage(String emptyResultsMessage) {
+		_emptyResultsMessage = emptyResultsMessage;
+	}
+
+	public void setLocalTaskExecutorClassName(
+		String localTaskExecutorClassName) {
+
+		_localTaskExecutorClassName = localTaskExecutorClassName;
+	}
+
+	public void setMvcRenderCommandName(String mvcRenderCommandName) {
+		_mvcRenderCommandName = mvcRenderCommandName;
+	}
+
 	@Override
 	public void setPageContext(PageContext pageContext) {
 		super.setPageContext(pageContext);
 
 		servletContext = ServletContextUtil.getServletContext();
+	}
+
+	public void setRemoteTaskExecutorClassName(
+		String remoteTaskExecutorClassName) {
+
+		_remoteTaskExecutorClassName = remoteTaskExecutorClassName;
 	}
 
 	public void setResultRowSplitter(ResultRowSplitter resultRowSplitter) {
@@ -44,6 +65,10 @@ public class ProcessListTag extends IncludeTag {
 	protected void cleanUp() {
 		super.cleanUp();
 
+		_emptyResultsMessage = StringPool.BLANK;
+		_localTaskExecutorClassName = StringPool.BLANK;
+		_mvcRenderCommandName = StringPool.BLANK;
+		_remoteTaskExecutorClassName = StringPool.BLANK;
 		_resultRowSplitter = null;
 	}
 
@@ -55,12 +80,28 @@ public class ProcessListTag extends IncludeTag {
 	@Override
 	protected void setAttributes(HttpServletRequest request) {
 		request.setAttribute(
+			"liferay-staging:process-list:emptyResultsMessage",
+			_emptyResultsMessage);
+		request.setAttribute(
+			"liferay-staging:process-list:localTaskExecutorClassName",
+			_localTaskExecutorClassName);
+		request.setAttribute(
+			"liferay-staging:process-list:mvcRenderCommandName",
+			_mvcRenderCommandName);
+		request.setAttribute(
+			"liferay-staging:process-list:remoteTaskExecutorClassName",
+			_remoteTaskExecutorClassName);
+		request.setAttribute(
 			"liferay-staging:process-list:resultRowSplitter",
 			_resultRowSplitter);
 	}
 
 	private static final String _PAGE = "/process_list/page.jsp";
 
+	private String _emptyResultsMessage = StringPool.BLANK;
+	private String _localTaskExecutorClassName = StringPool.BLANK;
+	private String _mvcRenderCommandName = StringPool.BLANK;
+	private String _remoteTaskExecutorClassName = StringPool.BLANK;
 	private ResultRowSplitter _resultRowSplitter;
 
 }
