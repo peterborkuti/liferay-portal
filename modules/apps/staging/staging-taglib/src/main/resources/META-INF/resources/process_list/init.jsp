@@ -17,11 +17,14 @@
 <%@ include file="/init.jsp" %>
 
 <%
-ResultRowSplitter resultRowSplitter = (ResultRowSplitter)request.getAttribute("liferay-staging:process-list:resultRowSplitter");
+boolean deleteMenu = GetterUtil.getBoolean(request.getAttribute("liferay-staging:process-list:deleteMenu"));
 String emptyResultsMessage = GetterUtil.getString(request.getAttribute("liferay-staging:process-list:emptyResultsMessage"));
 String localTaskExecutorClassName = GetterUtil.getString(request.getAttribute("liferay-staging:process-list:localTaskExecutorClassName"));
 String mvcRenderCommandName = GetterUtil.getString(request.getAttribute("liferay-staging:process-list:mvcRenderCommandName"));
+boolean relaunchMenu = GetterUtil.getBoolean(request.getAttribute("liferay-staging:process-list:relaunchMenu"));
 String remoteTaskExecutorClassName = GetterUtil.getString(request.getAttribute("liferay-staging:process-list:remoteTaskExecutorClassName"));
+ResultRowSplitter resultRowSplitter = (ResultRowSplitter)request.getAttribute("liferay-staging:process-list:resultRowSplitter");
+boolean summaryMenu = GetterUtil.getBoolean(request.getAttribute("liferay-staging:process-list:summaryMenu"));
 
 if (Validator.isNull(remoteTaskExecutorClassName)) {
 	remoteTaskExecutorClassName = localTaskExecutorClassName;
