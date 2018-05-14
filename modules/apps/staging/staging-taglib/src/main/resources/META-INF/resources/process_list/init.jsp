@@ -18,6 +18,14 @@
 
 <%
 ResultRowSplitter resultRowSplitter = (ResultRowSplitter)request.getAttribute("liferay-staging:process-list:resultRowSplitter");
+String emptyResultsMessage = GetterUtil.getString(request.getAttribute("liferay-staging:process-list:emptyResultsMessage"));
+String localTaskExecutorClassName = GetterUtil.getString(request.getAttribute("liferay-staging:process-list:localTaskExecutorClassName"));
+String mvcRenderCommandName = GetterUtil.getString(request.getAttribute("liferay-staging:process-list:mvcRenderCommandName"));
+String remoteTaskExecutorClassName = GetterUtil.getString(request.getAttribute("liferay-staging:process-list:remoteTaskExecutorClassName"));
+
+if (Validator.isNull(remoteTaskExecutorClassName)) {
+	remoteTaskExecutorClassName = localTaskExecutorClassName;
+}
 
 String displayStyle = ParamUtil.getString(request, "displayStyle", "descriptive");
 String navigation = ParamUtil.getString(request, "navigation", "all");
@@ -35,7 +43,7 @@ if ("list".equals(displayStyle)) {
 
 PortletURL renderURL = liferayPortletResponse.createRenderURL();
 
-renderURL.setParameter("mvcRenderCommandName", "publishLayoutsView");
+renderURL.setParameter("mvcRenderCommandName", mvcRenderCommandName);
 renderURL.setParameter("tabs1", "processes");
 
 boolean localPublishing = true;
@@ -52,5 +60,5 @@ renderURL.setParameter("orderByCol", orderByCol);
 renderURL.setParameter("orderByType", orderByType);
 renderURL.setParameter("searchContainerId", searchContainerId);
 
-String taskExecutorClassName = localPublishing ? BackgroundTaskExecutorNames.LAYOUT_STAGING_BACKGROUND_TASK_EXECUTOR : BackgroundTaskExecutorNames.LAYOUT_REMOTE_STAGING_BACKGROUND_TASK_EXECUTOR;
+String taskExecutorClassName = localPublishing ? localTaskExecutorClassName : remoteTaskExecutorClassName;
 %>
