@@ -160,7 +160,10 @@
 			>
 				<liferay-staging:process-list-menu
 					backgroundTask="<%= backgroundTask %>"
+					deleteMenu="<%= deleteMenu %>"
 					localPublishing="<%= localPublishing %>"
+					relaunchMenu="<%= relaunchMenu %>"
+					summaryMenu="<%= summaryMenu %>"
 				/>
 			</liferay-ui:search-container-column-text>
 		</liferay-ui:search-container-row>
