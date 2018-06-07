@@ -113,9 +113,11 @@ else {
 						}
 						%>
 
-						<a href="javascript:Liferay.fire('<%= liferayPortletResponse.getNamespace() %>submit', {incomplete: <%= layoutRevision.isIncomplete() %>, publishURL: '<%= publishURL %>', currentURL: '<%= currentURL %>'}); void(0);" id="submitLink">
-							<liferay-ui:message key="<%= label %>" />
-						</a>
+						<div class="btn-group-item">
+							<a class="btn btn-secondary btn-sm" href="javascript:Liferay.fire('<%= liferayPortletResponse.getNamespace() %>submit', {incomplete: <%= layoutRevision.isIncomplete() %>, publishURL: '<%= publishURL %>', currentURL: '<%= currentURL %>'}); void(0);" id="submitLink">
+								<liferay-ui:message key="<%= label %>" />
+							</a>
+						</div>
 					</c:otherwise>
 				</c:choose>
 			</li>
@@ -130,22 +132,6 @@ else {
 						<aui:input disabled="<%= true %>" id="readyToggle" label="<%= StringPool.BLANK %>" labelOn="ready-for-publication" name="readyToggle" type="toggle-switch" value="<%= true %>" />
 					</span>
 				</c:when>
-				<c:otherwise>
-					<aui:model-context bean="<%= layoutRevision %>" model="<%= LayoutRevision.class %>" />
-
-					<span class="staging-bar-workflow-text">
-						<aui:workflow-status markupView="lexicon" showIcon="<%= false %>" showLabel="<%= false %>" status="<%= layoutRevision.getStatus() %>" statusMessage='<%= layoutRevision.isHead() ? "ready-for-publication" : null %>' />
-					</span>
-
-					<aui:script>
-						AUI.$('.layout-revision-info .taglib-workflow-status').on(
-							'mouseenter',
-							function(event) {
-								Liferay.Portal.ToolTip.show(event.currentTarget, '<liferay-ui:message key="<%= taglibHelpMessage %>" />');
-							}
-						);
-					</aui:script>
-				</c:otherwise>
 			</c:choose>
 
 			<c:if test="<%= hasWorkflowTask %>">
