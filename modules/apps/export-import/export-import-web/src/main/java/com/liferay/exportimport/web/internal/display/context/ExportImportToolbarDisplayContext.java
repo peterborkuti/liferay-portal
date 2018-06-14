@@ -22,6 +22,7 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItemList;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
@@ -187,6 +188,11 @@ public class ExportImportToolbarDisplayContext {
 					});
 			}
 		};
+	}
+
+	public String getSearchContainerId() {
+		return ParamUtil.getString(_request, "searchContainerId",
+			StringPool.BLANK);
 	}
 
 	public String getSortingOrder() {
