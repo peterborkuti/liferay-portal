@@ -38,7 +38,7 @@ if (!ignoreRequestValue && Validator.isNotNull(ParamUtil.getString(request, "che
 	checked = ParamUtil.getBoolean(request, name, false);
 }
 
-String checkedString = (checked) ? "checked" : "";
+String checkedString = (checked) ? "checked=\"true\"" : "";
 String description = LanguageUtil.get(request, descriptionKey);
 String disabledString = (disabled) ? "disabled" : "";
 String domId = liferayPortletResponse.getNamespace() + id;
