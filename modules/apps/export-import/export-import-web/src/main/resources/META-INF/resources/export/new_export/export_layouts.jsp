@@ -64,6 +64,8 @@ else {
 	rootNodeName = LanguageUtil.get(request, "public-pages");
 }
 
+String backURL = ParamUtil.getString(request, "backURL");
+
 String treeId = "layoutsExportTree" + liveGroupId + privateLayout;
 
 String displayStyle = ParamUtil.getString(request, "displayStyle");
@@ -77,7 +79,7 @@ portletURL.setParameter("privateLayout", String.valueOf(privateLayout));
 portletURL.setParameter("displayStyle", displayStyle);
 
 portletDisplay.setShowBackIcon(true);
-portletDisplay.setURLBack(portletURL.toString());
+portletDisplay.setURLBack(backURL);
 
 renderResponse.setTitle(!configuredExport ? LanguageUtil.get(request, "new-custom-export") : LanguageUtil.format(request, "new-export-based-on-x", exportImportConfiguration.getName(), false));
 %>
@@ -173,7 +175,7 @@ renderResponse.setTitle(!configuredExport ? LanguageUtil.get(request, "new-custo
 		<aui:button-row>
 			<aui:button type="submit" value="export" />
 
-			<aui:button href="<%= portletURL.toString() %>" type="cancel" />
+			<aui:button href="<%= backURL %>" type="cancel" />
 		</aui:button-row>
 	</aui:form>
 </div>

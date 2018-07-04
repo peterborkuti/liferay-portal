@@ -40,6 +40,7 @@ ExportImportConfiguration exportImportConfiguration = (ExportImportConfiguration
 		<portlet:param name="groupId" value="<%= String.valueOf(groupId) %>" />
 		<portlet:param name="liveGroupId" value="<%= String.valueOf(liveGroupId) %>" />
 		<portlet:param name="privateLayout" value="<%= String.valueOf(privateLayout) %>" />
+		<portlet:param name="backURL" value="<%= String.valueOf(currentURL) %>" />
 	</portlet:renderURL>
 
 	<liferay-ui:icon
