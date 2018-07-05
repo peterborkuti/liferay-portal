@@ -87,6 +87,14 @@ if (Validator.isNull(publisherName)) {
 <c:choose>
 	<c:when test="<%= lastImportDate > 0 %>">
 		<c:if test="<%= Validator.isNotNull(lastImportLayoutSetBranchName) && Validator.isNotNull(publisherName) %>">
+			<div class="alert alert-fluid alert-info custom-info-alert" role="alert">
+				<div class="staging-alert-container">
+					<span class="alert-indicator">
+						<svg aria-hidden="true" class="lexicon-icon lexicon-icon-info-circle">
+							<use xlink:href="<%= themeDisplay.getPathThemeImages() %>/lexicon/icons.svg#info-circle" />
+						</svg>
+					</span>
+
 			<span class="last-publication-branch">
 				<liferay-ui:message arguments='<%= new String[] {"<strong>" + HtmlUtil.escape(layout.getName(locale)) + "</strong>", "<em>" + HtmlUtil.escape(layoutSetBranchDisplayContext.getLayoutSetBranchDisplayName(lastImportLayoutSetBranchName)) + "</em>"} %>' key='<%= (group.isStagingGroup() || group.isStagedRemotely()) ? "page-x-was-last-published-to-live" : "page-x-was-last-published-from-x" %>' translateArguments="<%= false %>" />
 
@@ -109,6 +117,8 @@ if (Validator.isNull(publisherName)) {
 			<span class="last-publication-user">
 				<liferay-ui:message arguments="<%= new String[] {HtmlUtil.escape(StringUtil.toLowerCase(LanguageUtil.getTimeDescription(request, (System.currentTimeMillis() - lastImportDate), true))), HtmlUtil.escape(publisherName)} %>" key="x-ago-by-x" translateArguments="<%= false %>" />
 			</span>
+				</div>
+			</div>
 		</c:if>
 	</c:when>
 	<c:otherwise>
