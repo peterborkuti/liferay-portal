@@ -95,28 +95,28 @@ if (Validator.isNull(publisherName)) {
 						</svg>
 					</span>
 
-			<span class="last-publication-branch">
-				<liferay-ui:message arguments='<%= new String[] {"<strong>" + HtmlUtil.escape(layout.getName(locale)) + "</strong>", "<em>" + HtmlUtil.escape(layoutSetBranchDisplayContext.getLayoutSetBranchDisplayName(lastImportLayoutSetBranchName)) + "</em>"} %>' key='<%= (group.isStagingGroup() || group.isStagedRemotely()) ? "page-x-was-last-published-to-live" : "page-x-was-last-published-from-x" %>' translateArguments="<%= false %>" />
+					<span class="last-publication-branch">
+						<liferay-ui:message arguments='<%= new String[] {"<strong>" + HtmlUtil.escape(layout.getName(locale)) + "</strong>", "<em>" + HtmlUtil.escape(layoutSetBranchDisplayContext.getLayoutSetBranchDisplayName(lastImportLayoutSetBranchName)) + "</em>"} %>' key='<%= (group.isStagingGroup() || group.isStagedRemotely()) ? "page-x-was-last-published-to-live" : "page-x-was-last-published-from-x" %>' translateArguments="<%= false %>" />
 
-				<c:if test="<%= (Validator.isNotNull(lastImportLayoutBranchName) && (layoutRevisions.size() > 1)) || Validator.isNotNull(lastImportLayoutRevisionId) %>">
-					<span class="last-publication-variation-details">(
-						<c:if test="<%= Validator.isNotNull(lastImportLayoutBranchName) && (layoutRevisions.size() > 1) %>">
-							<span class="variation-name">
-								<liferay-ui:message key="variation" />: <strong><liferay-ui:message key="<%= HtmlUtil.escape(layoutBranchDisplayContext.getLayoutBranchDisplayName(lastImportLayoutBranchName)) %>" localizeKey="<%= false %>" /></strong>
-							</span>
-						</c:if>
+						<c:if test="<%= (Validator.isNotNull(lastImportLayoutBranchName) && (layoutRevisions.size() > 1)) || Validator.isNotNull(lastImportLayoutRevisionId) %>">
+							<span class="last-publication-variation-details">(
+								<c:if test="<%= Validator.isNotNull(lastImportLayoutBranchName) && (layoutRevisions.size() > 1) %>">
+									<span class="variation-name">
+										<liferay-ui:message key="variation" />: <strong><liferay-ui:message key="<%= HtmlUtil.escape(layoutBranchDisplayContext.getLayoutBranchDisplayName(lastImportLayoutBranchName)) %>" localizeKey="<%= false %>" /></strong>
+									</span>
+								</c:if>
 
-						<c:if test="<%= Validator.isNotNull(lastImportLayoutRevisionId) %>">
-							<span class="layout-version">
-								<liferay-ui:message key="version" />: <strong><%= lastImportLayoutRevisionId %></strong>
-							</span>
+								<c:if test="<%= Validator.isNotNull(lastImportLayoutRevisionId) %>">
+									<span class="layout-version">
+										<liferay-ui:message key="version" />: <strong><%= lastImportLayoutRevisionId %></strong>
+									</span>
+								</c:if>
+							)</span>
 						</c:if>
-					)</span>
-				</c:if>
-			</span>
-			<span class="last-publication-user">
-				<liferay-ui:message arguments="<%= new String[] {HtmlUtil.escape(StringUtil.toLowerCase(LanguageUtil.getTimeDescription(request, (System.currentTimeMillis() - lastImportDate), true))), HtmlUtil.escape(publisherName)} %>" key="x-ago-by-x" translateArguments="<%= false %>" />
-			</span>
+					</span>
+					<span class="last-publication-user">
+						<liferay-ui:message arguments="<%= new String[] {HtmlUtil.escape(StringUtil.toLowerCase(LanguageUtil.getTimeDescription(request, (System.currentTimeMillis() - lastImportDate), true))), HtmlUtil.escape(publisherName)} %>" key="x-ago-by-x" translateArguments="<%= false %>" />
+					</span>
 				</div>
 			</div>
 		</c:if>
